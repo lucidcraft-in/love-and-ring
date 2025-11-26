@@ -1,11 +1,53 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Shield, Users, Lock, CheckCircle, Heart, Star } from "lucide-react";
+import { Shield, Users, Lock, CheckCircle, Heart, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Progress } from "@/components/ui/progress";
 import heroImage from "@/assets/hero-bg.jpg";
+import StepOne from "@/components/registration/StepOne";
+import StepTwo from "@/components/registration/StepTwo";
+import StepThree from "@/components/registration/StepThree";
+import StepFour from "@/components/registration/StepFour";
+import StepFive from "@/components/registration/StepFive";
 
 const Home = () => {
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 5;
+
+  const progress = (currentStep / totalSteps) * 100;
+
+  const nextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return <StepOne />;
+      case 2:
+        return <StepTwo />;
+      case 3:
+        return <StepThree />;
+      case 4:
+        return <StepFour />;
+      case 5:
+        return <StepFive />;
+      default:
+        return <StepOne />;
+    }
+  };
+
   const features = [
     {
       icon: Shield,
@@ -67,40 +109,132 @@ const Home = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background/80 to-secondary/20" />
         
         <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-3xl mx-auto text-center space-y-8"
-          >
-            <h1 className="text-5xl md:text-7xl font-bold">
-              Find Your <span className="gradient-text">Perfect Match</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground">
-              Join thousands of happy couples who found their life partner through our trusted matrimony platform
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                asChild
-                className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-lg px-8"
+          <AnimatePresence mode="wait">
+            {!showRegistration ? (
+              <motion.div
+                key="hero"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -30 }}
+                transition={{ duration: 0.8 }}
+                className="max-w-3xl mx-auto text-center space-y-8"
               >
-                <Link to="/register">Register Now</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild className="text-lg px-8">
-                <Link to="/browse">Browse Profiles</Link>
-              </Button>
-            </div>
-          </motion.div>
+                <h1 className="text-5xl md:text-7xl font-bold">
+                  Find Your <span className="gradient-text">Perfect Match</span>
+                </h1>
+                <p className="text-xl md:text-2xl text-muted-foreground">
+                  Join thousands of happy couples who found their life partner through our trusted matrimony platform
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button
+                    size="lg"
+                    onClick={() => setShowRegistration(true)}
+                    className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-lg px-8"
+                  >
+                    Register Now
+                  </Button>
+                  <Button size="lg" variant="outline" asChild className="text-lg px-8">
+                    <Link to="/browse">Browse Profiles</Link>
+                  </Button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="registration"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 30 }}
+                transition={{ duration: 0.8 }}
+                className="max-w-4xl mx-auto"
+              >
+                {/* Header */}
+                <div className="text-center mb-8">
+                  <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                    Create Your <span className="gradient-text">Profile</span>
+                  </h1>
+                  <p className="text-xl text-muted-foreground">
+                    Step {currentStep} of {totalSteps}: Complete your registration
+                  </p>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="mb-8">
+                  <Progress value={progress} className="h-3" />
+                  <div className="flex justify-between mt-2 text-sm text-muted-foreground">
+                    <span>Basic Details</span>
+                    <span>Basic Info</span>
+                    <span>Personal</span>
+                    <span>Education</span>
+                    <span>Additional</span>
+                  </div>
+                </div>
+
+                {/* Form Card */}
+                <Card className="p-8 glass-card">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentStep}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {renderStep()}
+                    </motion.div>
+                  </AnimatePresence>
+
+                  {/* Navigation Buttons */}
+                  <div className="flex justify-between mt-8 pt-6 border-t">
+                    <Button
+                      variant="outline"
+                      onClick={prevStep}
+                      disabled={currentStep === 1}
+                      className="gap-2"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+
+                    <Button
+                      onClick={nextStep}
+                      disabled={currentStep === totalSteps}
+                      className="gap-2 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                    >
+                      {currentStep === totalSteps ? "Submit" : "Continue"}
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </Card>
+
+                {/* Back to Home */}
+                <div className="text-center mt-6">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setShowRegistration(false);
+                      setCurrentStep(1);
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    ← Back to Home
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Decorative floating elements */}
-        <div className="absolute top-20 left-10 opacity-20">
-          <Heart className="h-16 w-16 text-primary animate-float" />
-        </div>
-        <div className="absolute bottom-20 right-10 opacity-20">
-          <Star className="h-20 w-20 text-secondary animate-float" style={{ animationDelay: "1s" }} />
-        </div>
+        {!showRegistration && (
+          <>
+            <div className="absolute top-20 left-10 opacity-20">
+              <Heart className="h-16 w-16 text-primary animate-float" />
+            </div>
+            <div className="absolute bottom-20 right-10 opacity-20">
+              <Star className="h-20 w-20 text-secondary animate-float" style={{ animationDelay: "1s" }} />
+            </div>
+          </>
+        )}
       </section>
 
       {/* Features Section */}
