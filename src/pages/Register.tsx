@@ -102,8 +102,14 @@ const Register = () => {
               </Button>
 
               <Button
-                onClick={nextStep}
-                disabled={currentStep === totalSteps}
+                onClick={() => {
+                  if (currentStep === totalSteps) {
+                    // Navigate to dashboard on submit
+                    window.location.href = '/dashboard';
+                  } else {
+                    nextStep();
+                  }
+                }}
                 className="gap-2 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
               >
                 {currentStep === totalSteps ? "Submit" : "Continue"}
