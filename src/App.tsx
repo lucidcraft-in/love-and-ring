@@ -11,6 +11,8 @@ import Pricing from "./pages/Pricing";
 import SuccessStories from "./pages/SuccessStories";
 import Contact from "./pages/Contact";
 import Register from "./pages/Register";
+import UserDashboard from "./pages/UserDashboard";
+import SingleProfile from "./pages/SingleProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,8 @@ const App = () => (
               <Route path="/success-stories" element={<SuccessStories />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/dashboard" element={<UserDashboard />} />
+              <Route path="/profile/:id" element={<SingleProfile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
