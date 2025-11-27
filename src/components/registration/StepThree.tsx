@@ -12,11 +12,18 @@ import { Upload, RotateCw, ZoomIn, ZoomOut, X, Check } from "lucide-react";
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 
+import type { RegistrationData } from "@/pages/Register";
+
 interface StepThreeProps {
   errors?: { [key: string]: string };
+  formData?: RegistrationData;
+  updateFormData?: (field: keyof RegistrationData, value: string) => void;
 }
 
-const StepThree = ({ errors = {} }: StepThreeProps) => {
+const StepThree = ({ errors = {}, formData, updateFormData }: StepThreeProps) => {
+  const handleChange = (field: keyof RegistrationData, value: string) => {
+    if (updateFormData) updateFormData(field, value);
+  };
   const [physicallyChallenged, setPhysicallyChallenged] = useState("no");
   const [livesWithFamily, setLivesWithFamily] = useState("yes");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -126,7 +133,8 @@ const StepThree = ({ errors = {} }: StepThreeProps) => {
             id="height" 
             type="number" 
             placeholder="e.g., 170" 
-            required 
+            value={formData?.height || ""}
+            onChange={(e) => handleChange("height", e.target.value)}
             className={errors.height ? "border-destructive" : ""}
           />
           {errors.height && <p className="text-xs text-destructive">{errors.height}</p>}
@@ -138,7 +146,8 @@ const StepThree = ({ errors = {} }: StepThreeProps) => {
             id="weight" 
             type="number" 
             placeholder="e.g., 65" 
-            required 
+            value={formData?.weight || ""}
+            onChange={(e) => handleChange("weight", e.target.value)}
             className={errors.weight ? "border-destructive" : ""}
           />
           {errors.weight && <p className="text-xs text-destructive">{errors.weight}</p>}
@@ -146,7 +155,7 @@ const StepThree = ({ errors = {} }: StepThreeProps) => {
 
         <div className="space-y-2">
           <Label htmlFor="maritalStatus">Marital Status *</Label>
-          <Select>
+          <Select value={formData?.maritalStatus} onValueChange={(v) => handleChange("maritalStatus", v)}>
             <SelectTrigger className={errors.maritalStatus ? "border-destructive" : ""}>
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
@@ -164,7 +173,7 @@ const StepThree = ({ errors = {} }: StepThreeProps) => {
 
         <div className="space-y-2">
           <Label htmlFor="bodyType">Body Type *</Label>
-          <Select>
+          <Select value={formData?.bodyType} onValueChange={(v) => handleChange("bodyType", v)}>
             <SelectTrigger className={errors.bodyType ? "border-destructive" : ""}>
               <SelectValue placeholder="Select body type" />
             </SelectTrigger>
@@ -206,7 +215,8 @@ const StepThree = ({ errors = {} }: StepThreeProps) => {
           <Input 
             id="city" 
             placeholder="Start typing city name..." 
-            required 
+            value={formData?.city || ""}
+            onChange={(e) => handleChange("city", e.target.value)}
             className={errors.city ? "border-destructive" : ""}
           />
           <p className="text-xs text-muted-foreground">Google Places autocomplete integration</p>

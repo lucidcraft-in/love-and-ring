@@ -16,13 +16,8 @@ const Summary = () => {
     }
   };
 
-  const handleCardClick = (cardTitle: string, premium: boolean) => {
-    if (premium && !isPremium) {
-      handlePremiumFeature();
-      return;
-    }
-    
-    // Navigate to respective pages
+  const handleCardClick = (cardTitle: string) => {
+    // Navigate to respective pages directly
     if (cardTitle === "Contact Viewed") {
       navigate("/dashboard/contacts-viewed");
     } else if (cardTitle === "Chats") {
@@ -52,7 +47,7 @@ const Summary = () => {
             <Card 
               key={card.title}
               className={`glass-card p-4 relative overflow-hidden cursor-pointer hover:shadow-lg transition-all`}
-              onClick={() => handleCardClick(card.title, !!card.premium)}
+              onClick={() => handleCardClick(card.title)}
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-10`} />
               <div className="relative z-10">

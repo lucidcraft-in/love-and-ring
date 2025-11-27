@@ -6,8 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Crown, Edit, Upload } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const EditProfile = () => {
+  const navigate = useNavigate();
   const [currentMembership] = useState("Free");
 
   return (
@@ -29,7 +31,10 @@ const EditProfile = () => {
               Upgrade to unlock premium features and find your match faster
             </p>
           </div>
-          <Button className="bg-gradient-to-r from-primary to-secondary">
+          <Button 
+            className="bg-gradient-to-r from-primary to-secondary"
+            onClick={() => navigate("/pricing")}
+          >
             Upgrade Now
           </Button>
         </div>

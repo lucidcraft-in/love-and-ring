@@ -1,7 +1,19 @@
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { RegistrationData } from "@/pages/Register";
 
-const StepFour = () => {
+interface StepFourProps {
+  formData?: RegistrationData;
+  updateFormData?: (field: keyof RegistrationData, value: string) => void;
+}
+
+const StepFour = ({ formData, updateFormData }: StepFourProps) => {
+  const handleChange = (field: keyof RegistrationData, value: string) => {
+    if (updateFormData) {
+      updateFormData(field, value);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -12,7 +24,7 @@ const StepFour = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="education">Highest Education *</Label>
-          <Select>
+          <Select value={formData?.education} onValueChange={(value) => handleChange("education", value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select education level" />
             </SelectTrigger>
@@ -25,11 +37,10 @@ const StepFour = () => {
               <SelectItem value="professional">Professional Degree</SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">Options from CRUD-based master list</p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="course">Course/Specialization *</Label>
+          <Label htmlFor="course">Course/Specialization</Label>
           <Select>
             <SelectTrigger>
               <SelectValue placeholder="Select course" />
@@ -46,12 +57,11 @@ const StepFour = () => {
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">Dependent on selected education level</p>
         </div>
 
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="profession">Profession *</Label>
-          <Select>
+          <Select value={formData?.profession} onValueChange={(value) => handleChange("profession", value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select profession" />
             </SelectTrigger>
@@ -69,15 +79,7 @@ const StepFour = () => {
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">Options from Profession master (CRUD-supported)</p>
         </div>
-      </div>
-
-      <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-        <p className="text-sm text-muted-foreground">
-          <strong>Note:</strong> All dropdown options are managed through a CRUD-based master data system, 
-          making it easy to add, update, or remove options as needed.
-        </p>
       </div>
     </div>
   );

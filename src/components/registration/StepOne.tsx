@@ -1,12 +1,21 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { RegistrationData } from "@/pages/Register";
 
 interface StepOneProps {
   errors?: { [key: string]: string };
+  formData?: RegistrationData;
+  updateFormData?: (field: keyof RegistrationData, value: string) => void;
 }
 
-const StepOne = ({ errors = {} }: StepOneProps) => {
+const StepOne = ({ errors = {}, formData, updateFormData }: StepOneProps) => {
+  const handleChange = (field: keyof RegistrationData, value: string) => {
+    if (updateFormData) {
+      updateFormData(field, value);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -15,10 +24,9 @@ const StepOne = ({ errors = {} }: StepOneProps) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* This Account For - at the top */}
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="accountFor">This Account For *</Label>
-          <Select>
+          <Select value={formData?.accountFor} onValueChange={(value) => handleChange("accountFor", value)}>
             <SelectTrigger className={errors.accountFor ? "border-destructive" : ""}>
               <SelectValue placeholder="Select profile for" />
             </SelectTrigger>
@@ -40,7 +48,8 @@ const StepOne = ({ errors = {} }: StepOneProps) => {
           <Input 
             id="fullName" 
             placeholder="Enter your full name" 
-            required 
+            value={formData?.fullName || ""}
+            onChange={(e) => handleChange("fullName", e.target.value)}
             className={errors.fullName ? "border-destructive" : ""}
           />
           {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
@@ -52,7 +61,8 @@ const StepOne = ({ errors = {} }: StepOneProps) => {
             id="email" 
             type="email" 
             placeholder="your.email@example.com" 
-            required 
+            value={formData?.email || ""}
+            onChange={(e) => handleChange("email", e.target.value)}
             className={errors.email ? "border-destructive" : ""}
           />
           {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
@@ -60,7 +70,7 @@ const StepOne = ({ errors = {} }: StepOneProps) => {
 
         <div className="space-y-2">
           <Label htmlFor="countryCode">Country Code *</Label>
-          <Select>
+          <Select value={formData?.countryCode} onValueChange={(value) => handleChange("countryCode", value)}>
             <SelectTrigger className={errors.countryCode ? "border-destructive" : ""}>
               <SelectValue placeholder="Select country code" />
             </SelectTrigger>
@@ -81,7 +91,8 @@ const StepOne = ({ errors = {} }: StepOneProps) => {
             id="mobile" 
             type="tel" 
             placeholder="Enter mobile number" 
-            required 
+            value={formData?.mobile || ""}
+            onChange={(e) => handleChange("mobile", e.target.value)}
             className={errors.mobile ? "border-destructive" : ""}
           />
           {errors.mobile && <p className="text-xs text-destructive">{errors.mobile}</p>}
@@ -89,7 +100,7 @@ const StepOne = ({ errors = {} }: StepOneProps) => {
 
         <div className="space-y-2">
           <Label htmlFor="gender">Gender *</Label>
-          <Select>
+          <Select value={formData?.gender} onValueChange={(value) => handleChange("gender", value)}>
             <SelectTrigger className={errors.gender ? "border-destructive" : ""}>
               <SelectValue placeholder="Select gender" />
             </SelectTrigger>
@@ -107,7 +118,8 @@ const StepOne = ({ errors = {} }: StepOneProps) => {
           <Input 
             id="dob" 
             type="date" 
-            required 
+            value={formData?.dob || ""}
+            onChange={(e) => handleChange("dob", e.target.value)}
             className={errors.dob ? "border-destructive" : ""}
           />
           <p className="text-xs text-muted-foreground">Must be at least 21 years old</p>
@@ -116,7 +128,7 @@ const StepOne = ({ errors = {} }: StepOneProps) => {
 
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="language">Preferred Language *</Label>
-          <Select>
+          <Select value={formData?.language} onValueChange={(value) => handleChange("language", value)}>
             <SelectTrigger className={errors.language ? "border-destructive" : ""}>
               <SelectValue placeholder="Select language" />
             </SelectTrigger>
