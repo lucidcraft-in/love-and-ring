@@ -35,7 +35,7 @@ const Footer = () => {
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
               <Heart className="h-8 w-8 text-primary fill-primary" />
-              <span className="text-xl font-bold gradient-text">MatrimonyHub</span>
+              <span className="text-xl font-bold gradient-text">Love & Ring</span>
             </Link>
             <p className="text-muted-foreground text-sm">
               Find your perfect match with trust, security, and complete privacy.
@@ -75,7 +75,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} MatrimonyHub. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Love & Ring. All rights reserved.</p>
         </div>
       </div>
     </footer>

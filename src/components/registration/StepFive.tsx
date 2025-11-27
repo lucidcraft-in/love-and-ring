@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X } from "lucide-react";
 
-const StepFive = () => {
+interface StepFiveProps {
+  errors?: { [key: string]: string };
+}
+
+const StepFive = ({ errors = {} }: StepFiveProps) => {
   const [incomeRange, setIncomeRange] = useState([25]);
   const [incomeType, setIncomeType] = useState("yearly");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
+  const [selectedDiets, setSelectedDiets] = useState<string[]>([]);
 
   const interests = [
     { id: "reading", name: "Reading", icon: "📚" },
@@ -32,6 +37,14 @@ const StepFive = () => {
     { id: "funny", name: "Funny", icon: "😄" },
     { id: "intelligent", name: "Intelligent", icon: "🧠" },
     { id: "patient", name: "Patient", icon: "🕊️" },
+  ];
+
+  const dietOptions = [
+    { id: "veg", name: "Vegetarian", icon: "🥗" },
+    { id: "non-veg", name: "Non-Veg", icon: "🍗" },
+    { id: "vegan", name: "Vegan", icon: "🌱" },
+    { id: "eggetarian", name: "Eggetarian", icon: "🥚" },
+    { id: "jain", name: "Jain", icon: "🙏" },
   ];
 
   const toggleSelection = (id: string, list: string[], setter: (val: string[]) => void) => {
@@ -138,52 +151,29 @@ const StepFive = () => {
           </div>
         </div>
 
-        {/* Membership */}
-        <div className="space-y-2">
-          <Label htmlFor="membership">Membership Type</Label>
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Select membership" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="free">🆓 Free (Public)</SelectItem>
-              <SelectItem value="silver">🥈 Silver (Private)</SelectItem>
-              <SelectItem value="gold">🥇 Gold (Private)</SelectItem>
-              <SelectItem value="premium">💎 Premium (Private)</SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground">
-            Membership types with name, account type, and icon (CRUD-supported)
-          </p>
-        </div>
-
-        {/* Diet */}
-        <div className="space-y-2">
-          <Label>Diet Preference</Label>
-          <RadioGroup defaultValue="veg">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <div className="flex items-center space-x-2 border rounded-lg p-3 hover:bg-muted/50 cursor-pointer">
-                <RadioGroupItem value="veg" id="veg" />
-                <Label htmlFor="veg" className="font-normal cursor-pointer flex-1">🥗 Vegetarian</Label>
+        {/* Diet - Multiple Select */}
+        <div className="space-y-3">
+          <Label>Diet Preference (Select all that apply)</Label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {dietOptions.map((diet) => (
+              <div 
+                key={diet.id}
+                className={`flex items-center space-x-3 border rounded-lg p-3 hover:bg-muted/50 cursor-pointer transition-colors ${
+                  selectedDiets.includes(diet.id) ? 'border-primary bg-primary/5' : ''
+                }`}
+                onClick={() => toggleSelection(diet.id, selectedDiets, setSelectedDiets)}
+              >
+                <Checkbox 
+                  id={diet.id} 
+                  checked={selectedDiets.includes(diet.id)}
+                  onCheckedChange={() => toggleSelection(diet.id, selectedDiets, setSelectedDiets)}
+                />
+                <Label htmlFor={diet.id} className="font-normal cursor-pointer flex-1">
+                  {diet.icon} {diet.name}
+                </Label>
               </div>
-              <div className="flex items-center space-x-2 border rounded-lg p-3 hover:bg-muted/50 cursor-pointer">
-                <RadioGroupItem value="non-veg" id="non-veg" />
-                <Label htmlFor="non-veg" className="font-normal cursor-pointer flex-1">🍗 Non-Veg</Label>
-              </div>
-              <div className="flex items-center space-x-2 border rounded-lg p-3 hover:bg-muted/50 cursor-pointer">
-                <RadioGroupItem value="vegan" id="vegan" />
-                <Label htmlFor="vegan" className="font-normal cursor-pointer flex-1">🌱 Vegan</Label>
-              </div>
-              <div className="flex items-center space-x-2 border rounded-lg p-3 hover:bg-muted/50 cursor-pointer">
-                <RadioGroupItem value="eggetarian" id="eggetarian" />
-                <Label htmlFor="eggetarian" className="font-normal cursor-pointer flex-1">🥚 Eggetarian</Label>
-              </div>
-              <div className="flex items-center space-x-2 border rounded-lg p-3 hover:bg-muted/50 cursor-pointer">
-                <RadioGroupItem value="jain" id="jain" />
-                <Label htmlFor="jain" className="font-normal cursor-pointer flex-1">🙏 Jain</Label>
-              </div>
-            </div>
-          </RadioGroup>
+            ))}
+          </div>
         </div>
       </div>
 

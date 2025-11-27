@@ -22,7 +22,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <Heart className="h-8 w-8 text-primary fill-primary" />
-            <span className="text-xl font-bold gradient-text">MatrimonyHub</span>
+            <span className="text-xl font-bold gradient-text">Love & Ring</span>
           </Link>
 
           {/* Desktop Navigation */}

@@ -13,6 +13,8 @@ import Contact from "./pages/Contact";
 import Register from "./pages/Register";
 import UserDashboard from "./pages/UserDashboard";
 import SingleProfile from "./pages/SingleProfile";
+import ContactsViewed from "./pages/ContactsViewed";
+import ChatsPage from "./pages/ChatsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/register" element={<Register />} />
               <Route path="/dashboard" element={<UserDashboard />} />
+              <Route path="/dashboard/contacts-viewed" element={<ContactsViewed />} />
+              <Route path="/dashboard/chats" element={<ChatsPage />} />
               <Route path="/profile/:id" element={<SingleProfile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
