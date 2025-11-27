@@ -2,7 +2,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const StepOne = () => {
+interface StepOneProps {
+  errors?: { [key: string]: string };
+}
+
+const StepOne = ({ errors = {} }: StepOneProps) => {
   return (
     <div className="space-y-6">
       <div>
@@ -11,20 +15,53 @@ const StepOne = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* This Account For - at the top */}
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="accountFor">This Account For *</Label>
+          <Select>
+            <SelectTrigger className={errors.accountFor ? "border-destructive" : ""}>
+              <SelectValue placeholder="Select profile for" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="self">Myself</SelectItem>
+              <SelectItem value="son">Son</SelectItem>
+              <SelectItem value="daughter">Daughter</SelectItem>
+              <SelectItem value="brother">Brother</SelectItem>
+              <SelectItem value="sister">Sister</SelectItem>
+              <SelectItem value="relative">Relative</SelectItem>
+              <SelectItem value="friend">Friend</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.accountFor && <p className="text-xs text-destructive">{errors.accountFor}</p>}
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="fullName">Full Name *</Label>
-          <Input id="fullName" placeholder="Enter your full name" required />
+          <Input 
+            id="fullName" 
+            placeholder="Enter your full name" 
+            required 
+            className={errors.fullName ? "border-destructive" : ""}
+          />
+          {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="email">Email Address *</Label>
-          <Input id="email" type="email" placeholder="your.email@example.com" required />
+          <Input 
+            id="email" 
+            type="email" 
+            placeholder="your.email@example.com" 
+            required 
+            className={errors.email ? "border-destructive" : ""}
+          />
+          {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="countryCode">Country Code *</Label>
           <Select>
-            <SelectTrigger>
+            <SelectTrigger className={errors.countryCode ? "border-destructive" : ""}>
               <SelectValue placeholder="Select country code" />
             </SelectTrigger>
             <SelectContent>
@@ -35,17 +72,25 @@ const StepOne = () => {
               <SelectItem value="+971">+971 (UAE)</SelectItem>
             </SelectContent>
           </Select>
+          {errors.countryCode && <p className="text-xs text-destructive">{errors.countryCode}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="mobile">Mobile Number *</Label>
-          <Input id="mobile" type="tel" placeholder="Enter mobile number" required />
+          <Input 
+            id="mobile" 
+            type="tel" 
+            placeholder="Enter mobile number" 
+            required 
+            className={errors.mobile ? "border-destructive" : ""}
+          />
+          {errors.mobile && <p className="text-xs text-destructive">{errors.mobile}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="gender">Gender *</Label>
           <Select>
-            <SelectTrigger>
+            <SelectTrigger className={errors.gender ? "border-destructive" : ""}>
               <SelectValue placeholder="Select gender" />
             </SelectTrigger>
             <SelectContent>
@@ -54,18 +99,25 @@ const StepOne = () => {
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
+          {errors.gender && <p className="text-xs text-destructive">{errors.gender}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="dob">Date of Birth *</Label>
-          <Input id="dob" type="date" required />
+          <Input 
+            id="dob" 
+            type="date" 
+            required 
+            className={errors.dob ? "border-destructive" : ""}
+          />
           <p className="text-xs text-muted-foreground">Must be at least 21 years old</p>
+          {errors.dob && <p className="text-xs text-destructive">{errors.dob}</p>}
         </div>
 
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="language">Preferred Language *</Label>
           <Select>
-            <SelectTrigger>
+            <SelectTrigger className={errors.language ? "border-destructive" : ""}>
               <SelectValue placeholder="Select language" />
             </SelectTrigger>
             <SelectContent>
@@ -77,6 +129,7 @@ const StepOne = () => {
               <SelectItem value="marathi">Marathi</SelectItem>
             </SelectContent>
           </Select>
+          {errors.language && <p className="text-xs text-destructive">{errors.language}</p>}
         </div>
       </div>
     </div>

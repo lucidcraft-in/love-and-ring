@@ -2,9 +2,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Shield, Users, Lock, CheckCircle, Heart, Star, ChevronLeft, ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Shield, Users, Lock, CheckCircle, Heart, Star, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
 import heroImage from "@/assets/hero-bg.jpg";
 import StepOne from "@/components/registration/StepOne";
 import StepTwo from "@/components/registration/StepTwo";
@@ -13,38 +14,79 @@ import StepFour from "@/components/registration/StepFour";
 import StepFive from "@/components/registration/StepFive";
 
 const Home = () => {
+  const navigate = useNavigate();
   const [showRegistration, setShowRegistration] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [stepErrors, setStepErrors] = useState<{ [key: string]: string }>({});
   const totalSteps = 5;
 
   const progress = (currentStep / totalSteps) * 100;
 
+  const validateStep = (step: number): boolean => {
+    const errors: { [key: string]: string } = {};
+    
+    switch (step) {
+      case 1:
+        // Validate Step 1 fields (basic validation - would be enhanced with form state)
+        // For now, we'll assume all fields are required
+        break;
+      case 2:
+        break;
+      case 3:
+        break;
+      case 4:
+        break;
+      case 5:
+        break;
+    }
+    
+    setStepErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      toast.error("Please fill all required fields");
+      return false;
+    }
+    
+    return true;
+  };
+
   const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
+    if (validateStep(currentStep)) {
+      if (currentStep < totalSteps) {
+        setCurrentStep(currentStep + 1);
+        setStepErrors({});
+      }
     }
   };
 
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+      setStepErrors({});
+    }
+  };
+
+  const handleSubmit = () => {
+    if (validateStep(currentStep)) {
+      toast.success("Registration successful!");
+      navigate('/dashboard');
     }
   };
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <StepOne />;
+        return <StepOne errors={stepErrors} />;
       case 2:
         return <StepTwo />;
       case 3:
-        return <StepThree />;
+        return <StepThree errors={stepErrors} />;
       case 4:
         return <StepFour />;
       case 5:
-        return <StepFive />;
+        return <StepFive errors={stepErrors} />;
       default:
-        return <StepOne />;
+        return <StepOne errors={stepErrors} />;
     }
   };
 
@@ -75,21 +117,21 @@ const Home = () => {
     {
       names: "Rahul & Priya",
       image: "https://images.unsplash.com/photo-1537511446984-935f663eb1f4?w=400&h=400&fit=crop",
-      story: "We found each other on MatrimonyHub and it's been a beautiful journey ever since.",
+      story: "We found each other on Love & Ring and it's been a beautiful journey ever since.",
       date: "Married: June 2024",
       location: "Mumbai, India",
     },
     {
       names: "Amit & Sneha",
       image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=400&fit=crop",
-      story: "Thanks to MatrimonyHub, we found our perfect match. Couldn't be happier!",
+      story: "Thanks to Love & Ring, we found our perfect match. Couldn't be happier!",
       date: "Married: March 2024",
       location: "Delhi, India",
     },
     {
       names: "Vikram & Anjali",
       image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=400&fit=crop",
-      story: "From first message to forever, MatrimonyHub made our dream come true.",
+      story: "From first message to forever, Love & Ring made our dream come true.",
       date: "Married: January 2024",
       location: "Bangalore, India",
     },
@@ -133,9 +175,6 @@ const Home = () => {
                   >
                     Register Now
                   </Button>
-                  <Button size="lg" variant="outline" asChild className="text-lg px-8">
-                    <Link to="/browse">Browse Profiles</Link>
-                  </Button>
                 </div>
               </motion.div>
             ) : (
@@ -145,8 +184,22 @@ const Home = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 30 }}
                 transition={{ duration: 0.8 }}
-                className="max-w-4xl mx-auto"
+                className="max-w-4xl mx-auto relative"
               >
+                {/* Close Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -top-2 -right-2 z-20 bg-background/80 hover:bg-background rounded-full shadow-lg"
+                  onClick={() => {
+                    setShowRegistration(false);
+                    setCurrentStep(1);
+                    setStepErrors({});
+                  }}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+
                 {/* Header */}
                 <div className="text-center mb-8">
                   <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -196,8 +249,7 @@ const Home = () => {
                     </Button>
 
                     <Button
-                      onClick={nextStep}
-                      disabled={currentStep === totalSteps}
+                      onClick={currentStep === totalSteps ? handleSubmit : nextStep}
                       className="gap-2 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
                     >
                       {currentStep === totalSteps ? "Submit" : "Continue"}
@@ -205,20 +257,6 @@ const Home = () => {
                     </Button>
                   </div>
                 </Card>
-
-                {/* Back to Home */}
-                <div className="text-center mt-6">
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setShowRegistration(false);
-                      setCurrentStep(1);
-                    }}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    ← Back to Home
-                  </Button>
-                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -246,7 +284,7 @@ const Home = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Why Choose MatrimonyHub?</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Why Choose Love & Ring?</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               We provide a secure, trusted platform to help you find your perfect life partner
             </p>
@@ -333,9 +371,9 @@ const Home = () => {
               viewport={{ once: true }}
               className="text-center space-y-6"
             >
-              <h2 className="text-4xl md:text-5xl font-bold">About MatrimonyHub</h2>
+              <h2 className="text-4xl md:text-5xl font-bold">About Love & Ring</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                MatrimonyHub is a trusted matrimony platform dedicated to helping individuals find their perfect life partner. 
+                Love & Ring is a trusted matrimony platform dedicated to helping individuals find their perfect life partner. 
                 With years of experience and thousands of success stories, we understand the importance of finding someone who 
                 shares your values, culture, and aspirations.
               </p>

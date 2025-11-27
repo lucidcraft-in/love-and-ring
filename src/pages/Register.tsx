@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import StepOne from "@/components/registration/StepOne";
 import StepTwo from "@/components/registration/StepTwo";
 import StepThree from "@/components/registration/StepThree";
@@ -11,37 +13,82 @@ import StepFour from "@/components/registration/StepFour";
 import StepFive from "@/components/registration/StepFive";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [stepErrors, setStepErrors] = useState<{ [key: string]: string }>({});
   const totalSteps = 5;
 
   const progress = (currentStep / totalSteps) * 100;
 
+  const validateStep = (step: number): boolean => {
+    const errors: { [key: string]: string } = {};
+    
+    // Basic validation - in production this would check actual form values
+    switch (step) {
+      case 1:
+        // Validate basic details
+        break;
+      case 2:
+        // Validate basic info
+        break;
+      case 3:
+        // Validate personal details
+        break;
+      case 4:
+        // Validate education
+        break;
+      case 5:
+        // Validate additional details
+        break;
+    }
+    
+    setStepErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      toast.error("Please fill all required fields");
+      return false;
+    }
+    
+    return true;
+  };
+
   const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
+    if (validateStep(currentStep)) {
+      if (currentStep < totalSteps) {
+        setCurrentStep(currentStep + 1);
+        setStepErrors({});
+      }
     }
   };
 
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+      setStepErrors({});
+    }
+  };
+
+  const handleSubmit = () => {
+    if (validateStep(currentStep)) {
+      toast.success("Registration successful!");
+      navigate('/dashboard');
     }
   };
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <StepOne />;
+        return <StepOne errors={stepErrors} />;
       case 2:
         return <StepTwo />;
       case 3:
-        return <StepThree />;
+        return <StepThree errors={stepErrors} />;
       case 4:
         return <StepFour />;
       case 5:
-        return <StepFive />;
+        return <StepFive errors={stepErrors} />;
       default:
-        return <StepOne />;
+        return <StepOne errors={stepErrors} />;
     }
   };
 
@@ -51,8 +98,18 @@ const Register = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto"
+          className="max-w-4xl mx-auto relative"
         >
+          {/* Close Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute -top-2 right-0 z-20 bg-background/80 hover:bg-background rounded-full shadow-lg"
+            onClick={() => navigate('/')}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -102,14 +159,7 @@ const Register = () => {
               </Button>
 
               <Button
-                onClick={() => {
-                  if (currentStep === totalSteps) {
-                    // Navigate to dashboard on submit
-                    window.location.href = '/dashboard';
-                  } else {
-                    nextStep();
-                  }
-                }}
+                onClick={currentStep === totalSteps ? handleSubmit : nextStep}
                 className="gap-2 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
               >
                 {currentStep === totalSteps ? "Submit" : "Continue"}
@@ -120,7 +170,7 @@ const Register = () => {
 
           {/* Help Text */}
           <div className="text-center mt-6 text-sm text-muted-foreground">
-            <p>Need help? Contact us at support@matrimonyhub.com</p>
+            <p>Need help? Contact us at support@lovering.com</p>
           </div>
         </motion.div>
       </div>
