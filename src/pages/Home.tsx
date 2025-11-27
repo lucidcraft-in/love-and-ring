@@ -2,51 +2,42 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Shield, Users, Lock, CheckCircle, Heart, Star, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Shield, Users, Lock, CheckCircle, Heart, Star, ChevronLeft, ChevronRight, X, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import heroImage from "@/assets/hero-bg.jpg";
+import { useAuth } from "@/contexts/AuthContext";
 import StepOne from "@/components/registration/StepOne";
 import StepTwo from "@/components/registration/StepTwo";
 import StepThree from "@/components/registration/StepThree";
 import StepFour from "@/components/registration/StepFour";
 import StepFive from "@/components/registration/StepFive";
 
+type FormMode = "hero" | "signin" | "registration";
+
 const Home = () => {
   const navigate = useNavigate();
-  const [showRegistration, setShowRegistration] = useState(false);
+  const { login, isAuthenticated } = useAuth();
+  const [formMode, setFormMode] = useState<FormMode>("hero");
   const [currentStep, setCurrentStep] = useState(1);
   const [stepErrors, setStepErrors] = useState<{ [key: string]: string }>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [signInData, setSignInData] = useState({ email: "", password: "" });
   const totalSteps = 5;
 
   const progress = (currentStep / totalSteps) * 100;
 
   const validateStep = (step: number): boolean => {
     const errors: { [key: string]: string } = {};
-    
-    switch (step) {
-      case 1:
-        // Validate Step 1 fields (basic validation - would be enhanced with form state)
-        // For now, we'll assume all fields are required
-        break;
-      case 2:
-        break;
-      case 3:
-        break;
-      case 4:
-        break;
-      case 5:
-        break;
-    }
-    
     setStepErrors(errors);
     
     if (Object.keys(errors).length > 0) {
       toast.error("Please fill all required fields");
       return false;
     }
-    
     return true;
   };
 
@@ -68,9 +59,28 @@ const Home = () => {
 
   const handleSubmit = () => {
     if (validateStep(currentStep)) {
+      login({ email: signInData.email || "user@example.com", name: "User" });
       toast.success("Registration successful!");
       navigate('/dashboard');
     }
+  };
+
+  const handleSignIn = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!signInData.email || !signInData.password) {
+      toast.error("Please fill all fields");
+      return;
+    }
+    login({ email: signInData.email, name: "User" });
+    toast.success("Signed in successfully!");
+    navigate('/dashboard');
+  };
+
+  const resetForm = () => {
+    setFormMode("hero");
+    setCurrentStep(1);
+    setStepErrors({});
+    setSignInData({ email: "", password: "" });
   };
 
   const renderStep = () => {
@@ -141,7 +151,7 @@ const Home = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section
-        className="relative min-h-[90vh] flex items-center justify-center overflow-hidden"
+        className="relative min-h-[90vh] flex items-center justify-center overflow-hidden px-4 py-8 sm:py-12"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: "cover",
@@ -150,80 +160,179 @@ const Home = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background/80 to-secondary/20" />
         
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto relative z-10">
           <AnimatePresence mode="wait">
-            {!showRegistration ? (
+            {formMode === "hero" && !isAuthenticated ? (
               <motion.div
                 key="hero"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -30 }}
                 transition={{ duration: 0.8 }}
-                className="max-w-3xl mx-auto text-center space-y-8"
+                className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 px-4"
               >
-                <h1 className="text-5xl md:text-7xl font-bold">
+                <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold">
                   Find Your <span className="gradient-text">Perfect Match</span>
                 </h1>
-                <p className="text-xl md:text-2xl text-muted-foreground">
+                <p className="text-base sm:text-xl md:text-2xl text-muted-foreground">
                   Join thousands of happy couples who found their life partner through our trusted matrimony platform
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                   <Button
                     size="lg"
-                    onClick={() => setShowRegistration(true)}
-                    className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-lg px-8"
+                    onClick={() => setFormMode("signin")}
+                    variant="outline"
+                    className="text-base sm:text-lg px-6 sm:px-8"
+                  >
+                    Sign In
+                  </Button>
+                  <Button
+                    size="lg"
+                    onClick={() => setFormMode("registration")}
+                    className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-base sm:text-lg px-6 sm:px-8"
                   >
                     Register Now
                   </Button>
                 </div>
               </motion.div>
-            ) : (
+            ) : formMode === "signin" ? (
+              <motion.div
+                key="signin"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 30 }}
+                transition={{ duration: 0.8 }}
+                className="max-w-md mx-auto relative p-4 sm:p-6"
+              >
+                {/* Close Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-0 right-0 sm:-top-2 sm:-right-2 z-20 bg-background/80 hover:bg-background rounded-full shadow-lg"
+                  onClick={resetForm}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+
+                <Card className="p-6 sm:p-8 glass-card">
+                  <div className="text-center mb-6">
+                    <h1 className="text-2xl sm:text-3xl font-bold mb-2">
+                      Welcome <span className="gradient-text">Back</span>
+                    </h1>
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      Sign in to continue your journey
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleSignIn} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="your.email@example.com"
+                        value={signInData.email}
+                        onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password</Label>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your password"
+                          value={signInData.password}
+                          onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
+                          required
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-sm">
+                      <Link to="/forgot-password" className="text-primary hover:underline">
+                        Forgot Password?
+                      </Link>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                    >
+                      Sign In
+                    </Button>
+                  </form>
+
+                  <div className="mt-6 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      Don't have an account?{" "}
+                      <button
+                        onClick={() => setFormMode("registration")}
+                        className="text-primary hover:underline font-medium"
+                      >
+                        Register Now
+                      </button>
+                    </p>
+                  </div>
+                </Card>
+              </motion.div>
+            ) : formMode === "registration" ? (
               <motion.div
                 key="registration"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 30 }}
                 transition={{ duration: 0.8 }}
-                className="max-w-4xl mx-auto relative"
+                className="max-w-4xl mx-auto relative p-4 sm:p-6"
               >
                 {/* Close Button */}
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute -top-2 -right-2 z-20 bg-background/80 hover:bg-background rounded-full shadow-lg"
-                  onClick={() => {
-                    setShowRegistration(false);
-                    setCurrentStep(1);
-                    setStepErrors({});
-                  }}
+                  className="absolute top-0 right-0 sm:-top-2 sm:-right-2 z-20 bg-background/80 hover:bg-background rounded-full shadow-lg"
+                  onClick={resetForm}
                 >
                   <X className="h-5 w-5" />
                 </Button>
 
                 {/* Header */}
-                <div className="text-center mb-8">
-                  <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                <div className="text-center mb-6 sm:mb-8">
+                  <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4">
                     Create Your <span className="gradient-text">Profile</span>
                   </h1>
-                  <p className="text-xl text-muted-foreground">
+                  <p className="text-base sm:text-xl text-muted-foreground">
                     Step {currentStep} of {totalSteps}: Complete your registration
                   </p>
                 </div>
 
                 {/* Progress Bar */}
-                <div className="mb-8">
-                  <Progress value={progress} className="h-3" />
-                  <div className="flex justify-between mt-2 text-sm text-muted-foreground">
+                <div className="mb-6 sm:mb-8">
+                  <Progress value={progress} className="h-2 sm:h-3" />
+                  <div className="hidden sm:flex justify-between mt-2 text-xs sm:text-sm text-muted-foreground">
                     <span>Basic Details</span>
                     <span>Basic Info</span>
                     <span>Personal</span>
                     <span>Education</span>
                     <span>Additional</span>
                   </div>
+                  <div className="sm:hidden text-center mt-2 text-xs text-muted-foreground">
+                    Step {currentStep}: {["Basic Details", "Basic Info", "Personal", "Education", "Additional"][currentStep - 1]}
+                  </div>
                 </div>
 
                 {/* Form Card */}
-                <Card className="p-8 glass-card">
+                <Card className="p-4 sm:p-6 md:p-8 glass-card">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={currentStep}
@@ -237,60 +346,97 @@ const Home = () => {
                   </AnimatePresence>
 
                   {/* Navigation Buttons */}
-                  <div className="flex justify-between mt-8 pt-6 border-t">
+                  <div className="flex justify-between mt-6 sm:mt-8 pt-4 sm:pt-6 border-t gap-4">
                     <Button
                       variant="outline"
                       onClick={prevStep}
                       disabled={currentStep === 1}
-                      className="gap-2"
+                      className="gap-1 sm:gap-2 text-sm sm:text-base"
                     >
                       <ChevronLeft className="h-4 w-4" />
-                      Previous
+                      <span className="hidden sm:inline">Previous</span>
+                      <span className="sm:hidden">Back</span>
                     </Button>
 
                     <Button
                       onClick={currentStep === totalSteps ? handleSubmit : nextStep}
-                      className="gap-2 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                      className="gap-1 sm:gap-2 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-sm sm:text-base"
                     >
                       {currentStep === totalSteps ? "Submit" : "Continue"}
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>
                 </Card>
+
+                {/* Already have account */}
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Already have an account?{" "}
+                    <button
+                      onClick={() => setFormMode("signin")}
+                      className="text-primary hover:underline font-medium"
+                    >
+                      Sign In
+                    </button>
+                  </p>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="authenticated"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -30 }}
+                transition={{ duration: 0.8 }}
+                className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 px-4"
+              >
+                <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold">
+                  Welcome <span className="gradient-text">Back!</span>
+                </h1>
+                <p className="text-base sm:text-xl md:text-2xl text-muted-foreground">
+                  Continue your journey to find your perfect life partner
+                </p>
+                <Button
+                  size="lg"
+                  onClick={() => navigate('/dashboard')}
+                  className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-base sm:text-lg px-6 sm:px-8"
+                >
+                  Go to Dashboard
+                </Button>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
         {/* Decorative floating elements */}
-        {!showRegistration && (
+        {formMode === "hero" && !isAuthenticated && (
           <>
-            <div className="absolute top-20 left-10 opacity-20">
-              <Heart className="h-16 w-16 text-primary animate-float" />
+            <div className="absolute top-20 left-4 sm:left-10 opacity-20">
+              <Heart className="h-10 w-10 sm:h-16 sm:w-16 text-primary animate-float" />
             </div>
-            <div className="absolute bottom-20 right-10 opacity-20">
-              <Star className="h-20 w-20 text-secondary animate-float" style={{ animationDelay: "1s" }} />
+            <div className="absolute bottom-20 right-4 sm:right-10 opacity-20">
+              <Star className="h-12 w-12 sm:h-20 sm:w-20 text-secondary animate-float" style={{ animationDelay: "1s" }} />
             </div>
           </>
         )}
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-12 sm:py-16 md:py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-10 sm:mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Why Choose Love & Ring?</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">Why Choose Love & Ring?</h2>
+            <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               We provide a secure, trusted platform to help you find your perfect life partner
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
@@ -299,10 +445,10 @@ const Home = () => {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="p-6 h-full glass-card hover:shadow-lg transition-all">
-                  <feature.icon className="h-12 w-12 text-primary mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                <Card className="p-4 sm:p-6 h-full glass-card hover:shadow-lg transition-all">
+                  <feature.icon className="h-10 w-10 sm:h-12 sm:w-12 text-primary mb-3 sm:mb-4" />
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">{feature.description}</p>
                 </Card>
               </motion.div>
             ))}
@@ -311,21 +457,21 @@ const Home = () => {
       </section>
 
       {/* Success Stories Preview */}
-      <section className="py-20">
+      <section className="py-12 sm:py-16 md:py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-10 sm:mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Success Stories</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">Success Stories</h2>
+            <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               Real couples, real happiness - read their inspiring journeys
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {successStories.map((story, index) => (
               <motion.div
                 key={index}
@@ -338,12 +484,12 @@ const Home = () => {
                   <img
                     src={story.image}
                     alt={story.names}
-                    className="w-full h-64 object-cover"
+                    className="w-full h-48 sm:h-64 object-cover"
                   />
-                  <div className="p-6 space-y-3">
-                    <h3 className="text-2xl font-semibold gradient-text">{story.names}</h3>
-                    <p className="text-muted-foreground italic">"{story.story}"</p>
-                    <div className="space-y-1 text-sm text-muted-foreground">
+                  <div className="p-4 sm:p-6 space-y-2 sm:space-y-3">
+                    <h3 className="text-xl sm:text-2xl font-semibold gradient-text">{story.names}</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground italic">"{story.story}"</p>
+                    <div className="space-y-1 text-xs sm:text-sm text-muted-foreground">
                       <p>{story.date}</p>
                       <p>{story.location}</p>
                     </div>
@@ -353,8 +499,8 @@ const Home = () => {
             ))}
           </div>
 
-          <div className="text-center mt-12">
-            <Button size="lg" variant="outline" asChild>
+          <div className="text-center mt-8 sm:mt-12">
+            <Button size="lg" variant="outline" asChild className="text-sm sm:text-base">
               <Link to="/success-stories">View All Stories</Link>
             </Button>
           </div>
@@ -362,26 +508,26 @@ const Home = () => {
       </section>
 
       {/* About Preview Section */}
-      <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
+      <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center space-y-6"
+              className="text-center space-y-4 sm:space-y-6"
             >
-              <h2 className="text-4xl md:text-5xl font-bold">About Love & Ring</h2>
-              <p className="text-lg text-muted-foreground leading-relaxed">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold">About Love & Ring</h2>
+              <p className="text-sm sm:text-lg text-muted-foreground leading-relaxed">
                 Love & Ring is a trusted matrimony platform dedicated to helping individuals find their perfect life partner. 
                 With years of experience and thousands of success stories, we understand the importance of finding someone who 
                 shares your values, culture, and aspirations.
               </p>
-              <p className="text-lg text-muted-foreground leading-relaxed">
+              <p className="text-sm sm:text-lg text-muted-foreground leading-relaxed">
                 Our platform combines advanced technology with personalized service to ensure you have the best experience 
                 in your search for a life partner. Every profile is verified, and your privacy is our top priority.
               </p>
-              <Button size="lg" variant="outline" asChild>
+              <Button size="lg" variant="outline" asChild className="text-sm sm:text-base">
                 <Link to="/about">Learn More About Us</Link>
               </Button>
             </motion.div>
@@ -390,24 +536,24 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary to-secondary text-white">
+      <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-r from-primary to-secondary text-white">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center space-y-6 max-w-3xl mx-auto"
+            className="text-center space-y-4 sm:space-y-6 max-w-3xl mx-auto"
           >
-            <h2 className="text-4xl md:text-5xl font-bold">Ready to Find Your Match?</h2>
-            <p className="text-xl opacity-90">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold">Ready to Find Your Match?</h2>
+            <p className="text-base sm:text-xl opacity-90">
               Create your profile in just a few minutes and start your journey to find your perfect life partner
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center pt-2 sm:pt-4">
               <Button
                 size="lg"
                 variant="secondary"
                 asChild
-                className="bg-white text-primary hover:bg-white/90 text-lg px-8"
+                className="bg-white text-primary hover:bg-white/90 text-sm sm:text-lg px-6 sm:px-8"
               >
                 <Link to="/register">Get Started Free</Link>
               </Button>
@@ -415,7 +561,7 @@ const Home = () => {
                 size="lg"
                 variant="outline"
                 asChild
-                className="border-white text-white hover:bg-white hover:text-primary text-lg px-8"
+                className="border-white text-white hover:bg-white hover:text-primary text-sm sm:text-lg px-6 sm:px-8"
               >
                 <Link to="/pricing">View Pricing</Link>
               </Button>
