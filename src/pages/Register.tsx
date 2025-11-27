@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import StepOne from "@/components/registration/StepOne";
@@ -12,52 +12,104 @@ import StepThree from "@/components/registration/StepThree";
 import StepFour from "@/components/registration/StepFour";
 import StepFive from "@/components/registration/StepFive";
 
+export interface RegistrationData {
+  accountFor: string;
+  fullName: string;
+  email: string;
+  countryCode: string;
+  mobile: string;
+  gender: string;
+  dob: string;
+  language: string;
+  religion: string;
+  caste: string;
+  motherTongue: string;
+  height: string;
+  weight: string;
+  maritalStatus: string;
+  bodyType: string;
+  city: string;
+  profileImage: string;
+  education: string;
+  profession: string;
+  interests: string[];
+  traits: string[];
+  diets: string[];
+}
+
 const Register = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [stepErrors, setStepErrors] = useState<{ [key: string]: string }>({});
+  const [isStepValid, setIsStepValid] = useState(false);
+  const [formData, setFormData] = useState<RegistrationData>({
+    accountFor: "",
+    fullName: "",
+    email: "",
+    countryCode: "",
+    mobile: "",
+    gender: "",
+    dob: "",
+    language: "",
+    religion: "",
+    caste: "",
+    motherTongue: "",
+    height: "",
+    weight: "",
+    maritalStatus: "",
+    bodyType: "",
+    city: "",
+    profileImage: "",
+    education: "",
+    profession: "",
+    interests: [],
+    traits: [],
+    diets: [],
+  });
   const totalSteps = 5;
 
   const progress = (currentStep / totalSteps) * 100;
 
-  const validateStep = (step: number): boolean => {
-    const errors: { [key: string]: string } = {};
-    
-    // Basic validation - in production this would check actual form values
+  const getRequiredFieldsForStep = (step: number): (keyof RegistrationData)[] => {
     switch (step) {
       case 1:
-        // Validate basic details
-        break;
+        return ["accountFor", "fullName", "email", "countryCode", "mobile", "gender", "dob", "language"];
       case 2:
-        // Validate basic info
-        break;
+        return ["religion", "caste", "motherTongue"];
       case 3:
-        // Validate personal details
-        break;
+        return ["height", "weight", "maritalStatus", "bodyType", "city"];
       case 4:
-        // Validate education
-        break;
+        return ["education", "profession"];
       case 5:
-        // Validate additional details
-        break;
+        return [];
+      default:
+        return [];
     }
-    
-    setStepErrors(errors);
-    
-    if (Object.keys(errors).length > 0) {
-      toast.error("Please fill all required fields");
-      return false;
-    }
-    
-    return true;
+  };
+
+  const checkStepValidity = (step: number): boolean => {
+    const requiredFields = getRequiredFieldsForStep(step);
+    return requiredFields.every(field => {
+      const value = formData[field];
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+      return value && value.trim() !== "";
+    });
+  };
+
+  useEffect(() => {
+    setIsStepValid(checkStepValidity(currentStep));
+  }, [formData, currentStep]);
+
+  const updateFormData = (field: keyof RegistrationData, value: string | string[]) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const nextStep = () => {
-    if (validateStep(currentStep)) {
-      if (currentStep < totalSteps) {
-        setCurrentStep(currentStep + 1);
-        setStepErrors({});
-      }
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+      setStepErrors({});
     }
   };
 
@@ -69,28 +121,29 @@ const Register = () => {
   };
 
   const handleSubmit = () => {
-    if (validateStep(currentStep)) {
-      toast.success("Registration successful!");
-      navigate('/dashboard');
-    }
+    toast.success("Registration successful!");
+    navigate('/dashboard');
   };
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <StepOne errors={stepErrors} />;
+        return <StepOne errors={stepErrors} formData={formData} updateFormData={updateFormData} />;
       case 2:
-        return <StepTwo />;
+        return <StepTwo formData={formData} updateFormData={updateFormData} />;
       case 3:
-        return <StepThree errors={stepErrors} />;
+        return <StepThree errors={stepErrors} formData={formData} updateFormData={updateFormData} />;
       case 4:
-        return <StepFour />;
+        return <StepFour formData={formData} updateFormData={updateFormData} />;
       case 5:
-        return <StepFive errors={stepErrors} />;
+        return <StepFive errors={stepErrors} formData={formData} updateFormData={updateFormData} />;
       default:
-        return <StepOne errors={stepErrors} />;
+        return <StepOne errors={stepErrors} formData={formData} updateFormData={updateFormData} />;
     }
   };
+
+  const isLastStep = currentStep === totalSteps;
+  const canProceed = isLastStep || isStepValid;
 
   return (
     <div className="min-h-screen py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
@@ -146,6 +199,18 @@ const Register = () => {
               </motion.div>
             </AnimatePresence>
 
+            {/* Validation Message */}
+            {!canProceed && !isLastStep && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-2 mt-6 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-600 dark:text-amber-400"
+              >
+                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                <p className="text-sm">Please fill all required fields to continue</p>
+              </motion.div>
+            )}
+
             {/* Navigation Buttons */}
             <div className="flex justify-between mt-8 pt-6 border-t">
               <Button
@@ -159,10 +224,11 @@ const Register = () => {
               </Button>
 
               <Button
-                onClick={currentStep === totalSteps ? handleSubmit : nextStep}
-                className="gap-2 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                onClick={isLastStep ? handleSubmit : nextStep}
+                disabled={!canProceed}
+                className={`gap-2 ${canProceed ? 'bg-gradient-to-r from-primary to-secondary hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`}
               >
-                {currentStep === totalSteps ? "Submit" : "Continue"}
+                {isLastStep ? "Submit" : "Continue"}
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>

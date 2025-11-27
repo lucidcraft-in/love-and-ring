@@ -6,11 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { X } from "lucide-react";
 
+import type { RegistrationData } from "@/pages/Register";
+
 interface StepFiveProps {
   errors?: { [key: string]: string };
+  formData?: RegistrationData;
+  updateFormData?: (field: keyof RegistrationData, value: string | string[]) => void;
 }
 
-const StepFive = ({ errors = {} }: StepFiveProps) => {
+const StepFive = ({ formData, updateFormData }: StepFiveProps) => {
   const [incomeRange, setIncomeRange] = useState([25]);
   const [incomeType, setIncomeType] = useState("yearly");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
