@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { 
   Search, 
   Send, 
@@ -17,9 +20,21 @@ import {
   ArrowLeft,
   Check,
   CheckCheck,
-  Image as ImageIcon
+  Image as ImageIcon,
+  X,
+  Trash2,
+  Ban,
+  Flag,
+  Camera,
+  CameraOff,
+  MicOff,
+  PhoneOff,
+  Square,
+  File,
+  MapPin
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface Message {
   id: number;
@@ -40,11 +55,31 @@ interface ChatUser {
   typing?: boolean;
 }
 
+const EMOJI_LIST = [
+  "😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "🙃",
+  "😉", "😊", "😇", "🥰", "😍", "🤩", "😘", "😗", "☺️", "😚",
+  "😋", "😛", "😜", "🤪", "😝", "🤑", "🤗", "🤭", "🤫", "🤔",
+  "🤐", "🤨", "😐", "😑", "😶", "😏", "😒", "🙄", "😬", "🤥",
+  "😌", "😔", "😪", "🤤", "😴", "😷", "🤒", "🤕", "🤢", "🤮",
+  "🥵", "🥶", "🥴", "😵", "🤯", "🤠", "🥳", "🥸", "😎", "🤓",
+  "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💕",
+  "💞", "💓", "💗", "💖", "💘", "💝", "💟", "👍", "👎", "👏"
+];
+
 const ChatsPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChat, setSelectedChat] = useState<ChatUser | null>(null);
   const [newMessage, setNewMessage] = useState("");
+  const [showVideoCall, setShowVideoCall] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [isCameraOn, setIsCameraOn] = useState(true);
+  const [isMicOn, setIsMicOn] = useState(true);
+  const recordingInterval = useRef<NodeJS.Timeout | null>(null);
+  
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, text: "Hi! I saw your profile and found it interesting.", sender: "other", time: "10:30 AM", status: "read" },
     { id: 2, text: "Hello! Thank you for reaching out 😊", sender: "me", time: "10:32 AM", status: "read" },
@@ -128,6 +163,74 @@ const ChatsPage = () => {
       handleSendMessage();
     }
   };
+
+  const handleEmojiSelect = (emoji: string) => {
+    setNewMessage(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  };
+
+  const handleClearChat = () => {
+    setMessages([]);
+    toast.success("Chat cleared");
+  };
+
+  const handleBlockUser = () => {
+    toast.success(`${selectedChat?.name} has been blocked`);
+  };
+
+  const handleReportUser = () => {
+    toast.success(`${selectedChat?.name} has been reported`);
+  };
+
+  const startRecording = () => {
+    setIsRecording(true);
+    setRecordingTime(0);
+    recordingInterval.current = setInterval(() => {
+      setRecordingTime(prev => prev + 1);
+    }, 1000);
+  };
+
+  const stopRecording = () => {
+    setIsRecording(false);
+    if (recordingInterval.current) {
+      clearInterval(recordingInterval.current);
+    }
+    toast.success("Voice message recorded");
+    setRecordingTime(0);
+  };
+
+  const cancelRecording = () => {
+    setIsRecording(false);
+    if (recordingInterval.current) {
+      clearInterval(recordingInterval.current);
+    }
+    setRecordingTime(0);
+  };
+
+  const formatRecordingTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleVideoCall = () => {
+    setShowVideoCall(true);
+  };
+
+  const endVideoCall = () => {
+    setShowVideoCall(false);
+    setIsCameraOn(true);
+    setIsMicOn(true);
+    toast.info("Call ended");
+  };
+
+  useEffect(() => {
+    return () => {
+      if (recordingInterval.current) {
+        clearInterval(recordingInterval.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 pt-16">
@@ -226,12 +329,30 @@ const ChatsPage = () => {
                 <Button variant="ghost" size="icon">
                   <Phone className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" onClick={handleVideoCall}>
                   <Video className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-5 w-5" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleClearChat} className="text-destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Clear Chat
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleBlockUser} className="text-destructive">
+                      <Ban className="h-4 w-4 mr-2" />
+                      Block User
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleReportUser} className="text-destructive">
+                      <Flag className="h-4 w-4 mr-2" />
+                      Report User
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
@@ -271,34 +392,107 @@ const ChatsPage = () => {
 
             {/* Message Input */}
             <div className="p-4 border-t bg-background">
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon">
-                  <Smile className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon">
-                  <Paperclip className="h-5 w-5" />
-                </Button>
-                <Input
-                  placeholder="Type a message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="flex-1"
-                />
-                {newMessage.trim() ? (
-                  <Button 
-                    size="icon" 
-                    onClick={handleSendMessage}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    <Send className="h-5 w-5" />
-                  </Button>
-                ) : (
-                  <Button variant="ghost" size="icon">
-                    <Mic className="h-5 w-5" />
-                  </Button>
-                )}
-              </div>
+              {isRecording ? (
+                /* Recording UI */
+                <div className="flex items-center gap-4 bg-destructive/10 rounded-lg p-3">
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="w-3 h-3 bg-destructive rounded-full animate-pulse" />
+                    <span className="text-destructive font-medium">Recording...</span>
+                    <span className="text-muted-foreground">{formatRecordingTime(recordingTime)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" onClick={cancelRecording}>
+                      <X className="h-5 w-5 text-muted-foreground" />
+                    </Button>
+                    <Button 
+                      size="icon" 
+                      onClick={stopRecording}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      <Send className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  {/* Emoji Picker */}
+                  <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Smile className="h-5 w-5" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 p-2" align="start">
+                      <div className="grid grid-cols-10 gap-1 max-h-48 overflow-y-auto">
+                        {EMOJI_LIST.map((emoji, index) => (
+                          <button
+                            key={index}
+                            className="text-xl hover:bg-muted rounded p-1 transition-colors"
+                            onClick={() => handleEmojiSelect(emoji)}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Attachment Menu */}
+                  <Popover open={showAttachMenu} onOpenChange={setShowAttachMenu}>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Paperclip className="h-5 w-5" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-48 p-2" align="start">
+                      <div className="flex flex-col gap-1">
+                        <Button variant="ghost" className="justify-start gap-2" onClick={() => {
+                          setShowAttachMenu(false);
+                          toast.info("Select image to send");
+                        }}>
+                          <ImageIcon className="h-4 w-4 text-blue-500" />
+                          Photo
+                        </Button>
+                        <Button variant="ghost" className="justify-start gap-2" onClick={() => {
+                          setShowAttachMenu(false);
+                          toast.info("Select file to send");
+                        }}>
+                          <File className="h-4 w-4 text-purple-500" />
+                          Document
+                        </Button>
+                        <Button variant="ghost" className="justify-start gap-2" onClick={() => {
+                          setShowAttachMenu(false);
+                          toast.info("Share location");
+                        }}>
+                          <MapPin className="h-4 w-4 text-green-500" />
+                          Location
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Input
+                    placeholder="Type a message..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    className="flex-1"
+                  />
+                  {newMessage.trim() ? (
+                    <Button 
+                      size="icon" 
+                      onClick={handleSendMessage}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      <Send className="h-5 w-5" />
+                    </Button>
+                  ) : (
+                    <Button variant="ghost" size="icon" onClick={startRecording}>
+                      <Mic className="h-5 w-5" />
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -313,6 +507,85 @@ const ChatsPage = () => {
           </div>
         )}
       </div>
+
+      {/* Video Call Dialog */}
+      <Dialog open={showVideoCall} onOpenChange={setShowVideoCall}>
+        <DialogContent className="max-w-4xl h-[80vh] p-0 overflow-hidden">
+          <div className="relative w-full h-full bg-gray-900 flex flex-col">
+            {/* Video Area */}
+            <div className="flex-1 relative">
+              {/* Remote Video (Full Screen) */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                {isCameraOn ? (
+                  <img 
+                    src={selectedChat?.avatar} 
+                    alt={selectedChat?.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center gap-4">
+                    <Avatar className="h-32 w-32">
+                      <AvatarImage src={selectedChat?.avatar} alt={selectedChat?.name} />
+                      <AvatarFallback className="text-4xl">{selectedChat?.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <p className="text-white text-lg">Camera Off</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Local Video (Small) */}
+              <div className="absolute bottom-4 right-4 w-32 h-44 bg-gray-800 rounded-lg overflow-hidden border-2 border-white/20">
+                <div className="w-full h-full flex items-center justify-center">
+                  <p className="text-white text-xs">You</p>
+                </div>
+              </div>
+
+              {/* Call Info */}
+              <div className="absolute top-4 left-4 text-white">
+                <h3 className="font-semibold text-lg">{selectedChat?.name}</h3>
+                <p className="text-sm text-white/70">Video Call</p>
+              </div>
+
+              {/* Close Button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute top-4 right-4 text-white hover:bg-white/20"
+                onClick={endVideoCall}
+              >
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
+
+            {/* Controls */}
+            <div className="p-6 bg-gray-900/90 flex items-center justify-center gap-6">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={`rounded-full w-14 h-14 ${!isMicOn ? 'bg-destructive text-white' : 'bg-gray-700 text-white hover:bg-gray-600'}`}
+                onClick={() => setIsMicOn(!isMicOn)}
+              >
+                {isMicOn ? <Mic className="h-6 w-6" /> : <MicOff className="h-6 w-6" />}
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={`rounded-full w-14 h-14 ${!isCameraOn ? 'bg-destructive text-white' : 'bg-gray-700 text-white hover:bg-gray-600'}`}
+                onClick={() => setIsCameraOn(!isCameraOn)}
+              >
+                {isCameraOn ? <Camera className="h-6 w-6" /> : <CameraOff className="h-6 w-6" />}
+              </Button>
+              <Button 
+                size="icon" 
+                className="rounded-full w-16 h-16 bg-destructive hover:bg-destructive/90 text-white"
+                onClick={endVideoCall}
+              >
+                <PhoneOff className="h-7 w-7" />
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
