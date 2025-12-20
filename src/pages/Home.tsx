@@ -472,7 +472,7 @@ const Home = () => {
           >
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">Success Stories</h2>
             <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Real couples, real happiness - read their inspiring journeys
+              Real Couples, Real Happiness – read their inspiring journeys and the beautiful stories that brought them together.
             </p>
           </motion.div>
 
