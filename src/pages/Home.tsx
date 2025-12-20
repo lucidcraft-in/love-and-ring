@@ -103,23 +103,23 @@ const Home = () => {
   const features = [
     {
       icon: Shield,
-      title: "Secure Platform",
-      description: "Your data is protected with industry-leading security measures",
+      title: "Secure & Trusted",
+      description: "Your data is protected with industry-leading security measures, ensuring complete trust and reliability.",
     },
     {
       icon: Users,
-      title: "Verified Profiles",
-      description: "Every profile is manually verified to ensure authenticity",
+      title: "Authentic Profiles",
+      description: "Every profile is manually verified through a strict authentication process to ensure complete authenticity.",
     },
     {
       icon: Lock,
-      title: "Privacy Control",
-      description: "Complete control over who can view your profile and contact details",
+      title: "Your Privacy",
+      description: "Ensuring absolute privacy with full control over who can view your profile and contact details, tailored to your needs.",
     },
     {
       icon: CheckCircle,
       title: "Advanced Matching",
-      description: "Smart algorithms to find your most compatible matches",
+      description: "Smart algorithm capabilities focusing on compatibility and exclusivity to help you find your perfect match.",
     },
   ];
 
