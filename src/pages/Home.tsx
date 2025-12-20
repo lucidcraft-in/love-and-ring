@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, Users, Lock, CheckCircle, Heart, Star, ChevronLeft, ChevronRight, X, Eye, EyeOff } from "lucide-react";
+import { Shield, Users, Lock, CheckCircle, Heart, Star, ChevronLeft, ChevronRight, X, Eye, EyeOff, Headset } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
@@ -120,6 +120,11 @@ const Home = () => {
       icon: CheckCircle,
       title: "Advanced Matching",
       description: "Smart algorithm capabilities focusing on compatibility and exclusivity to help you find your perfect match.",
+    },
+    {
+      icon: Headset,
+      title: "Personalised Support",
+      description: "Every profile receives consultant-led personalised support, ensuring meaningful matches without relying solely on algorithm-based outcomes.",
     },
   ];
 
@@ -436,7 +441,7 @@ const Home = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
