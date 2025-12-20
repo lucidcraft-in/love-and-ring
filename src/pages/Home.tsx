@@ -524,13 +524,13 @@ const Home = () => {
             >
               <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold">About Love & Ring</h2>
               <p className="text-sm sm:text-lg text-muted-foreground leading-relaxed">
-                Love & Ring is a trusted matrimony platform dedicated to helping individuals find their perfect life partner. 
-                With years of experience and thousands of success stories, we understand the importance of finding someone who 
-                shares your values, culture, and aspirations.
+                Love & Ring is a trusted, personalised matchmaking and matrimonial platform dedicated to helping individuals find their ideal life partner. Our platform is built on trust, authenticity, and a deep understanding of diverse social and cultural backgrounds.
               </p>
               <p className="text-sm sm:text-lg text-muted-foreground leading-relaxed">
-                Our platform combines advanced technology with personalized service to ensure you have the best experience 
-                in your search for a life partner. Every profile is verified, and your privacy is our top priority.
+                With many success stories, we understand the importance of finding a companion who shares your values and aspirations and is ready to walk together hand in hand.
+              </p>
+              <p className="text-sm sm:text-lg text-muted-foreground leading-relaxed">
+                Our platform combines advanced technology with consultant-led personalised service. Every profile is manually verified, and your privacy is always assured.
               </p>
               <Button size="lg" variant="outline" asChild className="text-sm sm:text-base">
                 <Link to="/about">Learn More About Us</Link>
