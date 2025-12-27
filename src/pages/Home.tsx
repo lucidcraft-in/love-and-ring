@@ -517,10 +517,16 @@ const Home = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="fixed inset-0 z-50 flex flex-col lg:flex-row overflow-hidden"
+                className="fixed inset-0 z-50 flex"
               >
-                {/* Dark Overlay for Readability */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 z-0" />
+                {/* Background - Hero Carousel (reuses same images) */}
+                <div className="absolute inset-0">
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${heroSlides[currentSlide]})` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/50" />
+                </div>
 
                 {/* Desktop/Tablet Close Button - Top Right of Screen */}
                 <Button
@@ -532,187 +538,187 @@ const Home = () => {
                   <X className="h-5 w-5" />
                 </Button>
 
-                {/* Left Section - Marketing Content */}
-                <motion.div 
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="hidden lg:flex lg:w-[45%] text-white p-12 xl:p-16 flex-col justify-center relative z-10"
+                {/* Mobile Close Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden absolute top-4 right-4 z-30 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-sm"
+                  onClick={resetForm}
                 >
-                  <div className="relative z-10 max-w-lg">
-                    {/* Main Heading */}
-                    <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-6">
-                      Register Now
-                      <br />
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-                        For Free
-                      </span>
-                    </h1>
+                  <X className="h-5 w-5" />
+                </Button>
 
-                    {/* Supporting Text */}
-                    <p className="text-lg text-white/80 leading-relaxed mb-10">
-                      Join thousands of verified profiles finding their perfect match. 
-                      Our platform offers secure, private, and meaningful connections 
-                      tailored to your preferences.
-                    </p>
-
-                    {/* Feature Highlights */}
-                    <div className="grid grid-cols-2 gap-4 mb-10">
-                      {loginFeatures.map((feature, index) => (
-                        <motion.div 
-                          key={index}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4 + index * 0.1 }}
-                          className="flex items-start gap-3 bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10"
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center flex-shrink-0">
-                            <feature.icon className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-white text-sm">{feature.title}</h3>
-                            <p className="text-white/60 text-xs">{feature.desc}</p>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-
-                    {/* Login Link */}
-                    <div className="pt-6 border-t border-white/10">
-                      <p className="text-white/70">
-                        Already have an account?{" "}
-                        <button onClick={() => setFormMode("signin")} className="text-primary hover:text-primary/80 font-semibold transition-colors">
-                          Login here
-                        </button>
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Right Section - Registration Form */}
-                <div className="flex-1 lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 overflow-y-auto">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                    className="w-full max-w-xl"
+                {/* Split Layout Container */}
+                <div className="relative z-10 flex flex-col lg:flex-row w-full h-full">
+                  {/* Left Section - Marketing Content */}
+                  <motion.div 
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className="hidden lg:flex lg:w-[45%] text-white p-8 xl:p-12 flex-col justify-center"
                   >
-                    {/* Mobile Header */}
-                    <div className="lg:hidden text-center mb-6">
-                      <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
-                        Create Your <span className="text-primary">Profile</span>
+                    <div className="max-w-md">
+                      {/* Main Heading */}
+                      <h1 className="text-3xl xl:text-4xl font-bold leading-tight mb-4">
+                        Register Now
+                        <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+                          For Free
+                        </span>
                       </h1>
-                      <p className="text-white/70 text-sm">
-                        Already have an account?{" "}
-                        <button onClick={() => setFormMode("signin")} className="text-primary hover:underline font-medium">
-                          Login
-                        </button>
+
+                      {/* Supporting Text */}
+                      <p className="text-base text-white/80 leading-relaxed mb-6">
+                        Join thousands of verified profiles finding their perfect match. 
+                        Our platform offers secure, private, and meaningful connections.
                       </p>
-                    </div>
 
-                    {/* Mobile Close Button */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="lg:hidden absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-sm z-30"
-                      onClick={resetForm}
-                    >
-                      <X className="h-5 w-5" />
-                    </Button>
-
-                    {/* Form Card */}
-                    <Card className="relative p-5 sm:p-6 lg:p-7 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
-                      {/* Step Progress Indicator */}
-                      <div className="mb-5">
-                        <div className="flex items-center justify-between mb-2">
-                          <h2 className="text-base font-semibold text-foreground">
-                            Step {currentStep} of {totalSteps}
-                          </h2>
-                          <span className="text-xs text-muted-foreground">
-                            {currentStep === 1 && "Basic Details"}
-                            {currentStep === 2 && "Background Info"}
-                            {currentStep === 3 && "Personal Details"}
-                            {currentStep === 4 && "Education & Work"}
-                            {currentStep === 5 && "Final Steps"}
-                          </span>
-                        </div>
-                        
-                        {/* Step Dots */}
-                        <div className="flex items-center gap-1.5">
-                          {Array.from({ length: totalSteps }, (_, i) => (
-                            <div key={i} className="flex-1 flex items-center">
-                              <div 
-                                className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                                  i + 1 < currentStep 
-                                    ? 'bg-gradient-to-r from-primary to-secondary' 
-                                    : i + 1 === currentStep 
-                                      ? 'bg-gradient-to-r from-primary to-secondary' 
-                                      : 'bg-muted'
-                                }`}
-                              />
+                      {/* Feature Highlights - Compact */}
+                      <div className="grid grid-cols-2 gap-3 mb-6">
+                        {loginFeatures.map((feature, index) => (
+                          <motion.div 
+                            key={index}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 + index * 0.1 }}
+                            className="flex items-start gap-2 bg-white/5 backdrop-blur-sm rounded-lg p-3 border border-white/10"
+                          >
+                            <div className="w-8 h-8 rounded-md bg-gradient-to-r from-primary to-secondary flex items-center justify-center flex-shrink-0">
+                              <feature.icon className="w-4 h-4 text-white" />
                             </div>
-                          ))}
-                        </div>
+                            <div>
+                              <h3 className="font-semibold text-white text-xs">{feature.title}</h3>
+                              <p className="text-white/60 text-[10px]">{feature.desc}</p>
+                            </div>
+                          </motion.div>
+                        ))}
                       </div>
 
-                      {/* Form Content */}
-                      <AnimatePresence mode="wait">
-                        <motion.div
-                          key={currentStep}
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3 }}
-                          className="[&_label]:text-sm [&_label]:mb-1 [&_.space-y-4]:space-y-3 [&_.space-y-6]:space-y-4 [&_input]:h-9 [&_select]:h-9 [&_.grid.gap-4]:gap-3 [&_.grid.gap-6]:gap-4"
-                        >
-                          {renderStep()}
-                        </motion.div>
-                      </AnimatePresence>
-
-                      {/* Validation Message */}
-                      {!canProceed && !isLastStep && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="flex items-center gap-2 mt-4 p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-600 dark:text-amber-400"
-                        >
-                          <Heart className="h-4 w-4 flex-shrink-0" />
-                          <p className="text-xs">Please fill all required fields to continue</p>
-                        </motion.div>
-                      )}
-
-                      {/* Navigation Buttons */}
-                      <div className="flex justify-between mt-5 pt-4 border-t border-border/50">
-                        <Button
-                          variant="outline"
-                          onClick={prevStep}
-                          disabled={currentStep === 1}
-                          className="gap-1.5 rounded-lg px-4 h-9 text-sm disabled:opacity-40"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                          Previous
-                        </Button>
-
-                        <Button
-                          onClick={isLastStep ? handleSubmit : nextStep}
-                          disabled={!canProceed}
-                          className={`gap-1.5 rounded-lg px-6 h-9 text-sm ${
-                            canProceed 
-                              ? 'bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25' 
-                              : 'opacity-40 cursor-not-allowed'
-                          }`}
-                        >
-                          {isLastStep ? "Submit" : "Continue"}
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
+                      {/* Login Link */}
+                      <div className="pt-4 border-t border-white/10">
+                        <p className="text-white/70 text-sm">
+                          Already have an account?{" "}
+                          <button onClick={() => setFormMode("signin")} className="text-primary hover:text-primary/80 font-semibold transition-colors">
+                            Login here
+                          </button>
+                        </p>
                       </div>
-                    </Card>
-
-                    {/* Help Text */}
-                    <div className="text-center mt-4 text-xs text-white/60">
-                      <p>Need help? Contact us at <span className="text-primary">support@lovering.com</span></p>
                     </div>
                   </motion.div>
+
+                  {/* Right Section - Registration Form */}
+                  <div className="flex-1 lg:w-[55%] flex items-center justify-center p-4 lg:p-6 overflow-y-auto">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.3 }}
+                      className="w-full max-w-md my-auto"
+                    >
+                      {/* Mobile Header */}
+                      <div className="lg:hidden text-center mb-4">
+                        <h1 className="text-xl sm:text-2xl font-bold mb-1 text-white">
+                          Create Your <span className="text-primary">Profile</span>
+                        </h1>
+                        <p className="text-white/70 text-xs">
+                          Already have an account?{" "}
+                          <button onClick={() => setFormMode("signin")} className="text-primary hover:underline font-medium">
+                            Login
+                          </button>
+                        </p>
+                      </div>
+
+                      {/* Form Card */}
+                      <Card className="relative p-4 sm:p-5 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl max-h-[80vh] overflow-y-auto">
+                        {/* Step Progress Indicator */}
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h2 className="text-sm font-semibold text-foreground">
+                              Step {currentStep} of {totalSteps}
+                            </h2>
+                            <span className="text-xs text-muted-foreground">
+                              {currentStep === 1 && "Basic Details"}
+                              {currentStep === 2 && "Background Info"}
+                              {currentStep === 3 && "Personal Details"}
+                              {currentStep === 4 && "Education & Work"}
+                              {currentStep === 5 && "Final Steps"}
+                            </span>
+                          </div>
+                          
+                          {/* Step Dots */}
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: totalSteps }, (_, i) => (
+                              <div key={i} className="flex-1 flex items-center">
+                                <div 
+                                  className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                                    i + 1 <= currentStep 
+                                      ? 'bg-gradient-to-r from-primary to-secondary' 
+                                      : 'bg-muted'
+                                  }`}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Form Content */}
+                        <AnimatePresence mode="wait">
+                          <motion.div
+                            key={currentStep}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.3 }}
+                            className="[&_label]:text-xs [&_label]:mb-1 [&_.space-y-4]:space-y-2 [&_.space-y-6]:space-y-3 [&_input]:h-8 [&_select]:h-8 [&_.grid.gap-4]:gap-2 [&_.grid.gap-6]:gap-3 text-sm"
+                          >
+                            {renderStep()}
+                          </motion.div>
+                        </AnimatePresence>
+
+                        {/* Validation Message */}
+                        {!canProceed && !isLastStep && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-center gap-2 mt-3 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-600 dark:text-amber-400"
+                          >
+                            <Heart className="h-3 w-3 flex-shrink-0" />
+                            <p className="text-xs">Please fill all required fields to continue</p>
+                          </motion.div>
+                        )}
+
+                        {/* Navigation Buttons */}
+                        <div className="flex justify-between mt-4 pt-3 border-t border-border/50">
+                          <Button
+                            variant="outline"
+                            onClick={prevStep}
+                            disabled={currentStep === 1}
+                            className="gap-1 rounded-lg px-3 h-8 text-xs disabled:opacity-40"
+                          >
+                            <ChevronLeft className="h-3 w-3" />
+                            Previous
+                          </Button>
+
+                          <Button
+                            onClick={isLastStep ? handleSubmit : nextStep}
+                            disabled={!canProceed}
+                            className={`gap-1 rounded-lg px-5 h-8 text-xs ${
+                              canProceed 
+                                ? 'bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25' 
+                                : 'opacity-40 cursor-not-allowed'
+                            }`}
+                          >
+                            {isLastStep ? "Submit" : "Continue"}
+                            <ChevronRight className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </Card>
+
+                      {/* Help Text */}
+                      <div className="text-center mt-3 text-xs text-white/60">
+                        <p>Need help? <span className="text-primary">support@lovering.com</span></p>
+                      </div>
+                    </motion.div>
+                  </div>
                 </div>
               </motion.div>
             ) : (
