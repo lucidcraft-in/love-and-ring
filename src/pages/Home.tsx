@@ -32,20 +32,12 @@ const Home = () => {
   const [signInData, setSignInData] = useState({ email: "", password: "" });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
-  const [imagesLoaded, setImagesLoaded] = useState(false);
   const totalSteps = 5;
 
   // Preload hero images for smooth transitions
   useEffect(() => {
-    let loadedCount = 0;
     heroSlides.forEach((src) => {
       const img = new Image();
-      img.onload = () => {
-        loadedCount++;
-        if (loadedCount === heroSlides.length) {
-          setImagesLoaded(true);
-        }
-      };
       img.src = src;
     });
   }, []);
@@ -188,38 +180,26 @@ const Home = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section
-        className="relative min-h-[90vh] flex items-center justify-center overflow-hidden px-4 py-8 sm:py-12 bg-gradient-to-br from-primary/30 via-secondary/20 to-primary/40"
+        className="relative min-h-[90vh] flex items-center justify-center overflow-hidden px-4 py-8 sm:py-12"
         onMouseEnter={() => setIsHeroHovered(true)}
         onMouseLeave={() => setIsHeroHovered(false)}
       >
-        {/* Static first image as base layer - prevents white flash */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url(${heroSlides[0]})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        />
-        
-        {/* Background Image Carousel - animates on top */}
-        {imagesLoaded && (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentSlide}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `url(${heroSlides[currentSlide]})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            />
-          </AnimatePresence>
-        )}
+        {/* Background Image Carousel */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${heroSlides[currentSlide]})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+        </AnimatePresence>
         
         {/* Elegant Vertical Gradient Overlay - romantic, premium feel */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-primary/40" />
