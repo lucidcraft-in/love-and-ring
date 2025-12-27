@@ -216,10 +216,10 @@ const Home = () => {
                 transition={{ duration: 0.8 }}
                 className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 px-4"
               >
-                <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-                  Find Your <span className="gradient-text">Perfect Match</span>
+                <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white hero-text-shadow">
+                  Find Your <span className="gradient-text-light">Perfect Match</span>
                 </h1>
-                <p className="text-base sm:text-xl md:text-2xl text-muted-foreground drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
+                <p className="text-base sm:text-xl md:text-2xl hero-subtext">
                   Join thousands of happy couples who found their life partner through our trusted matrimony platform
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
