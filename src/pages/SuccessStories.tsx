@@ -14,6 +14,8 @@ import abinaBasil2 from "@/assets/abina-basil-2.png";
 import molexRoshin1 from "@/assets/molex-roshin-1.png";
 import molexRoshin2 from "@/assets/molex-roshin-2.png";
 import molexRoshin3 from "@/assets/molex-roshin-3.png";
+import sheenBibin1 from "@/assets/sheen-bibin-1.png";
+import sheenBibin2 from "@/assets/sheen-bibin-2.png";
 
 interface Story {
   names: string;
@@ -40,7 +42,7 @@ const SuccessStories = () => {
     },
     {
       names: "Sheen & Bibin",
-      images: [],
+      images: [sheenBibin1, sheenBibin2],
       story: "We are incredibly grateful to Love & Ring for bringing us together. From the very beginning, the platform felt trustworthy and easy to use. It helped us connect naturally and confidently, making our journey truly special.",
       date: "Married: 6th December 2025",
     },
