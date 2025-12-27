@@ -37,35 +37,10 @@ const Home = () => {
   const [formMode, setFormMode] = useState<FormMode>("hero");
   const [currentStep, setCurrentStep] = useState(1);
   const [stepErrors, setStepErrors] = useState<{ [key: string]: string }>({});
-  const [isStepValid, setIsStepValid] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [signInData, setSignInData] = useState({ email: "", password: "" });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
-  const [formData, setFormData] = useState({
-    accountFor: "",
-    fullName: "",
-    email: "",
-    countryCode: "",
-    mobile: "",
-    gender: "",
-    dob: "",
-    language: "",
-    religion: "",
-    caste: "",
-    motherTongue: "",
-    height: "",
-    weight: "",
-    maritalStatus: "",
-    bodyType: "",
-    city: "",
-    profileImage: "",
-    education: "",
-    profession: "",
-    interests: [] as string[],
-    traits: [] as string[],
-    diets: [] as string[],
-  });
   const totalSteps = 5;
 
   // Preload hero images for smooth transitions
@@ -88,46 +63,23 @@ const Home = () => {
 
   const progress = (currentStep / totalSteps) * 100;
 
-  const getRequiredFieldsForStep = (step: number): string[] => {
-    switch (step) {
-      case 1:
-        return ["accountFor", "fullName", "email", "countryCode", "mobile", "gender", "dob", "language"];
-      case 2:
-        return ["religion", "caste", "motherTongue"];
-      case 3:
-        return ["height", "weight", "maritalStatus", "bodyType", "city"];
-      case 4:
-        return ["education", "profession"];
-      case 5:
-        return [];
-      default:
-        return [];
+  const validateStep = (step: number): boolean => {
+    const errors: { [key: string]: string } = {};
+    setStepErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      toast.error("Please fill all required fields");
+      return false;
     }
-  };
-
-  const checkStepValidity = (step: number): boolean => {
-    const requiredFields = getRequiredFieldsForStep(step);
-    return requiredFields.every(field => {
-      const value = formData[field as keyof typeof formData];
-      if (Array.isArray(value)) {
-        return value.length > 0;
-      }
-      return value && value.trim() !== "";
-    });
-  };
-
-  useEffect(() => {
-    setIsStepValid(checkStepValidity(currentStep));
-  }, [formData, currentStep]);
-
-  const updateFormData = (field: string, value: string | string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    return true;
   };
 
   const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-      setStepErrors({});
+    if (validateStep(currentStep)) {
+      if (currentStep < totalSteps) {
+        setCurrentStep(currentStep + 1);
+        setStepErrors({});
+      }
     }
   };
 
@@ -139,9 +91,11 @@ const Home = () => {
   };
 
   const handleSubmit = () => {
-    login({ email: formData.email || "user@example.com", name: formData.fullName || "User" });
-    toast.success("Registration successful!");
-    navigate('/dashboard');
+    if (validateStep(currentStep)) {
+      login({ email: signInData.email || "user@example.com", name: "User" });
+      toast.success("Registration successful!");
+      navigate('/dashboard');
+    }
   };
 
   const handleSignIn = (e: React.FormEvent) => {
@@ -162,23 +116,20 @@ const Home = () => {
     setSignInData({ email: "", password: "" });
   };
 
-  const isLastStep = currentStep === totalSteps;
-  const canProceed = isLastStep || isStepValid;
-
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <StepOne errors={stepErrors} formData={formData} updateFormData={updateFormData} />;
+        return <StepOne errors={stepErrors} />;
       case 2:
-        return <StepTwo formData={formData} updateFormData={updateFormData} />;
+        return <StepTwo />;
       case 3:
-        return <StepThree errors={stepErrors} formData={formData} updateFormData={updateFormData} />;
+        return <StepThree errors={stepErrors} />;
       case 4:
-        return <StepFour formData={formData} updateFormData={updateFormData} />;
+        return <StepFour />;
       case 5:
-        return <StepFive errors={stepErrors} formData={formData} updateFormData={updateFormData} />;
+        return <StepFive errors={stepErrors} />;
       default:
-        return <StepOne errors={stepErrors} formData={formData} updateFormData={updateFormData} />;
+        return <StepOne errors={stepErrors} />;
     }
   };
 
@@ -295,10 +246,10 @@ const Home = () => {
                   </Button>
                   <Button
                     size="lg"
-                    onClick={() => setFormMode("registration")}
+                    asChild
                     className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-base sm:text-lg px-6 sm:px-8"
                   >
-                    Register Now
+                    <Link to="/register">Register Now</Link>
                   </Button>
                 </div>
               </motion.div>
@@ -372,9 +323,9 @@ const Home = () => {
                     <div className="pt-6 border-t border-white/10">
                       <p className="text-white/70">
                         Don't have an account?{" "}
-                        <button onClick={() => setFormMode("registration")} className="text-primary hover:text-primary/80 font-semibold transition-colors">
+                        <Link to="/register" className="text-primary hover:text-primary/80 font-semibold transition-colors">
                           Register Now
-                        </button>
+                        </Link>
                       </p>
                     </div>
                   </div>
@@ -395,9 +346,9 @@ const Home = () => {
                       </h1>
                       <p className="text-white/70 text-sm">
                         Don't have an account?{" "}
-                        <button onClick={() => setFormMode("registration")} className="text-primary hover:underline font-medium">
+                        <Link to="/register" className="text-primary hover:underline font-medium">
                           Register
-                        </button>
+                        </Link>
                       </p>
                     </div>
 
@@ -497,9 +448,9 @@ const Home = () => {
                       {/* Register Link - Mobile/Tablet visible inside card */}
                       <p className="text-center mt-5 text-sm text-muted-foreground lg:hidden">
                         Don't have an account?{" "}
-                        <button onClick={() => setFormMode("registration")} className="text-primary hover:underline font-medium">
+                        <Link to="/register" className="text-primary hover:underline font-medium">
                           Register Now
-                        </button>
+                        </Link>
                       </p>
                     </Card>
 
@@ -513,206 +464,95 @@ const Home = () => {
             ) : formMode === "registration" ? (
               <motion.div
                 key="registration"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="absolute inset-0 flex flex-col lg:flex-row"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 30 }}
+                transition={{ duration: 0.8 }}
+                className="max-w-4xl mx-auto relative p-4 sm:p-6"
               >
-                {/* Dark Overlay for Readability */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 z-0" />
-
-                {/* Desktop/Tablet Close Button - Top Right of Screen */}
+                {/* Close Button */}
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="hidden lg:flex absolute top-6 right-6 z-30 text-white/80 hover:text-white hover:bg-white/10 rounded-full h-10 w-10 backdrop-blur-sm border border-white/20"
+                  className="absolute top-0 right-0 sm:-top-2 sm:-right-2 z-20 bg-background/80 hover:bg-background rounded-full shadow-lg"
                   onClick={resetForm}
                 >
                   <X className="h-5 w-5" />
                 </Button>
 
-                {/* Left Section - Marketing Content */}
-                <motion.div 
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="hidden lg:flex lg:w-[45%] text-white p-12 xl:p-16 flex-col justify-center relative z-10"
-                >
-                  <div className="relative z-10 max-w-lg">
-                    {/* Main Heading */}
-                    <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-6">
-                      Register Now
-                      <br />
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-                        For Free
-                      </span>
-                    </h1>
+                {/* Header */}
+                <div className="text-center mb-6 sm:mb-8">
+                  <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4">
+                    Create Your <span className="gradient-text">Profile</span>
+                  </h1>
+                  <p className="text-base sm:text-xl text-muted-foreground">
+                    Step {currentStep} of {totalSteps}: Complete your registration
+                  </p>
+                </div>
 
-                    {/* Supporting Text */}
-                    <p className="text-lg text-white/80 leading-relaxed mb-10">
-                      Join thousands of verified profiles finding their perfect match. 
-                      Our platform offers secure, private, and meaningful connections 
-                      tailored to your preferences.
-                    </p>
-
-                    {/* Feature Highlights */}
-                    <div className="grid grid-cols-2 gap-4 mb-10">
-                      {loginFeatures.map((feature, index) => (
-                        <motion.div 
-                          key={index}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4 + index * 0.1 }}
-                          className="flex items-start gap-3 bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10"
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center flex-shrink-0">
-                            <feature.icon className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-white text-sm">{feature.title}</h3>
-                            <p className="text-white/60 text-xs">{feature.desc}</p>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-
-                    {/* Login Link */}
-                    <div className="pt-6 border-t border-white/10">
-                      <p className="text-white/70">
-                        Already have an account?{" "}
-                        <button onClick={() => setFormMode("signin")} className="text-primary hover:text-primary/80 font-semibold transition-colors">
-                          Login here
-                        </button>
-                      </p>
-                    </div>
+                {/* Progress Bar */}
+                <div className="mb-6 sm:mb-8">
+                  <Progress value={progress} className="h-2 sm:h-3" />
+                  <div className="hidden sm:flex justify-between mt-2 text-xs sm:text-sm text-muted-foreground">
+                    <span>Basic Details</span>
+                    <span>Basic Info</span>
+                    <span>Personal</span>
+                    <span>Education</span>
+                    <span>Additional</span>
                   </div>
-                </motion.div>
+                  <div className="sm:hidden text-center mt-2 text-xs text-muted-foreground">
+                    Step {currentStep}: {["Basic Details", "Basic Info", "Personal", "Education", "Additional"][currentStep - 1]}
+                  </div>
+                </div>
 
-                {/* Right Section - Registration Form */}
-                <div className="flex-1 lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 min-h-[80vh] lg:min-h-0">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                    className="w-full max-w-xl"
-                  >
-                    {/* Mobile Header */}
-                    <div className="lg:hidden text-center mb-6">
-                      <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
-                        Create Your <span className="text-primary">Profile</span>
-                      </h1>
-                      <p className="text-white/70 text-sm">
-                        Already have an account?{" "}
-                        <button onClick={() => setFormMode("signin")} className="text-primary hover:underline font-medium">
-                          Login
-                        </button>
-                      </p>
-                    </div>
-
-                    {/* Mobile Close Button */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="lg:hidden absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-sm z-30"
-                      onClick={resetForm}
+                {/* Form Card */}
+                <Card className="p-4 sm:p-6 md:p-8 glass-card">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentStep}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3 }}
                     >
-                      <X className="h-5 w-5" />
+                      {renderStep()}
+                    </motion.div>
+                  </AnimatePresence>
+
+                  {/* Navigation Buttons */}
+                  <div className="flex justify-between mt-6 sm:mt-8 pt-4 sm:pt-6 border-t gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={prevStep}
+                      disabled={currentStep === 1}
+                      className="gap-1 sm:gap-2 text-sm sm:text-base"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      <span className="hidden sm:inline">Previous</span>
+                      <span className="sm:hidden">Back</span>
                     </Button>
 
-                    {/* Form Card */}
-                    <Card className="relative p-5 sm:p-6 lg:p-7 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
-                      {/* Step Progress Indicator */}
-                      <div className="mb-5">
-                        <div className="flex items-center justify-between mb-2">
-                          <h2 className="text-base font-semibold text-foreground">
-                            Step {currentStep} of {totalSteps}
-                          </h2>
-                          <span className="text-xs text-muted-foreground">
-                            {currentStep === 1 && "Basic Details"}
-                            {currentStep === 2 && "Background Info"}
-                            {currentStep === 3 && "Personal Details"}
-                            {currentStep === 4 && "Education & Work"}
-                            {currentStep === 5 && "Final Steps"}
-                          </span>
-                        </div>
-                        
-                        {/* Step Dots */}
-                        <div className="flex items-center gap-1.5">
-                          {Array.from({ length: totalSteps }, (_, i) => (
-                            <div key={i} className="flex-1 flex items-center">
-                              <div 
-                                className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                                  i + 1 < currentStep 
-                                    ? 'bg-gradient-to-r from-primary to-secondary' 
-                                    : i + 1 === currentStep 
-                                      ? 'bg-gradient-to-r from-primary to-secondary' 
-                                      : 'bg-muted'
-                                }`}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                    <Button
+                      onClick={currentStep === totalSteps ? handleSubmit : nextStep}
+                      className="gap-1 sm:gap-2 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-sm sm:text-base"
+                    >
+                      {currentStep === totalSteps ? "Submit" : "Continue"}
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </Card>
 
-                      {/* Form Content */}
-                      <AnimatePresence mode="wait">
-                        <motion.div
-                          key={currentStep}
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3 }}
-                          className="[&_label]:text-sm [&_label]:mb-1 [&_.space-y-4]:space-y-3 [&_.space-y-6]:space-y-4 [&_input]:h-9 [&_select]:h-9 [&_.grid.gap-4]:gap-3 [&_.grid.gap-6]:gap-4"
-                        >
-                          {renderStep()}
-                        </motion.div>
-                      </AnimatePresence>
-
-                      {/* Validation Message */}
-                      {!canProceed && !isLastStep && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="flex items-center gap-2 mt-4 p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-600 dark:text-amber-400"
-                        >
-                          <Heart className="h-4 w-4 flex-shrink-0" />
-                          <p className="text-xs">Please fill all required fields to continue</p>
-                        </motion.div>
-                      )}
-
-                      {/* Navigation Buttons */}
-                      <div className="flex justify-between mt-5 pt-4 border-t border-border/50">
-                        <Button
-                          variant="outline"
-                          onClick={prevStep}
-                          disabled={currentStep === 1}
-                          className="gap-1.5 rounded-lg px-4 h-9 text-sm disabled:opacity-40"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                          Previous
-                        </Button>
-
-                        <Button
-                          onClick={isLastStep ? handleSubmit : nextStep}
-                          disabled={!canProceed}
-                          className={`gap-1.5 rounded-lg px-6 h-9 text-sm ${
-                            canProceed 
-                              ? 'bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25' 
-                              : 'opacity-40 cursor-not-allowed'
-                          }`}
-                        >
-                          {isLastStep ? "Submit" : "Continue"}
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </Card>
-
-                    {/* Help Text */}
-                    <div className="text-center mt-4 text-xs text-white/60">
-                      <p>Need help? Contact us at <span className="text-primary">support@lovering.com</span></p>
-                    </div>
-                  </motion.div>
+                {/* Already have account */}
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Already have an account?{" "}
+                    <button
+                      onClick={() => setFormMode("signin")}
+                      className="text-primary hover:underline font-medium"
+                    >
+                      Sign In
+                    </button>
+                  </p>
                 </div>
               </motion.div>
             ) : (
