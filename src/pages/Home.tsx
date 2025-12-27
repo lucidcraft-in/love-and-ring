@@ -517,7 +517,7 @@ const Home = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="absolute inset-0 flex flex-col lg:flex-row overflow-hidden"
+                className="fixed inset-0 z-50 flex flex-col lg:flex-row overflow-hidden"
               >
                 {/* Dark Overlay for Readability */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 z-0" />
