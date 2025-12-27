@@ -529,7 +529,7 @@ const Home = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="fixed inset-0 z-50 flex"
+                className="fixed inset-0 z-50 flex flex-col lg:flex-row"
               >
                 {/* Background - Hero Carousel (reuses same images) */}
                 <div className="absolute inset-0">
@@ -537,31 +537,22 @@ const Home = () => {
                     className="absolute inset-0 bg-cover bg-center"
                     style={{ backgroundImage: `url(${heroSlides[currentSlide]})` }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/50" />
+                  {/* Dark overlay - stronger on mobile for readability */}
+                  <div className="absolute inset-0 bg-black/80 lg:bg-gradient-to-r lg:from-black/85 lg:via-black/70 lg:to-black/50" />
                 </div>
 
-                {/* Desktop/Tablet Close Button - Top Right of Screen */}
+                {/* Close Button - All screens */}
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="hidden lg:flex absolute top-6 right-6 z-30 text-white/80 hover:text-white hover:bg-white/10 rounded-full h-10 w-10 backdrop-blur-sm border border-white/20"
-                  onClick={resetForm}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-
-                {/* Mobile Close Button */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="lg:hidden absolute top-4 right-4 z-30 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-sm"
+                  className="absolute top-4 right-4 lg:top-6 lg:right-6 z-30 text-white/80 hover:text-white hover:bg-white/10 rounded-full h-9 w-9 lg:h-10 lg:w-10 backdrop-blur-sm border border-white/20"
                   onClick={resetForm}
                 >
                   <X className="h-5 w-5" />
                 </Button>
 
                 {/* Split Layout Container */}
-                <div className="relative z-10 flex flex-col lg:flex-row w-full h-full">
+                <div className="relative z-10 flex flex-col lg:flex-row w-full h-full overflow-hidden">
                   {/* Left Section - Marketing Content */}
                   <motion.div 
                     initial={{ opacity: 0, x: -30 }}
@@ -618,15 +609,15 @@ const Home = () => {
                     </div>
                   </motion.div>
 
-                  {/* Right Section - Registration Form */}
-                  <div className="flex-1 lg:w-[55%] flex items-center justify-center p-4 lg:p-6 overflow-y-auto">
+                  {/* Right Section - Registration Form (Single column on mobile/tablet) */}
+                  <div className="flex-1 lg:w-[55%] flex items-start lg:items-center justify-center pt-14 pb-4 px-4 lg:p-6 overflow-y-auto">
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.3 }}
-                      className="w-full max-w-md my-auto"
+                      className="w-full max-w-md"
                     >
-                      {/* Mobile Header */}
+                      {/* Mobile/Tablet Header */}
                       <div className="lg:hidden text-center mb-4">
                         <h1 className="text-xl sm:text-2xl font-bold mb-1 text-white">
                           Create Your <span className="text-primary">Profile</span>
@@ -639,8 +630,8 @@ const Home = () => {
                         </p>
                       </div>
 
-                      {/* Form Card */}
-                      <Card className="relative p-4 sm:p-5 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl max-h-[80vh] overflow-y-auto">
+                      {/* Form Card - Scrollable on mobile */}
+                      <Card className="relative p-4 sm:p-5 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl">
                         {/* Step Progress Indicator */}
                         <div className="mb-4">
                           <div className="flex items-center justify-between mb-2">
