@@ -4,6 +4,9 @@ import { Heart } from "lucide-react";
 import SuccessStoryCarousel from "@/components/SuccessStoryCarousel";
 import abinaBasil1 from "@/assets/abina-basil-1.png";
 import abinaBasil2 from "@/assets/abina-basil-2.png";
+import molexRoshin1 from "@/assets/molex-roshin-1.png";
+import molexRoshin2 from "@/assets/molex-roshin-2.png";
+import molexRoshin3 from "@/assets/molex-roshin-3.png";
 
 interface Story {
   names: string;
@@ -20,6 +23,12 @@ const SuccessStories = () => {
       images: [abinaBasil1, abinaBasil2],
       story: "We found each other on Love & Ring and it's been a beautiful journey ever since.",
       date: "Married: 9th November 2025",
+    },
+    {
+      names: "Molex & Roshin",
+      images: [molexRoshin1, molexRoshin2, molexRoshin3],
+      story: "Thanks to Love & Ring, we found our perfect match. Couldn't be happier!",
+      date: "Married: 10th November 2025",
     },
   ];
 
