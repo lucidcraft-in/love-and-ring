@@ -19,6 +19,7 @@ import sheenBibin2 from "@/assets/sheen-bibin-2.png";
 import athiraVisish1 from "@/assets/athira-visish-1.png";
 import athiraVisish2 from "@/assets/athira-visish-2.png";
 import athiraVisish3 from "@/assets/athira-visish-3.png";
+import jesnaAlias1 from "@/assets/jesna-alias-1.png";
 
 interface Story {
   names: string;
@@ -57,7 +58,7 @@ const SuccessStories = () => {
     },
     {
       names: "Jesna & Alias",
-      images: [],
+      images: [jesnaAlias1],
       story: "From start to finish, Love & Ring offered a respectful and well-guided experience. The platform was simple to navigate and made it easy for our families to be involved, which meant a lot to us.",
       date: "Married: 6th January 2025",
     },
