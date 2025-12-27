@@ -41,16 +41,11 @@ const Navbar = () => {
 
   return (
     <nav 
-      className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
         isScrolled 
-          ? "bg-background/95 border-b border-border shadow-md transition-all duration-500 ease-out" 
-          : "bg-background/30 border-b border-white/10 shadow-sm"
+          ? "bg-background/95 backdrop-blur-md border-b border-border shadow-md" 
+          : "bg-background/30 backdrop-blur-xl border-b border-white/10 shadow-sm"
       }`}
-      style={{
-        // Ensure glassmorphism is applied immediately on load
-        WebkitBackdropFilter: 'blur(24px)',
-        backdropFilter: 'blur(24px)',
-      }}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
