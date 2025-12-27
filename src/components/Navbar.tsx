@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,21 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+
+  // Detect scroll position to toggle navbar style
+  useEffect(() => {
+    const handleScroll = () => {
+      // Hero section is approximately 90vh, trigger after scrolling past ~80% of it
+      const heroHeight = window.innerHeight * 0.7;
+      setIsScrolled(window.scrollY > heroHeight);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -27,7 +40,13 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/40 backdrop-blur-xl border-b border-white/10 shadow-sm">
+    <nav 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
+        isScrolled 
+          ? "bg-background/95 backdrop-blur-md border-b border-border shadow-md" 
+          : "bg-background/30 backdrop-blur-xl border-b border-white/10 shadow-sm"
+      }`}
+    >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
