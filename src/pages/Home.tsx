@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,13 +8,17 @@ import { Shield, Users, Lock, CheckCircle, Heart, Star, ChevronLeft, ChevronRigh
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import heroImage from "@/assets/hero-bg.jpg";
+import heroSlide1 from "@/assets/hero-slide-1.jpg";
+import heroSlide2 from "@/assets/hero-slide-2.jpg";
+import heroSlide3 from "@/assets/hero-slide-3.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import StepOne from "@/components/registration/StepOne";
 import StepTwo from "@/components/registration/StepTwo";
 import StepThree from "@/components/registration/StepThree";
 import StepFour from "@/components/registration/StepFour";
 import StepFive from "@/components/registration/StepFive";
+
+const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
 type FormMode = "hero" | "signin" | "registration";
 
@@ -26,7 +30,16 @@ const Home = () => {
   const [stepErrors, setStepErrors] = useState<{ [key: string]: string }>({});
   const [showPassword, setShowPassword] = useState(false);
   const [signInData, setSignInData] = useState({ email: "", password: "" });
+  const [currentSlide, setCurrentSlide] = useState(0);
   const totalSteps = 5;
+
+  // Auto-rotate hero background slides
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const progress = (currentStep / totalSteps) * 100;
 
@@ -157,13 +170,26 @@ const Home = () => {
       {/* Hero Section */}
       <section
         className="relative min-h-[90vh] flex items-center justify-center overflow-hidden px-4 py-8 sm:py-12"
-        style={{
-          backgroundImage: `url(${heroImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background/80 to-secondary/20" />
+        {/* Background Image Carousel */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${heroSlides[currentSlide]})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+        </AnimatePresence>
+        
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-background/70 to-secondary/40" />
         
         <div className="container mx-auto relative z-10">
           <AnimatePresence mode="wait">
