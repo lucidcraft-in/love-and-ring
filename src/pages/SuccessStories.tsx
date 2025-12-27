@@ -1,6 +1,13 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Heart } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import SuccessStoryCarousel from "@/components/SuccessStoryCarousel";
 import abinaBasil1 from "@/assets/abina-basil-1.png";
 import abinaBasil2 from "@/assets/abina-basil-2.png";
@@ -17,6 +24,7 @@ interface Story {
 }
 
 const SuccessStories = () => {
+  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const stories: Story[] = [
     {
       names: "Abina & Basil",
@@ -114,9 +122,19 @@ const SuccessStories = () => {
                       </div>
                     </div>
                     <div className="p-6 flex flex-col flex-1">
-                      <p className="text-muted-foreground italic leading-relaxed line-clamp-4 flex-1">
-                        "{story.story}"
-                      </p>
+                      <div className="flex-1">
+                        <p className="text-muted-foreground italic leading-relaxed line-clamp-4">
+                          "{story.story}"
+                        </p>
+                        {story.story.length > 150 && (
+                          <button
+                            onClick={() => setSelectedStory(story)}
+                            className="text-primary text-sm font-medium hover:underline mt-2 transition-colors"
+                          >
+                            Read more
+                          </button>
+                        )}
+                      </div>
                       <div className="pt-4 mt-4 border-t">
                         <p className="text-sm font-semibold text-primary">{story.date}</p>
                       </div>
@@ -156,6 +174,26 @@ const SuccessStories = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* Read More Modal */}
+      <Dialog open={!!selectedStory} onOpenChange={() => setSelectedStory(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Heart className="h-5 w-5 text-primary fill-primary" />
+              {selectedStory?.names}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-muted-foreground italic leading-relaxed">
+              "{selectedStory?.story}"
+            </p>
+            <p className="text-sm font-semibold text-primary">
+              {selectedStory?.date}
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
