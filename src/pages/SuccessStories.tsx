@@ -20,6 +20,10 @@ import athiraVisish1 from "@/assets/athira-visish-1.png";
 import athiraVisish2 from "@/assets/athira-visish-2.png";
 import athiraVisish3 from "@/assets/athira-visish-3.png";
 import jesnaAlias1 from "@/assets/jesna-alias-1.png";
+import nimishaJestin1 from "@/assets/nimisha-jestin-1.png";
+import nimishaJestin2 from "@/assets/nimisha-jestin-2.png";
+import nimishaJestin3 from "@/assets/nimisha-jestin-3.png";
+import nimishaJestin4 from "@/assets/nimisha-jestin-4.png";
 
 interface Story {
   names: string;
@@ -64,7 +68,7 @@ const SuccessStories = () => {
     },
     {
       names: "Nimisha & Jestin",
-      images: [],
+      images: [nimishaJestin1, nimishaJestin2, nimishaJestin3, nimishaJestin4],
       story: "Finding the right partner felt effortless with Love & Ring. The personalized approach and transparent process gave us confidence at every step. We're grateful for a platform that truly understands relationships.",
       date: "Married: 2nd January 2025",
     },
