@@ -239,10 +239,10 @@ const Home = () => {
                   </Button>
                   <Button
                     size="lg"
-                    onClick={() => setFormMode("registration")}
+                    asChild
                     className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-base sm:text-lg px-6 sm:px-8"
                   >
-                    Register Now
+                    <Link to="/register">Register Now</Link>
                   </Button>
                 </div>
               </motion.div>
@@ -328,12 +328,12 @@ const Home = () => {
                   <div className="mt-6 text-center">
                     <p className="text-sm text-muted-foreground">
                       Don't have an account?{" "}
-                      <button
-                        onClick={() => setFormMode("registration")}
+                      <Link
+                        to="/register"
                         className="text-primary hover:underline font-medium"
                       >
                         Register Now
-                      </button>
+                      </Link>
                     </p>
                   </div>
                 </Card>
