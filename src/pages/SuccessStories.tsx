@@ -24,55 +24,35 @@ const SuccessStories = () => {
     },
     {
       names: "Amit & Sneha",
-      images: [
-        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1529634597939-b1e7cda5a4d1?w=600&h=600&fit=crop",
-      ],
+      images: ["https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=600&fit=crop"],
       story: "Thanks to MatrimonyHub, we found our perfect match. Couldn't be happier! The advanced matching algorithm really understood what we were looking for in a life partner.",
       date: "Married: March 2024",
       location: "Delhi, India",
     },
     {
       names: "Vikram & Anjali",
-      images: [
-        "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1537511446984-935f663eb1f4?w=600&h=600&fit=crop",
-      ],
+      images: ["https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&h=600&fit=crop"],
       story: "From first message to forever, MatrimonyHub made our dream come true. We appreciate the privacy controls and verified profiles that made us feel secure throughout our journey.",
       date: "Married: January 2024",
       location: "Bangalore, India",
     },
     {
       names: "Karan & Meera",
-      images: [
-        "https://images.unsplash.com/photo-1529634597939-b1e7cda5a4d1?w=600&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&h=600&fit=crop",
-      ],
+      images: ["https://images.unsplash.com/photo-1529634597939-b1e7cda5a4d1?w=600&h=600&fit=crop"],
       story: "Our families are so grateful to MatrimonyHub for bringing us together. The cultural sensitivity and attention to traditional values made the whole process comfortable for everyone involved.",
       date: "Married: December 2023",
       location: "Pune, India",
     },
     {
       names: "Rohan & Divya",
-      images: [
-        "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=600&fit=crop",
-      ],
+      images: ["https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&h=600&fit=crop"],
       story: "We were both skeptical about online matrimony, but MatrimonyHub changed our minds completely. The verification process gave us confidence, and the matching was spot on!",
       date: "Married: October 2023",
       location: "Hyderabad, India",
     },
     {
       names: "Arjun & Kavya",
-      images: [
-        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1537511446984-935f663eb1f4?w=600&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1529634597939-b1e7cda5a4d1?w=600&h=600&fit=crop",
-      ],
+      images: ["https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=600&fit=crop"],
       story: "Found my soulmate through MatrimonyHub! The platform's focus on compatibility and shared values helped us build a strong foundation for our relationship.",
       date: "Married: September 2023",
       location: "Chennai, India",
@@ -116,21 +96,29 @@ const SuccessStories = () => {
               >
                 <Card className="overflow-hidden glass-card hover:shadow-xl transition-all h-full">
                   <div className="relative group">
-                    <Carousel className="w-full" opts={{ loop: true }}>
-                      <CarouselContent>
-                        {story.images.map((image, imgIndex) => (
-                          <CarouselItem key={imgIndex}>
-                            <img
-                              src={image}
-                              alt={`${story.names} - Photo ${imgIndex + 1}`}
-                              className="w-full h-72 object-cover"
-                            />
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                      <CarouselPrevious className="left-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <CarouselNext className="right-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </Carousel>
+                    {story.images.length > 1 ? (
+                      <Carousel className="w-full" opts={{ loop: true }}>
+                        <CarouselContent>
+                          {story.images.map((image, imgIndex) => (
+                            <CarouselItem key={imgIndex}>
+                              <img
+                                src={image}
+                                alt={`${story.names} - Photo ${imgIndex + 1}`}
+                                className="w-full h-72 object-cover"
+                              />
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="left-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <CarouselNext className="right-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Carousel>
+                    ) : (
+                      <img
+                        src={story.images[0]}
+                        alt={story.names}
+                        className="w-full h-72 object-cover"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                     <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
                       <h3 className="text-2xl font-bold text-white mb-1">{story.names}</h3>
