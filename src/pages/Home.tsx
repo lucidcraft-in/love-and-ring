@@ -622,7 +622,7 @@ const Home = () => {
                 size="lg"
                 variant="outline"
                 asChild
-                className="border-white text-white hover:bg-white hover:text-primary text-sm sm:text-lg px-6 sm:px-8"
+                className="border-2 border-white/80 text-white bg-white/10 backdrop-blur-sm hover:bg-white hover:text-primary shadow-[0_0_15px_rgba(255,255,255,0.2)] text-sm sm:text-lg px-6 sm:px-8"
               >
                 <Link to="/pricing">View Pricing</Link>
               </Button>
