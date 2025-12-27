@@ -14,6 +14,8 @@ import heroSlide3 from "@/assets/hero-slide-3.jpg";
 import homeAthiraVisish1 from "@/assets/home-athira-visish-1.png";
 import homeAthiraVisish2 from "@/assets/home-athira-visish-2.png";
 import homeAthiraVisish3 from "@/assets/home-athira-visish-3.png";
+import homeAbinaBasil1 from "@/assets/home-abina-basil-1.png";
+import homeAbinaBasil2 from "@/assets/home-abina-basil-2.png";
 import { useAuth } from "@/contexts/AuthContext";
 import StepOne from "@/components/registration/StepOne";
 import StepTwo from "@/components/registration/StepTwo";
@@ -165,7 +167,7 @@ const Home = () => {
     },
     {
       names: "Abina & Basil",
-      images: [],
+      images: [homeAbinaBasil1, homeAbinaBasil2],
       story: "A trustworthy platform that helped us connect naturally and confidently.",
       date: "Married: 9th November 2025",
     },
