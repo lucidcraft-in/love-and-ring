@@ -31,15 +31,26 @@ const Home = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [signInData, setSignInData] = useState({ email: "", password: "" });
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isHeroHovered, setIsHeroHovered] = useState(false);
   const totalSteps = 5;
 
-  // Auto-rotate hero background slides
+  // Preload hero images for smooth transitions
   useEffect(() => {
+    heroSlides.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+
+  // Auto-rotate hero background slides with pause on hover
+  useEffect(() => {
+    if (isHeroHovered) return;
+    
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 5000);
+    }, 7000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isHeroHovered]);
 
   const progress = (currentStep / totalSteps) * 100;
 
@@ -170,6 +181,8 @@ const Home = () => {
       {/* Hero Section */}
       <section
         className="relative min-h-[90vh] flex items-center justify-center overflow-hidden px-4 py-8 sm:py-12"
+        onMouseEnter={() => setIsHeroHovered(true)}
+        onMouseLeave={() => setIsHeroHovered(false)}
       >
         {/* Background Image Carousel */}
         <AnimatePresence mode="wait">
