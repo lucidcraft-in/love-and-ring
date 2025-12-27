@@ -251,10 +251,10 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pt-16">
       {/* Hero Section */}
       <section
-        className="relative h-screen max-h-screen flex items-center justify-center overflow-hidden"
+        className="relative h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden"
         onMouseEnter={() => setIsHeroHovered(true)}
         onMouseLeave={() => setIsHeroHovered(false)}
       >
