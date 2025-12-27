@@ -11,12 +11,16 @@ import { toast } from "sonner";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
 import heroSlide3 from "@/assets/hero-slide-3.jpg";
+import homeAthiraVisish1 from "@/assets/home-athira-visish-1.png";
+import homeAthiraVisish2 from "@/assets/home-athira-visish-2.png";
+import homeAthiraVisish3 from "@/assets/home-athira-visish-3.png";
 import { useAuth } from "@/contexts/AuthContext";
 import StepOne from "@/components/registration/StepOne";
 import StepTwo from "@/components/registration/StepTwo";
 import StepThree from "@/components/registration/StepThree";
 import StepFour from "@/components/registration/StepFour";
 import StepFive from "@/components/registration/StepFive";
+import HomeStoryCarousel from "@/components/HomeStoryCarousel";
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
@@ -155,19 +159,19 @@ const Home = () => {
   const successStories = [
     {
       names: "Athira & Visish",
-      image: "",
+      images: [homeAthiraVisish1, homeAthiraVisish2, homeAthiraVisish3],
       story: "Love & Ring made our journey calm, reassuring, and truly meaningful.",
       date: "Married: 29th October 2025",
     },
     {
       names: "Abina & Basil",
-      image: "",
+      images: [],
       story: "A trustworthy platform that helped us connect naturally and confidently.",
       date: "Married: 9th November 2025",
     },
     {
       names: "Molex & Roshin",
-      image: "",
+      images: [],
       story: "Thanks to Love & Ring, we found our perfect match with ease and clarity.",
       date: "Married: 10th November 2025",
     },
@@ -523,9 +527,11 @@ const Home = () => {
                 transition={{ delay: index * 0.1 }}
               >
                 <Card className="overflow-hidden glass-card hover:shadow-xl transition-all">
-                  {story.image ? (
+                  {story.images.length > 1 ? (
+                    <HomeStoryCarousel images={story.images} names={story.names} />
+                  ) : story.images.length === 1 ? (
                     <img
-                      src={story.image}
+                      src={story.images[0]}
                       alt={story.names}
                       className="w-full h-48 sm:h-64 object-cover"
                     />
