@@ -16,6 +16,9 @@ import molexRoshin2 from "@/assets/molex-roshin-2.png";
 import molexRoshin3 from "@/assets/molex-roshin-3.png";
 import sheenBibin1 from "@/assets/sheen-bibin-1.png";
 import sheenBibin2 from "@/assets/sheen-bibin-2.png";
+import athiraVisish1 from "@/assets/athira-visish-1.png";
+import athiraVisish2 from "@/assets/athira-visish-2.png";
+import athiraVisish3 from "@/assets/athira-visish-3.png";
 
 interface Story {
   names: string;
@@ -48,7 +51,7 @@ const SuccessStories = () => {
     },
     {
       names: "Athira & Visish",
-      images: [],
+      images: [athiraVisish1, athiraVisish2, athiraVisish3],
       story: "Love & Ring made the entire process feel calm and reassuring. The genuine profiles and thoughtful matching gave us clarity and comfort throughout our search. We're thankful for such a smooth and meaningful experience.",
       date: "Married: 29th October 2025",
     },
