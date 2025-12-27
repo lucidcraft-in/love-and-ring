@@ -238,11 +238,11 @@ const Home = () => {
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                   <Button
                     size="lg"
-                    onClick={() => setFormMode("signin")}
+                    asChild
                     variant="outline"
                     className="text-base sm:text-lg px-6 sm:px-8"
                   >
-                    Sign In
+                    <Link to="/login">Sign In</Link>
                   </Button>
                   <Button
                     size="lg"
