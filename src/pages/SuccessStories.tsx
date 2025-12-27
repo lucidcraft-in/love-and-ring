@@ -30,6 +30,30 @@ const SuccessStories = () => {
       story: "Thanks to Love & Ring, we found our perfect match. Couldn't be happier!",
       date: "Married: 10th November 2025",
     },
+    {
+      names: "Sheen & Bibin",
+      images: [],
+      story: "We are incredibly grateful to Love & Ring for bringing us together. From the very beginning, the platform felt trustworthy and easy to use. It helped us connect naturally and confidently, making our journey truly special.",
+      date: "Married: 6th December 2025",
+    },
+    {
+      names: "Athira & Visish",
+      images: [],
+      story: "Love & Ring made the entire process feel calm and reassuring. The genuine profiles and thoughtful matching gave us clarity and comfort throughout our search. We're thankful for such a smooth and meaningful experience.",
+      date: "Married: 29th October 2025",
+    },
+    {
+      names: "Jesna & Alias",
+      images: [],
+      story: "From start to finish, Love & Ring offered a respectful and well-guided experience. The platform was simple to navigate and made it easy for our families to be involved, which meant a lot to us.",
+      date: "Married: 6th January 2025",
+    },
+    {
+      names: "Nimisha & Jestin",
+      images: [],
+      story: "Finding the right partner felt effortless with Love & Ring. The personalized approach and transparent process gave us confidence at every step. We're grateful for a platform that truly understands relationships.",
+      date: "Married: 2nd January 2025",
+    },
   ];
 
   return (
@@ -72,12 +96,16 @@ const SuccessStories = () => {
                     <div className="relative">
                       {story.images.length > 1 ? (
                         <SuccessStoryCarousel images={story.images} names={story.names} />
-                      ) : (
+                      ) : story.images.length === 1 ? (
                         <img
                           src={story.images[0]}
                           alt={story.names}
                           className="w-full h-72 object-cover object-center"
                         />
+                      ) : (
+                        <div className="w-full h-72 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                          <Heart className="h-16 w-16 text-primary/40" />
+                        </div>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                       <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
