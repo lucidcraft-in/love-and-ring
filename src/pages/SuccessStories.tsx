@@ -92,7 +92,7 @@ const SuccessStories = () => {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="overflow-hidden glass-card hover:shadow-xl transition-all h-full">
+                  <Card className="overflow-hidden glass-card hover:shadow-xl transition-all h-full flex flex-col">
                     <div className="relative">
                       {story.images.length > 1 ? (
                         <SuccessStoryCarousel images={story.images} names={story.names} />
@@ -113,11 +113,11 @@ const SuccessStories = () => {
                         {story.location && <p className="text-white/90 text-sm">{story.location}</p>}
                       </div>
                     </div>
-                    <div className="p-6 space-y-4">
-                      <p className="text-muted-foreground italic leading-relaxed">
+                    <div className="p-6 flex flex-col flex-1">
+                      <p className="text-muted-foreground italic leading-relaxed line-clamp-4 flex-1">
                         "{story.story}"
                       </p>
-                      <div className="pt-2 border-t">
+                      <div className="pt-4 mt-4 border-t">
                         <p className="text-sm font-semibold text-primary">{story.date}</p>
                       </div>
                     </div>
