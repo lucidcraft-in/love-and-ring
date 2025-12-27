@@ -188,8 +188,9 @@ const Home = () => {
           />
         </AnimatePresence>
         
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-background/70 to-secondary/40" />
+        {/* Soft Gradient Overlay - maintains romantic, premium feel */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/60 to-background/85" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-transparent to-secondary/25" />
         
         <div className="container mx-auto relative z-10">
           <AnimatePresence mode="wait">
