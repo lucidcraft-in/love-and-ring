@@ -154,25 +154,22 @@ const Home = () => {
 
   const successStories = [
     {
-      names: "Rahul & Priya",
-      image: "https://images.unsplash.com/photo-1537511446984-935f663eb1f4?w=400&h=400&fit=crop",
-      story: "We found each other on Love & Ring and it's been a beautiful journey ever since.",
-      date: "Married: June 2024",
-      location: "Mumbai, India",
+      names: "Athira & Visish",
+      image: "",
+      story: "Love & Ring made our journey calm, reassuring, and truly meaningful.",
+      date: "Married: 29th October 2025",
     },
     {
-      names: "Amit & Sneha",
-      image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=400&fit=crop",
-      story: "Thanks to Love & Ring, we found our perfect match. Couldn't be happier!",
-      date: "Married: March 2024",
-      location: "Delhi, India",
+      names: "Abina & Basil",
+      image: "",
+      story: "A trustworthy platform that helped us connect naturally and confidently.",
+      date: "Married: 9th November 2025",
     },
     {
-      names: "Vikram & Anjali",
-      image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=400&fit=crop",
-      story: "From first message to forever, Love & Ring made our dream come true.",
-      date: "Married: January 2024",
-      location: "Bangalore, India",
+      names: "Molex & Roshin",
+      image: "",
+      story: "Thanks to Love & Ring, we found our perfect match with ease and clarity.",
+      date: "Married: 10th November 2025",
     },
   ];
 
@@ -526,17 +523,22 @@ const Home = () => {
                 transition={{ delay: index * 0.1 }}
               >
                 <Card className="overflow-hidden glass-card hover:shadow-xl transition-all">
-                  <img
-                    src={story.image}
-                    alt={story.names}
-                    className="w-full h-48 sm:h-64 object-cover"
-                  />
+                  {story.image ? (
+                    <img
+                      src={story.image}
+                      alt={story.names}
+                      className="w-full h-48 sm:h-64 object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-48 sm:h-64 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                      <Heart className="h-12 w-12 text-primary/40" />
+                    </div>
+                  )}
                   <div className="p-4 sm:p-6 space-y-2 sm:space-y-3">
                     <h3 className="text-xl sm:text-2xl font-semibold gradient-text">{story.names}</h3>
                     <p className="text-sm sm:text-base text-muted-foreground italic">"{story.story}"</p>
-                    <div className="space-y-1 text-xs sm:text-sm text-muted-foreground">
+                    <div className="text-xs sm:text-sm text-muted-foreground">
                       <p>{story.date}</p>
-                      <p>{story.location}</p>
                     </div>
                   </div>
                 </Card>
