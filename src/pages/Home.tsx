@@ -201,9 +201,9 @@ const Home = () => {
           />
         </AnimatePresence>
         
-        {/* Subtle Gradient Overlay - allows images to show through with brand color accents */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/30 to-background/60" />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-transparent to-secondary/30" />
+        {/* Elegant Vertical Gradient Overlay - romantic, premium feel */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-primary/40" />
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary/15 via-transparent to-primary/20" />
         
         <div className="container mx-auto relative z-10">
           <AnimatePresence mode="wait">
