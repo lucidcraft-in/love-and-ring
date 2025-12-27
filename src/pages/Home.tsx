@@ -242,7 +242,7 @@ const Home = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section
-        className="relative min-h-[90vh] flex items-center justify-center overflow-hidden px-4 py-8 sm:py-12"
+        className="relative h-screen max-h-screen flex items-center justify-center overflow-hidden"
         onMouseEnter={() => setIsHeroHovered(true)}
         onMouseLeave={() => setIsHeroHovered(false)}
       >
@@ -267,7 +267,7 @@ const Home = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-primary/40" />
         <div className="absolute inset-0 bg-gradient-to-br from-secondary/15 via-transparent to-primary/20" />
         
-        <div className="container mx-auto relative z-10">
+        <div className="container mx-auto relative z-10 h-full flex items-center justify-center overflow-hidden">
           <AnimatePresence mode="wait">
             {formMode === "hero" && !isAuthenticated ? (
               <motion.div
@@ -309,7 +309,7 @@ const Home = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="absolute inset-0 flex flex-col lg:flex-row"
+                className="absolute inset-0 flex flex-col lg:flex-row overflow-hidden"
               >
                 {/* Dark Overlay for Readability */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 z-0" />
@@ -381,7 +381,7 @@ const Home = () => {
                 </motion.div>
 
                 {/* Right Section - Login Form */}
-                <div className="flex-1 lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 min-h-[80vh] lg:min-h-0">
+                <div className="flex-1 lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 overflow-y-auto">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -517,7 +517,7 @@ const Home = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="absolute inset-0 flex flex-col lg:flex-row"
+                className="absolute inset-0 flex flex-col lg:flex-row overflow-hidden"
               >
                 {/* Dark Overlay for Readability */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 z-0" />
@@ -590,7 +590,7 @@ const Home = () => {
                 </motion.div>
 
                 {/* Right Section - Registration Form */}
-                <div className="flex-1 lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 min-h-[80vh] lg:min-h-0">
+                <div className="flex-1 lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 overflow-y-auto">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
