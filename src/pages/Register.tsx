@@ -198,6 +198,16 @@ const Register = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
       </div>
 
+      {/* Desktop/Tablet Close Button - Top Right of Screen */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="hidden lg:flex absolute top-6 right-6 z-20 text-white/80 hover:text-white hover:bg-white/10 rounded-full h-10 w-10 backdrop-blur-sm border border-white/20"
+        onClick={() => navigate('/')}
+      >
+        <X className="h-5 w-5" />
+      </Button>
+
       {/* Content Layer */}
       <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
         {/* Left Section - Marketing Content */}
@@ -207,16 +217,6 @@ const Register = () => {
           transition={{ duration: 0.6 }}
           className="hidden lg:flex lg:w-[45%] text-white p-12 xl:p-16 flex-col justify-center relative"
         >
-          {/* Close Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-6 left-6 text-white/70 hover:text-white hover:bg-white/10 rounded-full"
-            onClick={() => navigate('/')}
-          >
-            <X className="h-5 w-5" />
-          </Button>
-
           <div className="relative z-10 max-w-lg">
             {/* Brand */}
             <Link to="/" className="inline-block mb-10">
@@ -312,15 +312,6 @@ const Register = () => {
 
             {/* Form Card */}
             <Card className="relative p-5 sm:p-6 lg:p-7 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
-              {/* Desktop/Tablet Close Button - Top Right of Card */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden lg:flex absolute top-4 right-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full h-8 w-8"
-                onClick={() => navigate('/')}
-              >
-                <X className="h-4 w-4" />
-              </Button>
 
               {/* Step Progress Indicator */}
               <div className="mb-5 pr-8 lg:pr-6">
