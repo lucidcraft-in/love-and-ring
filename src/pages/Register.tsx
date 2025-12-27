@@ -275,12 +275,12 @@ const Register = () => {
         </motion.div>
 
         {/* Right Section - Registration Form */}
-        <div className="flex-1 lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-10 min-h-screen lg:min-h-0">
+        <div className="flex-1 lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-8 min-h-screen lg:min-h-0">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="w-full max-w-2xl"
+            className="w-full max-w-xl"
           >
             {/* Mobile Header */}
             <div className="lg:hidden text-center mb-6">
@@ -311,14 +311,24 @@ const Register = () => {
             </Button>
 
             {/* Form Card */}
-            <Card className="p-6 sm:p-8 lg:p-10 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
+            <Card className="relative p-5 sm:p-6 lg:p-7 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
+              {/* Desktop/Tablet Close Button - Top Right of Card */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden lg:flex absolute top-4 right-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full h-8 w-8"
+                onClick={() => navigate('/')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+
               {/* Step Progress Indicator */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-foreground">
+              <div className="mb-5 pr-8 lg:pr-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-base font-semibold text-foreground">
                     Step {currentStep} of {totalSteps}
                   </h2>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {currentStep === 1 && "Basic Details"}
                     {currentStep === 2 && "Background Info"}
                     {currentStep === 3 && "Personal Details"}
@@ -328,11 +338,11 @@ const Register = () => {
                 </div>
                 
                 {/* Step Dots */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   {Array.from({ length: totalSteps }, (_, i) => (
                     <div key={i} className="flex-1 flex items-center">
                       <div 
-                        className={`h-2 flex-1 rounded-full transition-all duration-300 ${
+                        className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
                           i + 1 < currentStep 
                             ? 'bg-gradient-to-r from-primary to-secondary' 
                             : i + 1 === currentStep 
@@ -353,6 +363,7 @@ const Register = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
+                  className="[&_label]:text-sm [&_label]:mb-1 [&_.space-y-4]:space-y-3 [&_.space-y-6]:space-y-4 [&_input]:h-9 [&_select]:h-9 [&_.grid.gap-4]:gap-3 [&_.grid.gap-6]:gap-4"
                 >
                   {renderStep()}
                 </motion.div>
@@ -363,20 +374,20 @@ const Register = () => {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center gap-2 mt-6 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-600 dark:text-amber-400"
+                  className="flex items-center gap-2 mt-4 p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-600 dark:text-amber-400"
                 >
-                  <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                  <p className="text-sm">Please fill all required fields to continue</p>
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <p className="text-xs">Please fill all required fields to continue</p>
                 </motion.div>
               )}
 
               {/* Navigation Buttons */}
-              <div className="flex justify-between mt-8 pt-6 border-t border-border/50">
+              <div className="flex justify-between mt-5 pt-4 border-t border-border/50">
                 <Button
                   variant="outline"
                   onClick={prevStep}
                   disabled={currentStep === 1}
-                  className="gap-2 rounded-xl px-6 disabled:opacity-40"
+                  className="gap-1.5 rounded-lg px-4 h-9 text-sm disabled:opacity-40"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
@@ -385,7 +396,7 @@ const Register = () => {
                 <Button
                   onClick={isLastStep ? handleSubmit : nextStep}
                   disabled={!canProceed}
-                  className={`gap-2 rounded-xl px-8 ${
+                  className={`gap-1.5 rounded-lg px-6 h-9 text-sm ${
                     canProceed 
                       ? 'bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25' 
                       : 'opacity-40 cursor-not-allowed'
@@ -398,7 +409,7 @@ const Register = () => {
             </Card>
 
             {/* Help Text */}
-            <div className="text-center mt-6 text-sm text-white/60">
+            <div className="text-center mt-4 text-xs text-white/60">
               <p>Need help? Contact us at <span className="text-primary">support@lovering.com</span></p>
             </div>
           </motion.div>
