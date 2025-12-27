@@ -86,6 +86,18 @@ const Home = () => {
     return () => clearInterval(interval);
   }, [isHeroHovered]);
 
+  // Disable body scroll when overlay is active
+  useEffect(() => {
+    if (formMode === "signin" || formMode === "registration") {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [formMode]);
+
   const progress = (currentStep / totalSteps) * 100;
 
   const getRequiredFieldsForStep = (step: number): string[] => {
