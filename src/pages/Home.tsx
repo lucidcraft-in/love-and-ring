@@ -283,13 +283,6 @@ const Home = () => {
                   className="hidden lg:flex lg:w-[45%] text-white p-12 xl:p-16 flex-col justify-center relative z-10"
                 >
                   <div className="relative z-10 max-w-lg">
-                    {/* Brand */}
-                    <Link to="/" className="inline-block mb-10">
-                      <span className="text-2xl font-bold">
-                        Love<span className="text-primary">&</span>Ring
-                      </span>
-                    </Link>
-
                     {/* Main Heading */}
                     <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-6">
                       Welcome Back
@@ -348,11 +341,6 @@ const Home = () => {
                   >
                     {/* Mobile Header */}
                     <div className="lg:hidden text-center mb-6">
-                      <Link to="/" className="inline-block mb-4">
-                        <span className="text-2xl font-bold text-white">
-                          Love<span className="text-primary">&</span>Ring
-                        </span>
-                      </Link>
                       <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
                         Welcome <span className="text-primary">Back</span>
                       </h1>
