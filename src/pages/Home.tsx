@@ -217,7 +217,7 @@ const Home = () => {
                 className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 px-4"
               >
                 <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white hero-text-shadow">
-                  Find Your <span className="text-primary drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">Perfect Match</span>
+                  Find Your <span className="gradient-text-light drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">Perfect Match</span>
                 </h1>
                 <p className="text-base sm:text-xl md:text-2xl hero-subtext">
                   Join thousands of happy couples who found their life partner through our trusted matrimony platform
