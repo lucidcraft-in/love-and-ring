@@ -1,13 +1,7 @@
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Heart } from "lucide-react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import SuccessStoryCarousel from "@/components/SuccessStoryCarousel";
 
 const SuccessStories = () => {
   const stories = [
@@ -95,28 +89,14 @@ const SuccessStories = () => {
                 transition={{ delay: index * 0.1 }}
               >
                 <Card className="overflow-hidden glass-card hover:shadow-xl transition-all h-full">
-                  <div className="relative group">
+                  <div className="relative">
                     {story.images.length > 1 ? (
-                      <Carousel className="w-full" opts={{ loop: true }}>
-                        <CarouselContent>
-                          {story.images.map((image, imgIndex) => (
-                            <CarouselItem key={imgIndex}>
-                              <img
-                                src={image}
-                                alt={`${story.names} - Photo ${imgIndex + 1}`}
-                                className="w-full h-72 object-cover"
-                              />
-                            </CarouselItem>
-                          ))}
-                        </CarouselContent>
-                        <CarouselPrevious className="left-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <CarouselNext className="right-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </Carousel>
+                      <SuccessStoryCarousel images={story.images} names={story.names} />
                     ) : (
                       <img
                         src={story.images[0]}
                         alt={story.names}
-                        className="w-full h-72 object-cover"
+                        className="w-full h-72 object-cover object-center"
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
