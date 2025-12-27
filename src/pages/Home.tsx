@@ -16,6 +16,9 @@ import homeAthiraVisish2 from "@/assets/home-athira-visish-2.png";
 import homeAthiraVisish3 from "@/assets/home-athira-visish-3.png";
 import homeAbinaBasil1 from "@/assets/home-abina-basil-1.png";
 import homeAbinaBasil2 from "@/assets/home-abina-basil-2.png";
+import homeMolexRoshin1 from "@/assets/home-molex-roshin-1.png";
+import homeMolexRoshin2 from "@/assets/home-molex-roshin-2.png";
+import homeMolexRoshin3 from "@/assets/home-molex-roshin-3.png";
 import { useAuth } from "@/contexts/AuthContext";
 import StepOne from "@/components/registration/StepOne";
 import StepTwo from "@/components/registration/StepTwo";
@@ -173,7 +176,7 @@ const Home = () => {
     },
     {
       names: "Molex & Roshin",
-      images: [],
+      images: [homeMolexRoshin1, homeMolexRoshin2, homeMolexRoshin3],
       story: "Thanks to Love & Ring, we found our perfect match with ease and clarity.",
       date: "Married: 10th November 2025",
     },
