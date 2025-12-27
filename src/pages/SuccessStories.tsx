@@ -2,18 +2,26 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Heart } from "lucide-react";
 import SuccessStoryCarousel from "@/components/SuccessStoryCarousel";
+import abinaBasil1 from "@/assets/abina-basil-1.png";
+import abinaBasil2 from "@/assets/abina-basil-2.png";
 
 interface Story {
   names: string;
   images: string[];
   story: string;
   date: string;
-  location: string;
+  location?: string;
 }
 
 const SuccessStories = () => {
-  // Real stories will be added here
-  const stories: Story[] = [];
+  const stories: Story[] = [
+    {
+      names: "Abina & Basil",
+      images: [abinaBasil1, abinaBasil2],
+      story: "We found each other on Love & Ring and it's been a beautiful journey ever since.",
+      date: "Married: 9th November 2025",
+    },
+  ];
 
   return (
     <div className="min-h-screen">
@@ -65,7 +73,7 @@ const SuccessStories = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                       <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
                         <h3 className="text-2xl font-bold text-white mb-1">{story.names}</h3>
-                        <p className="text-white/90 text-sm">{story.location}</p>
+                        {story.location && <p className="text-white/90 text-sm">{story.location}</p>}
                       </div>
                     </div>
                     <div className="p-6 space-y-4">
