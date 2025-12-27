@@ -487,22 +487,25 @@ const Home = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="p-4 sm:p-6 h-full glass-card hover:shadow-lg transition-all">
-                  <feature.icon className="h-10 w-10 sm:h-12 sm:w-12 text-primary mb-3 sm:mb-4" />
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground">{feature.description}</p>
-                </Card>
-              </motion.div>
-            ))}
+          <div className="flex justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl">
+              {features.map((feature, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="w-full max-w-sm mx-auto"
+                >
+                  <Card className="p-5 sm:p-6 h-full glass-card hover:shadow-lg transition-all">
+                    <feature.icon className="h-10 w-10 sm:h-12 sm:w-12 text-primary mb-3 sm:mb-4" />
+                    <h3 className="text-lg sm:text-xl font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground">{feature.description}</p>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
