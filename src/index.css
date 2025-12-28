@@ -121,8 +121,11 @@ All colors MUST be HSL.
     font-family: 'Poppins', sans-serif;
   }
 
-  body.dashboard-view {
-    overflow: hidden;
+  /* Dashboard fixed layout only for tablet and desktop */
+  @media (min-width: 768px) {
+    body.dashboard-view {
+      overflow: hidden;
+    }
   }
 
   h1, h2, h3, h4, h5, h6 {
