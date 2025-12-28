@@ -1,171 +1,159 @@
-import { Link } from "react-router-dom";
-import { Camera, Crown, Eye, Heart, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { X, Menu, LayoutDashboard, UserPen, ImageIcon, Heart, Users, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 interface ProfileSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
-  onNavigate?: (tab: string) => void;
+  activeTab: string;
+  onNavigate: (tab: string) => void;
 }
 
-const ProfileSidebar = ({ isOpen, onToggle, onNavigate }: ProfileSidebarProps) => {
-  const isPremium = false;
-  
+const navigationItems = [
+  { id: "summary", label: "Summary", icon: LayoutDashboard },
+  { id: "edit-profile", label: "Edit Profile", icon: UserPen },
+  { id: "my-photos", label: "My Photos", icon: ImageIcon },
+  { id: "partner-preference", label: "Partner Preference", icon: Heart },
+  { id: "matches", label: "Matches", icon: Users },
+  { id: "browse", label: "Browse Profiles", icon: Search },
+];
+
+const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSidebarProps) => {
   // Mock user data
   const user = {
     name: "John Doe",
     profileId: "SM123456",
-    email: "john.doe@email.com",
+    email: "johndoe@example.com",
     avatar: "",
     initials: "JD",
   };
 
   return (
     <>
-      {/* Mobile Overlay */}
-      {isOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
-          onClick={onToggle}
-        />
-      )}
+      {/* Mobile Menu Toggle */}
+      <button
+        onClick={onToggle}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-background/80 backdrop-blur-sm border border-border shadow-md"
+      >
+        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </button>
 
-      {/* Sidebar - Hidden on mobile, visible on tablet/desktop */}
+      {/* Mobile Overlay */}
+      {isOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-30" onClick={onToggle} />}
+
+      {/* Desktop/Tablet Sidebar - ChatGPT style fixed sidebar */}
+      <aside className={cn("hidden lg:flex flex-col w-[280px] h-[200vh] bg-card border-r border-border")}>
+        {/* Fixed Profile Header Section - Never scrolls */}
+        <div className="flex-shrink-0 flex flex-col items-center pt-8 pb-6 px-4 border-b border-border bg-card">
+          <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback className="text-3xl font-semibold bg-gradient-to-br from-primary to-secondary text-primary-foreground">
+              {user.initials}
+            </AvatarFallback>
+          </Avatar>
+          <h2 className="mt-4 text-xl font-semibold text-foreground">{user.name}</h2>
+          <p className="text-xs text-muted-foreground mt-1">ID: {user.profileId}</p>
+          <span className="mt-2 px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full">
+            Free Account
+          </span>
+        </div>
+
+        {/* Scrollable Navigation Menu Section - Only this part scrolls */}
+        <nav className="flex-1 px-4 py-4 overflow-y-scroll scrollbar-hide">
+          <ul className="space-y-2">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+
+              return (
+                <li key={item.id}>
+                  <button
+                    onClick={() => onNavigate(item.id)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-gradient-to-r from-primary to-secondary text-white shadow-md"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="h-5 w-5 flex-shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="pt-3">
+            <div className="flex items-center gap-3 p-2 rounded-xl bg-muted/50 hover:bg-muted transition">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src="" />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white text-sm font-semibold">
+                  JD
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="leading-tight">
+                <p className="text-sm font-semibold text-foreground">John Doe</p>
+                <p className="text-xs text-muted-foreground">JohnDoe@gmail.com</p>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </aside>
+
+      {/* Mobile Sidebar - Preserved old UI */}
       <aside
         className={cn(
-          "hidden lg:flex fixed left-0 top-0 h-screen w-[280px] bg-card border-r border-border z-40",
-          "flex-col"
+          "lg:hidden fixed left-0 top-0 h-screen w-[280px] bg-card border-r border-border z-40",
+          "flex flex-col overflow-hidden transition-transform duration-300 ease-in-out",
+          isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        {/* Fixed Header Section - Avatar, Name, Badge */}
-        <div className="flex-shrink-0 p-6 pb-0">
-          {/* Avatar */}
-          <div className="relative mx-auto mb-4 w-fit">
-            <Avatar className="h-24 w-24 border-4 border-primary/20">
+        {/* Mobile Profile Section */}
+        <div className="p-5 border-b border-border">
+          <div className="relative mx-auto mb-3 w-fit">
+            <Avatar className="h-20 w-20 border-4 border-primary/20">
               <AvatarImage src={user.avatar} alt={user.name} />
               <AvatarFallback className="text-xl font-semibold bg-gradient-to-br from-primary to-secondary text-primary-foreground">
                 {user.initials}
               </AvatarFallback>
             </Avatar>
-            <button 
-              className="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
-              onClick={() => onNavigate?.("profile")}
-            >
-              <Camera className="h-3.5 w-3.5" />
-            </button>
           </div>
-
-          {/* User Name */}
-          <div className="text-center mb-3">
+          <div className="text-center">
             <h2 className="text-lg font-semibold text-foreground">{user.name}</h2>
-          </div>
-
-          {/* Free Account Badge */}
-          <div className="flex justify-center mb-4">
-            <Badge 
-              variant={isPremium ? "default" : "secondary"} 
-              className={cn(
-                isPremium && "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0"
-              )}
-            >
-              {isPremium ? (
-                <>
-                  <Crown className="h-3 w-3 mr-1" />
-                  Premium
-                </>
-              ) : (
-                "Free Account"
-              )}
-            </Badge>
-          </div>
-
-          {/* Divider */}
-          <Separator className="mb-4" />
-        </div>
-
-        {/* Scrollable Content Section */}
-        <div className="flex-1 overflow-y-auto px-6 scrollbar-hide">
-          {/* Profile Completion */}
-          <div className="p-4 rounded-lg bg-muted/50 mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Profile Completion</span>
-              <span className="text-sm text-primary font-semibold">75%</span>
-            </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-500"
-                style={{ width: "75%" }}
-              />
-            </div>
-          </div>
-
-          {/* Profile Views Card */}
-          <div className="p-4 rounded-lg bg-muted/50 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-primary/10">
-                <Eye className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-xl font-bold text-foreground">24</p>
-                <p className="text-xs text-muted-foreground">Profile Views</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Interests Card */}
-          <div className="p-4 rounded-lg bg-muted/50 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-secondary/10">
-                <Heart className="h-4 w-4 text-secondary" />
-              </div>
-              <div>
-                <p className="text-xl font-bold text-foreground">12</p>
-                <p className="text-xs text-muted-foreground">Interests Received</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Member Since */}
-          <p className="text-xs text-muted-foreground text-center mb-4">
-            Member since Jan 2024
-          </p>
-
-          {/* Upgrade to Premium Button */}
-          {!isPremium && (
-            <Button
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 mb-4"
-              asChild
-            >
-              <Link to="/pricing">
-                <Crown className="h-4 w-4 mr-2" />
-                Upgrade to Premium
-              </Link>
-            </Button>
-          )}
-        </div>
-
-        {/* Fixed Footer - User Mini Profile Card */}
-        <div className="flex-shrink-0 p-4 border-t border-border">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback className="text-sm bg-gradient-to-br from-primary to-secondary text-primary-foreground">
-                {user.initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
-              <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
-                <Mail className="h-3 w-3" />
-                {user.email}
-              </p>
-            </div>
+            <p className="text-xs text-muted-foreground">ID: {user.profileId}</p>
           </div>
         </div>
+
+        {/* Mobile Navigation */}
+        <nav className="flex-1 p-3 overflow-y-auto">
+          <ul className="space-y-1">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+
+              return (
+                <li key={item.id}>
+                  <button
+                    onClick={() => {
+                      onNavigate(item.id);
+                      onToggle();
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-gradient-to-r from-primary to-secondary text-white shadow-md"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
       </aside>
     </>
   );
