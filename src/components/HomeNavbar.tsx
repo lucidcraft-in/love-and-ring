@@ -47,10 +47,10 @@ const HomeNavbar = () => {
     ? "bg-background/95 backdrop-blur-md border-b border-border shadow-sm"
     : "bg-transparent";
 
-  // Pill button style for nav links when over hero
+  // Simple text style for nav links
   const navLinkClass = isScrolled
-    ? "text-foreground hover:text-primary transition-colors duration-300 font-medium text-sm xl:text-base px-4 py-2"
-    : "text-white font-medium text-sm xl:text-base px-4 py-2 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 hover:bg-black/40 hover:border-white/30 transition-all duration-300 shadow-sm";
+    ? "text-foreground hover:text-primary transition-colors duration-300 font-medium text-sm xl:text-base"
+    : "text-white hover:text-white/80 transition-colors duration-300 font-medium text-sm xl:text-base drop-shadow-sm";
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${navbarBg}`}>
@@ -65,7 +65,7 @@ const HomeNavbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-2 xl:space-x-3">
+          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -131,10 +131,10 @@ const HomeNavbar = () => {
                   <Link
                     key={link.path}
                     to={link.path}
-                    className={`font-medium transition-colors duration-300 px-4 py-2 rounded-full ${
+                    className={`font-medium transition-colors duration-300 py-2 ${
                       isScrolled 
-                        ? "text-foreground hover:text-primary hover:bg-muted" 
-                        : "text-white bg-black/30 border border-white/20 hover:bg-black/40"
+                        ? "text-foreground hover:text-primary" 
+                        : "text-white hover:text-white/80"
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
