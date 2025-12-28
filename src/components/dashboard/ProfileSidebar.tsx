@@ -1,6 +1,16 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Camera, Edit, Crown, X, Menu } from "lucide-react";
+import { 
+  Camera, 
+  Crown, 
+  X, 
+  Menu, 
+  LayoutDashboard, 
+  UserPen, 
+  ImageIcon, 
+  Heart, 
+  Users, 
+  Search 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -9,22 +19,28 @@ import { cn } from "@/lib/utils";
 interface ProfileSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
-  onNavigate?: (tab: string) => void;
+  activeTab: string;
+  onNavigate: (tab: string) => void;
 }
 
-const ProfileSidebar = ({ isOpen, onToggle, onNavigate }: ProfileSidebarProps) => {
-  const [isPremium] = useState(false);
+const navigationItems = [
+  { id: "summary", label: "Summary", icon: LayoutDashboard },
+  { id: "edit-profile", label: "Edit Profile", icon: UserPen },
+  { id: "my-photos", label: "My Photos", icon: ImageIcon },
+  { id: "partner-preference", label: "Partner Preference", icon: Heart },
+  { id: "matches", label: "Matches", icon: Users },
+  { id: "browse", label: "Browse Profiles", icon: Search },
+];
+
+const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSidebarProps) => {
+  const isPremium = false;
   
-  // Mock user data - replace with actual user data
+  // Mock user data
   const user = {
     name: "John Doe",
     profileId: "SM123456",
     avatar: "",
     initials: "JD",
-  };
-
-  const handleEditProfile = () => {
-    onNavigate?.("profile");
   };
 
   return (
@@ -49,33 +65,33 @@ const ProfileSidebar = ({ isOpen, onToggle, onNavigate }: ProfileSidebarProps) =
       <aside
         className={cn(
           "fixed left-0 top-0 h-screen w-[280px] bg-card border-r border-border z-40",
-          "flex flex-col transition-transform duration-300 ease-in-out",
+          "flex flex-col overflow-hidden transition-transform duration-300 ease-in-out",
           "lg:translate-x-0 lg:static lg:z-auto",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         {/* Profile Section */}
-        <div className="flex-1 p-6 flex flex-col">
-          {/* Avatar with Edit Button */}
-          <div className="relative mx-auto mb-4">
-            <Avatar className="h-28 w-28 border-4 border-primary/20">
+        <div className="p-5 border-b border-border">
+          {/* Avatar */}
+          <div className="relative mx-auto mb-3 w-fit">
+            <Avatar className="h-20 w-20 border-4 border-primary/20">
               <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback className="text-2xl font-semibold bg-gradient-to-br from-primary to-secondary text-primary-foreground">
+              <AvatarFallback className="text-xl font-semibold bg-gradient-to-br from-primary to-secondary text-primary-foreground">
                 {user.initials}
               </AvatarFallback>
             </Avatar>
             <button 
-              className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
-              onClick={handleEditProfile}
+              className="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
+              onClick={() => onNavigate("edit-profile")}
             >
-              <Camera className="h-4 w-4" />
+              <Camera className="h-3.5 w-3.5" />
             </button>
           </div>
 
           {/* User Info */}
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-foreground">{user.name}</h2>
-            <p className="text-sm text-muted-foreground">ID: {user.profileId}</p>
+          <div className="text-center">
+            <h2 className="text-lg font-semibold text-foreground">{user.name}</h2>
+            <p className="text-xs text-muted-foreground">ID: {user.profileId}</p>
             <Badge 
               variant={isPremium ? "default" : "secondary"} 
               className={cn(
@@ -94,65 +110,77 @@ const ProfileSidebar = ({ isOpen, onToggle, onNavigate }: ProfileSidebarProps) =
             </Badge>
           </div>
 
-          {/* Quick Actions */}
-          <div className="space-y-3">
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2"
-              onClick={handleEditProfile}
-            >
-              <Edit className="h-4 w-4" />
-              Edit Profile
-            </Button>
-
-            {!isPremium && (
-              <Button
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
-                asChild
-              >
-                <Link to="/pricing">
-                  <Crown className="h-4 w-4 mr-2" />
-                  Upgrade to Premium
-                </Link>
-              </Button>
-            )}
-          </div>
-
           {/* Profile Completion */}
-          <div className="mt-6 p-4 rounded-lg bg-muted/50">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Profile Completion</span>
-              <span className="text-sm text-primary font-semibold">75%</span>
+          <div className="mt-4 p-3 rounded-lg bg-muted/50">
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-xs font-medium">Profile Completion</span>
+              <span className="text-xs text-primary font-semibold">75%</span>
             </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-500"
                 style={{ width: "75%" }}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Complete your profile to get better matches
-            </p>
           </div>
 
-          {/* Stats */}
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <div className="text-center p-3 rounded-lg bg-muted/50">
-              <p className="text-2xl font-bold text-primary">24</p>
-              <p className="text-xs text-muted-foreground">Profile Views</p>
-            </div>
-            <div className="text-center p-3 rounded-lg bg-muted/50">
-              <p className="text-2xl font-bold text-primary">12</p>
-              <p className="text-xs text-muted-foreground">Interests</p>
-            </div>
-          </div>
+          {/* Upgrade Button */}
+          {!isPremium && (
+            <Button
+              className="w-full mt-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+              size="sm"
+              asChild
+            >
+              <Link to="/pricing">
+                <Crown className="h-4 w-4 mr-2" />
+                Upgrade to Premium
+              </Link>
+            </Button>
+          )}
         </div>
 
-        {/* Footer */}
+        {/* Navigation */}
+        <nav className="flex-1 p-3 overflow-y-auto">
+          <ul className="space-y-1">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              
+              return (
+                <li key={item.id}>
+                  <button
+                    onClick={() => {
+                      onNavigate(item.id);
+                      onToggle();
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-gradient-to-r from-primary to-secondary text-white shadow-md"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* Footer Stats */}
         <div className="p-4 border-t border-border">
-          <p className="text-xs text-muted-foreground text-center">
-            Member since Jan 2024
-          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="text-center p-2 rounded-lg bg-muted/50">
+              <p className="text-lg font-bold text-primary">24</p>
+              <p className="text-[10px] text-muted-foreground">Profile Views</p>
+            </div>
+            <div className="text-center p-2 rounded-lg bg-muted/50">
+              <p className="text-lg font-bold text-primary">12</p>
+              <p className="text-[10px] text-muted-foreground">Interests</p>
+            </div>
+          </div>
         </div>
       </aside>
     </>
