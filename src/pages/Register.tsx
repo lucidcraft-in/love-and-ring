@@ -311,7 +311,7 @@ const Register = () => {
             </Button>
 
             {/* Form Card */}
-            <Card className="relative p-5 sm:p-6 lg:p-7 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
+            <Card className="relative mt-10 p-5 sm:p-6 lg:p-7 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
 
               {/* Step Progress Indicator */}
               <div className="mb-5 pr-8 lg:pr-6">
