@@ -2,8 +2,6 @@ import { Link } from "react-router-dom";
 import { 
   Camera, 
   Crown, 
-  X, 
-  Menu, 
   LayoutDashboard, 
   UserPen, 
   ImageIcon, 
@@ -45,29 +43,11 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
 
   return (
     <>
-      {/* Mobile Menu Toggle */}
-      <button
-        onClick={onToggle}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-background/80 backdrop-blur-sm border border-border shadow-md"
-      >
-        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </button>
-
-      {/* Mobile Overlay */}
-      {isOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
-          onClick={onToggle}
-        />
-      )}
-
-      {/* Sidebar */}
+      {/* Sidebar - Hidden on mobile, visible on tablet+ */}
       <aside
         className={cn(
-          "fixed left-0 top-0 h-screen w-[280px] bg-card border-r border-border z-40",
-          "flex flex-col overflow-hidden transition-transform duration-300 ease-in-out",
-          "lg:translate-x-0 lg:static lg:z-auto",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          "hidden md:flex fixed left-0 top-0 h-screen w-[280px] bg-card border-r border-border z-40",
+          "flex-col overflow-hidden"
         )}
       >
         {/* Profile Section */}
@@ -151,7 +131,6 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
                   <button
                     onClick={() => {
                       onNavigate(item.id);
-                      onToggle();
                     }}
                     className={cn(
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
