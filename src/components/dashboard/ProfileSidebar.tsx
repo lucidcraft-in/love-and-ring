@@ -1,13 +1,4 @@
-import { 
-  X, 
-  Menu, 
-  LayoutDashboard, 
-  UserPen, 
-  ImageIcon, 
-  Heart, 
-  Users, 
-  Search 
-} from "lucide-react";
+import { X, Menu, LayoutDashboard, UserPen, ImageIcon, Heart, Users, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
@@ -48,19 +39,10 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
       </button>
 
       {/* Mobile Overlay */}
-      {isOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
-          onClick={onToggle}
-        />
-      )}
+      {isOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-30" onClick={onToggle} />}
 
       {/* Desktop/Tablet Sidebar - ChatGPT style fixed sidebar */}
-      <aside
-        className={cn(
-          "hidden lg:flex flex-col w-[280px] h-screen bg-card border-r border-border"
-        )}
-      >
+      <aside className={cn("hidden lg:flex flex-col w-[280px] h-screen bg-card border-r border-border")}>
         {/* Fixed Profile Header Section - Never scrolls */}
         <div className="flex-shrink-0 flex flex-col items-center pt-8 pb-6 px-4 border-b border-border bg-card">
           <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
@@ -77,12 +59,12 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
         </div>
 
         {/* Scrollable Navigation Menu Section - Only this part scrolls */}
-        <nav className="flex-1 px-4 py-4 overflow-y-auto scrollbar-hide">
+        <nav className="flex-1 px-4 py-4 overflow-y-scroll scrollbar-hide">
           <ul className="space-y-2">
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
-              
+
               return (
                 <li key={item.id}>
                   <button
@@ -91,7 +73,7 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
                       "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                       isActive
                         ? "bg-gradient-to-r from-primary to-secondary text-white shadow-md"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
                     <Icon className="h-5 w-5 flex-shrink-0" />
@@ -101,6 +83,21 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
               );
             })}
           </ul>
+          <div className="pt-3">
+            <div className="flex items-center gap-3 p-2 rounded-xl bg-muted/50 hover:bg-muted transition">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src="" />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white text-sm font-semibold">
+                  JD
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="leading-tight">
+                <p className="text-sm font-semibold text-foreground">John Doe</p>
+                <p className="text-xs text-muted-foreground">JohnDoe@gmail.com</p>
+              </div>
+            </div>
+          </div>
         </nav>
       </aside>
 
@@ -109,7 +106,7 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
         className={cn(
           "lg:hidden fixed left-0 top-0 h-screen w-[280px] bg-card border-r border-border z-40",
           "flex flex-col overflow-hidden transition-transform duration-300 ease-in-out",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {/* Mobile Profile Section */}
@@ -134,7 +131,7 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
-              
+
               return (
                 <li key={item.id}>
                   <button
@@ -146,7 +143,7 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                       isActive
                         ? "bg-gradient-to-r from-primary to-secondary text-white shadow-md"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
                     <Icon className="h-4 w-4 flex-shrink-0" />
