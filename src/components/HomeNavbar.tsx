@@ -42,10 +42,10 @@ const HomeNavbar = () => {
     navigate("/");
   };
 
-  // Dynamic styles based on scroll state
+  // Dynamic styles based on scroll state - subtle glass effect on navbar only
   const navbarBg = isScrolled
     ? "bg-background/95 backdrop-blur-md border-b border-border shadow-sm"
-    : "bg-transparent";
+    : "bg-black/40 backdrop-blur-[6px] border-b border-white/10";
 
   // Simple text style for nav links
   const navLinkClass = isScrolled
