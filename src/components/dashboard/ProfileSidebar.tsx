@@ -58,14 +58,16 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
       {/* Desktop/Tablet Sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex flex-col w-[280px] h-screen sticky top-0 bg-card border-r border-border"
+          "hidden lg:flex flex-col w-[280px] sticky top-[5vh] bg-card border-r border-border rounded-lg"
         )}
-        style={{ overflow: 'hidden' }}
+        style={{ 
+          height: '90vh',
+          overflow: 'hidden'
+        }}
       >
         {/* Fixed Profile Header Section - approx 220px height */}
         <div 
-          className="flex-shrink-0 flex flex-col items-center pt-8 pb-6 px-4 border-b border-border bg-card"
-          style={{ position: 'sticky', top: 0, zIndex: 10 }}
+          className="flex-shrink-0 flex flex-col items-center pt-8 pb-6 px-4 border-b border-border bg-card rounded-t-lg"
         >
           <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
             <AvatarImage src={user.avatar} alt={user.name} />
@@ -85,7 +87,7 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
           className="flex-1 px-4 py-4 scrollbar-hide"
           style={{ 
             overflowY: 'auto',
-            maxHeight: 'calc(100vh - 220px)'
+            maxHeight: 'calc(90vh - 220px)'
           }}
         >
           <ul className="space-y-2">
