@@ -191,14 +191,15 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section - starts from top of viewport, behind navbar */}
+      {/* Hero Section - starts from absolute top of viewport, behind navbar */}
       <section
         id="hero-section"
-        className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 pt-16"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        style={{ marginTop: 0, paddingTop: 0 }}
         onMouseEnter={() => setIsHeroHovered(true)}
         onMouseLeave={() => setIsHeroHovered(false)}
       >
-        {/* Background Image Carousel with blur */}
+        {/* Background Image Carousel - covers from absolute top */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
@@ -206,13 +207,13 @@ const Home = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.5, ease: "easeInOut" }}
-            className="absolute inset-0"
+            className="absolute inset-0 top-0"
             style={{
               backgroundImage: `url(${heroSlides[currentSlide]})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               filter: "blur(2px)",
-              transform: "scale(1.02)", // Prevent blur edge artifacts
+              transform: "scale(1.02)",
             }}
           />
         </AnimatePresence>
@@ -225,7 +226,8 @@ const Home = () => {
           }}
         />
         
-        <div className="container mx-auto relative z-10">
+        {/* Hero Content - centered with padding for navbar space */}
+        <div className="container mx-auto relative z-10 px-4 pt-16">
           <AnimatePresence mode="wait">
             {formMode === "hero" && !isAuthenticated ? (
               <motion.div
