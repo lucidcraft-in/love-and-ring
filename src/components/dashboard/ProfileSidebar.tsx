@@ -58,11 +58,15 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
       {/* Desktop/Tablet Sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex flex-col w-[280px] h-screen sticky top-0 bg-card border-r border-border overflow-hidden"
+          "hidden lg:flex flex-col w-[280px] h-screen sticky top-0 bg-card border-r border-border"
         )}
+        style={{ overflow: 'hidden' }}
       >
-        {/* Fixed Profile Header Section */}
-        <div className="flex-shrink-0 flex flex-col items-center pt-8 pb-6 px-4">
+        {/* Fixed Profile Header Section - approx 220px height */}
+        <div 
+          className="flex-shrink-0 flex flex-col items-center pt-8 pb-6 px-4 border-b border-border bg-card"
+          style={{ position: 'sticky', top: 0, zIndex: 10 }}
+        >
           <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback className="text-3xl font-semibold bg-gradient-to-br from-primary to-secondary text-primary-foreground">
@@ -70,11 +74,21 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
             </AvatarFallback>
           </Avatar>
           <h2 className="mt-4 text-xl font-semibold text-foreground">{user.name}</h2>
+          <p className="text-xs text-muted-foreground mt-1">ID: {user.profileId}</p>
+          <span className="mt-2 px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full">
+            Free Account
+          </span>
         </div>
 
-        {/* Scrollable Navigation Tabs */}
-        <nav className="flex-1 px-4 overflow-y-auto scrollbar-hide">
-          <ul className="space-y-2 pb-4">
+        {/* Scrollable Navigation Menu Section */}
+        <nav 
+          className="flex-1 px-4 py-4 scrollbar-hide"
+          style={{ 
+            overflowY: 'auto',
+            maxHeight: 'calc(100vh - 220px)'
+          }}
+        >
+          <ul className="space-y-2">
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -98,22 +112,6 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
             })}
           </ul>
         </nav>
-
-        {/* Bottom Section: Compact Profile Card */}
-        <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-            <Avatar className="h-10 w-10 border-2 border-border">
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback className="text-sm font-medium bg-gradient-to-br from-primary to-secondary text-primary-foreground">
-                {user.initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-            </div>
-          </div>
-        </div>
       </aside>
 
       {/* Mobile Sidebar - Preserved old UI */}
