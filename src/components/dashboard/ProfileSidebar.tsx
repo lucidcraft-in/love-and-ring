@@ -58,49 +58,52 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
       {/* Desktop/Tablet Sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex flex-col w-[280px] h-[120vh] sticky top-0 bg-card border-r border-border overflow-hidden"
+          "hidden lg:flex flex-col justify-between w-[280px] h-screen sticky top-0 bg-card border-r border-border overflow-hidden"
         )}
       >
-        {/* Large Profile Avatar Section */}
-        <div className="flex flex-col items-center pt-8 pb-6 px-4">
-          <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
-            <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback className="text-3xl font-semibold bg-gradient-to-br from-primary to-secondary text-primary-foreground">
-              {user.initials}
-            </AvatarFallback>
-          </Avatar>
-          <h2 className="mt-4 text-xl font-semibold text-foreground">{user.name}</h2>
+        {/* Top Section: Profile + Navigation */}
+        <div className="flex flex-col">
+          {/* Large Profile Avatar Section */}
+          <div className="flex flex-col items-center pt-8 pb-6 px-4">
+            <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
+              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarFallback className="text-3xl font-semibold bg-gradient-to-br from-primary to-secondary text-primary-foreground">
+                {user.initials}
+              </AvatarFallback>
+            </Avatar>
+            <h2 className="mt-4 text-xl font-semibold text-foreground">{user.name}</h2>
+          </div>
+
+          {/* Navigation Tabs */}
+          <nav className="px-4">
+            <ul className="space-y-2">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                
+                return (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => onNavigate(item.id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-gradient-to-r from-primary to-secondary text-white shadow-md"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <Icon className="h-5 w-5 flex-shrink-0" />
+                      <span>{item.label}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav className="flex-1 px-4">
-          <ul className="space-y-2">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              
-              return (
-                <li key={item.id}>
-                  <button
-                    onClick={() => onNavigate(item.id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
-                      isActive
-                        ? "bg-gradient-to-r from-primary to-secondary text-white shadow-md"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    <Icon className="h-5 w-5 flex-shrink-0" />
-                    <span>{item.label}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        {/* Compact Profile Card at Bottom */}
-        <div className="mt-auto p-4 border-t border-border">
+        {/* Bottom Section: Compact Profile Card */}
+        <div className="p-4 border-t border-border">
           <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
             <Avatar className="h-10 w-10 border-2 border-border">
               <AvatarImage src={user.avatar} alt={user.name} />
