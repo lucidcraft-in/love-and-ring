@@ -1,85 +1,73 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import ProfileDashboard from "@/components/dashboard/ProfileDashboard";
 import ProfileSidebar from "@/components/dashboard/ProfileSidebar";
-import Summary from "@/components/dashboard/Summary";
-import EditProfile from "@/components/dashboard/EditProfile";
-import MyPhotos from "@/components/dashboard/MyPhotos";
-import PartnerPreference from "@/components/dashboard/PartnerPreference";
 import Matches from "@/components/dashboard/Matches";
 import BrowseProfiles from "@/components/dashboard/BrowseProfiles";
-import Footer from "@/components/Footer";
 
 const UserDashboard = () => {
-  const [activeTab, setActiveTab] = useState("summary");
+  const [activeTab, setActiveTab] = useState("profile");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Lock body scroll on desktop/tablet only
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768) {
-        document.body.classList.add("dashboard-view");
-      } else {
-        document.body.classList.remove("dashboard-view");
-      }
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      document.body.classList.remove("dashboard-view");
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
 
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
     setSidebarOpen(false);
   };
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case "summary":
-        return <Summary />;
-      case "edit-profile":
-        return <EditProfile />;
-      case "my-photos":
-        return <MyPhotos />;
-      case "partner-preference":
-        return <PartnerPreference />;
-      case "matches":
-        return <Matches />;
-      case "browse":
-        return <BrowseProfiles />;
-      default:
-        return <Summary />;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-muted/30 dark:bg-background lg:h-screen lg:overflow-hidden">
-      <div className="flex flex-col lg:flex-row lg:h-full">
-        {/* Left: Sidebar */}
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
+      {/* Two-column layout */}
+      <div className="flex min-h-screen">
+        {/* Left: Fixed Profile Sidebar */}
         <ProfileSidebar 
           isOpen={sidebarOpen} 
           onToggle={() => setSidebarOpen(!sidebarOpen)}
-          activeTab={activeTab}
           onNavigate={handleNavigate}
         />
 
         {/* Right: Scrollable Main Content */}
-        <main className="flex-1 lg:overflow-y-auto lg:h-screen">
-          <div className="min-h-[120vh] flex flex-col">
-            <div className="flex-1 p-6 lg:p-8">
-              {/* Mobile header spacing for menu button */}
-              <div className="lg:hidden h-8" />
-              
-              {renderContent()}
-            </div>
+        <main className="flex-1 lg:ml-0 overflow-y-auto">
+          <div className="container mx-auto px-4 py-8 lg:pl-8">
+            {/* Mobile header spacing for menu button */}
+            <div className="lg:hidden h-12" />
 
-            {/* Footer inside right content area */}
-            <div className="mt-auto">
-              <Footer />
-            </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Card className="glass-card p-2 mb-6">
+                <TabsList className="w-full grid grid-cols-3 h-auto bg-transparent gap-2">
+                  <TabsTrigger 
+                    value="profile"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white py-3 rounded-xl text-xs sm:text-sm"
+                  >
+                    Profile Dashboard
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="matches"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white py-3 rounded-xl text-xs sm:text-sm"
+                  >
+                    Matches
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="browse"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white py-3 rounded-xl text-xs sm:text-sm"
+                  >
+                    Browse Profiles
+                  </TabsTrigger>
+                </TabsList>
+              </Card>
+
+              <TabsContent value="profile">
+                <ProfileDashboard />
+              </TabsContent>
+
+              <TabsContent value="matches">
+                <Matches />
+              </TabsContent>
+
+              <TabsContent value="browse">
+                <BrowseProfiles />
+              </TabsContent>
+            </Tabs>
           </div>
         </main>
       </div>
