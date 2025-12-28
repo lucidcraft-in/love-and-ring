@@ -191,13 +191,14 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
+      {/* Hero Section - starts from top of viewport, behind navbar */}
       <section
-        className="relative min-h-[90vh] flex items-center justify-center overflow-hidden px-4 py-8 sm:py-12"
+        id="hero-section"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 pt-16"
         onMouseEnter={() => setIsHeroHovered(true)}
         onMouseLeave={() => setIsHeroHovered(false)}
       >
-        {/* Background Image Carousel */}
+        {/* Background Image Carousel with blur */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
@@ -210,15 +211,17 @@ const Home = () => {
               backgroundImage: `url(${heroSlides[currentSlide]})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
+              filter: "blur(2px)",
+              transform: "scale(1.02)", // Prevent blur edge artifacts
             }}
           />
         </AnimatePresence>
         
-        {/* Gradient Overlay for text readability */}
+        {/* Dark Gradient Overlay for text readability */}
         <div 
           className="absolute inset-0" 
           style={{
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.45) 50%, rgba(0,0,0,0.65) 100%)'
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.6) 100%)'
           }}
         />
         
