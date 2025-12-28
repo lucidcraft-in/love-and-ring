@@ -55,20 +55,14 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
         />
       )}
 
-      {/* Desktop/Tablet Sidebar */}
+      {/* Desktop/Tablet Sidebar - ChatGPT style fixed sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex flex-col w-[280px] sticky top-[5vh] bg-card border-r border-border rounded-lg"
+          "hidden lg:flex flex-col w-[280px] h-screen bg-card border-r border-border"
         )}
-        style={{ 
-          height: '90vh',
-          overflow: 'hidden'
-        }}
       >
-        {/* Fixed Profile Header Section - approx 220px height */}
-        <div 
-          className="flex-shrink-0 flex flex-col items-center pt-8 pb-6 px-4 border-b border-border bg-card rounded-t-lg"
-        >
+        {/* Fixed Profile Header Section - Never scrolls */}
+        <div className="flex-shrink-0 flex flex-col items-center pt-8 pb-6 px-4 border-b border-border bg-card">
           <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback className="text-3xl font-semibold bg-gradient-to-br from-primary to-secondary text-primary-foreground">
@@ -82,14 +76,8 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
           </span>
         </div>
 
-        {/* Scrollable Navigation Menu Section */}
-        <nav 
-          className="flex-1 px-4 py-4 scrollbar-hide"
-          style={{ 
-            overflowY: 'auto',
-            maxHeight: 'calc(90vh - 220px)'
-          }}
-        >
+        {/* Scrollable Navigation Menu Section - Only this part scrolls */}
+        <nav className="flex-1 px-4 py-4 overflow-y-auto scrollbar-hide">
           <ul className="space-y-2">
             {navigationItems.map((item) => {
               const Icon = item.icon;

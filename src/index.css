@@ -121,8 +121,9 @@ All colors MUST be HSL.
     font-family: 'Poppins', sans-serif;
   }
 
+  /* Dashboard: prevent body scroll on desktop */
   body.dashboard-view {
-    overflow: hidden;
+    @apply lg:overflow-hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
