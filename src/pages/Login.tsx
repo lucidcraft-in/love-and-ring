@@ -68,7 +68,7 @@ const Login = () => {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Hero Carousel Background - Same as Register Page */}
-      <div className="absolute inset-0 z-0">
+      <div id="hero-section" className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
