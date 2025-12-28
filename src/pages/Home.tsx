@@ -224,7 +224,7 @@ const Home = () => {
         <div 
           className="absolute inset-0" 
           style={{
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.55) 100%)'
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.5) 100%)'
           }}
         />
         
