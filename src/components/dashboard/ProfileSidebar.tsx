@@ -41,10 +41,10 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
       {/* Mobile Overlay */}
       {isOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-30" onClick={onToggle} />}
 
-      {/* Desktop/Tablet Sidebar - ChatGPT style fixed sidebar */}
-      <aside className={cn("hidden lg:flex flex-col w-[280px] h-screen bg-card border-r border-border")}>
-        {/* Fixed Profile Header Section - Never scrolls */}
-        <div className="flex-shrink-0 flex flex-col items-center pt-8 pb-6 px-4 border-b border-border bg-card">
+      {/* Desktop/Tablet Sidebar - Entire sidebar scrolls as one unit */}
+      <aside className="hidden lg:block w-[280px] h-screen overflow-y-auto scrollbar-hide bg-card border-r border-border">
+        {/* Profile Section */}
+        <div className="flex flex-col items-center pt-8 pb-6 px-4 border-b border-border">
           <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback className="text-3xl font-semibold bg-gradient-to-br from-primary to-secondary text-primary-foreground">
@@ -58,8 +58,8 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
           </span>
         </div>
 
-        {/* Scrollable Navigation Menu Section - Only this part scrolls */}
-        <nav className="flex-1 px-4 py-4 overflow-y-scroll scrollbar-hide">
+        {/* Navigation Menu */}
+        <nav className="px-4 py-4">
           <ul className="space-y-2">
             {navigationItems.map((item) => {
               const Icon = item.icon;
