@@ -57,10 +57,9 @@ const UserDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#f7f9fc] dark:bg-background md:h-screen md:overflow-hidden">
-      {/* Desktop/Tablet: Flex container with stretch alignment */}
-      <div className="flex flex-col md:flex-row md:items-stretch md:h-full">
+      <div className="flex flex-col md:flex-row md:h-full">
         {/* Left: Fixed Profile Sidebar - Desktop/Tablet only */}
-        <div className="hidden md:flex md:flex-shrink-0 md:h-screen md:min-h-[120vh] md:sticky md:top-0">
+        <div className="hidden md:block md:flex-shrink-0">
           <ProfileSidebar 
             isOpen={sidebarOpen} 
             onToggle={() => setSidebarOpen(!sidebarOpen)}
@@ -81,7 +80,7 @@ const UserDashboard = () => {
 
         {/* Right: Scrollable Main Content - Desktop/Tablet */}
         <main className="flex-1 md:overflow-y-auto md:h-screen">
-          <div className="min-h-[120vh] flex flex-col">
+          <div className="min-h-[120vh] md:min-h-[120vh] flex flex-col">
             <div className="flex-1 p-6 lg:p-8">
               {/* Mobile header spacing for menu button */}
               <div className="md:hidden h-8" />

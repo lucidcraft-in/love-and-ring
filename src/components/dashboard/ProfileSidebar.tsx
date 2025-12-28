@@ -64,10 +64,8 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 w-[280px] bg-card border-r border-border z-40",
-          "flex flex-col transition-transform duration-300 ease-in-out",
-          "h-screen overflow-y-auto",
-          "md:h-full md:min-h-screen md:sticky md:top-0 md:overflow-y-auto",
+          "fixed left-0 top-0 h-screen w-[280px] bg-card border-r border-border z-40",
+          "flex flex-col overflow-hidden transition-transform duration-300 ease-in-out",
           "lg:translate-x-0 lg:static lg:z-auto",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
