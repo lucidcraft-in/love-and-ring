@@ -112,9 +112,18 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html, body {
+    height: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Poppins', sans-serif;
+  }
+
+  /* Dashboard: prevent body scroll on desktop */
+  body.dashboard-view {
+    @apply lg:overflow-hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -153,12 +162,13 @@ All colors MUST be HSL.
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 
-  /* Hide scrollbar utility */
+  /* Hide scrollbar but keep scroll functionality */
   .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
   }
+  
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+    display: none;  /* Chrome, Safari, Opera */
   }
 }
