@@ -80,18 +80,18 @@ const HomeNavbar = () => {
           <div className="hidden lg:flex items-center space-x-4">
             {isAuthenticated ? (
               <Button 
-                variant={isScrolled ? "ghost" : "outline"} 
+                variant="secondary"
                 onClick={handleLogout} 
-                className={`gap-2 transition-colors duration-300 ${!isScrolled ? "text-white border-white/30 hover:bg-white/10" : ""}`}
+                className="gap-2 bg-white text-foreground hover:bg-white/90 rounded-full px-5 shadow-md border-0"
               >
                 <LogOut className="h-4 w-4" />
                 Logout
               </Button>
             ) : (
               <Button 
-                variant={isScrolled ? "ghost" : "outline"} 
+                variant="secondary"
                 asChild
-                className={`transition-colors duration-300 ${!isScrolled ? "text-white border-white/30 hover:bg-white/10" : ""}`}
+                className="bg-white text-foreground hover:bg-white/90 rounded-full px-5 shadow-md border-0"
               >
                 <Link to="/">Sign In</Link>
               </Button>

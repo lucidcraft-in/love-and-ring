@@ -203,7 +203,7 @@ const Home = () => {
         onMouseEnter={() => setIsHeroHovered(true)}
         onMouseLeave={() => setIsHeroHovered(false)}
       >
-        {/* Background Image Carousel - covers from absolute top */}
+        {/* Background Image Carousel - sharp, no blur */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
@@ -211,22 +211,20 @@ const Home = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.5, ease: "easeInOut" }}
-            className="absolute inset-0 top-0"
+            className="absolute inset-0"
             style={{
               backgroundImage: `url(${heroSlides[currentSlide]})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
-              filter: "blur(2px)",
-              transform: "scale(1.02)",
             }}
           />
         </AnimatePresence>
         
-        {/* Dark Gradient Overlay for text readability */}
+        {/* Dark Gradient Overlay for text readability - no blur */}
         <div 
           className="absolute inset-0" 
           style={{
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.6) 100%)'
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.55) 100%)'
           }}
         />
         
