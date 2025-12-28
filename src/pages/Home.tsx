@@ -214,9 +214,13 @@ const Home = () => {
           />
         </AnimatePresence>
         
-        {/* Elegant Vertical Gradient Overlay - romantic, premium feel */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-primary/40" />
-        <div className="absolute inset-0 bg-gradient-to-br from-secondary/15 via-transparent to-primary/20" />
+        {/* Gradient Overlay for text readability */}
+        <div 
+          className="absolute inset-0" 
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.45) 50%, rgba(0,0,0,0.65) 100%)'
+          }}
+        />
         
         <div className="container mx-auto relative z-10">
           <AnimatePresence mode="wait">
@@ -564,10 +568,22 @@ const Home = () => {
                 transition={{ duration: 0.8 }}
                 className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 px-4"
               >
-                <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold">
-                  Welcome <span className="gradient-text">Back!</span>
+                <h1 
+                  className="text-3xl sm:text-5xl md:text-7xl font-bold"
+                  style={{ 
+                    color: '#FFFFFF',
+                    textShadow: '0 2px 12px rgba(0,0,0,0.35)'
+                  }}
+                >
+                  Welcome <span className="gradient-text-light">Back!</span>
                 </h1>
-                <p className="text-base sm:text-xl md:text-2xl text-muted-foreground">
+                <p 
+                  className="text-base sm:text-xl md:text-2xl"
+                  style={{ 
+                    color: 'rgba(255,255,255,0.85)',
+                    textShadow: '0 2px 12px rgba(0,0,0,0.35)'
+                  }}
+                >
                   Continue your journey to find your perfect life partner
                 </p>
                 <Button
