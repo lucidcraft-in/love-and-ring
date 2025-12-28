@@ -44,7 +44,7 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
       {/* Desktop/Tablet Sidebar - ChatGPT style fixed sidebar */}
       <aside className={cn("hidden lg:flex flex-col w-[280px] h-screen bg-card border-r border-border")}>
         {/* Fixed Profile Header Section - Never scrolls */}
-        <div className="flex-shrink-0 flex flex-col items-center pt-5 pb-6 px-4 border-b border-border bg-card">
+        <div className="flex-shrink-0 flex flex-col items-center pt-4 pb-4 px-4 border-b border-border bg-card">
           <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback className="text-3xl font-semibold bg-gradient-to-br from-primary to-secondary text-primary-foreground">
