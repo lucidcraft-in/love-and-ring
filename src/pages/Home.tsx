@@ -26,7 +26,7 @@ import StepThree from "@/components/registration/StepThree";
 import StepFour from "@/components/registration/StepFour";
 import StepFive from "@/components/registration/StepFive";
 import HomeStoryCarousel from "@/components/HomeStoryCarousel";
-import HomeNavbar from "@/components/HomeNavbar";
+
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
@@ -192,8 +192,6 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Home-specific Navbar - fixed, transparent over hero */}
-      <HomeNavbar />
       
       {/* Hero Section - starts from absolute top of viewport, behind navbar */}
       <section

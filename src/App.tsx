@@ -23,13 +23,16 @@ const queryClient = new QueryClient();
 
 const AppLayout = () => {
   const location = useLocation();
-  const isHomePage = location.pathname === "/";
+  
+  // Hero routes have transparent navbar overlay - no padding needed
+  const heroRoutes = ["/", "/login", "/register"];
+  const isHeroRoute = heroRoutes.includes(location.pathname);
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Only render App-level Navbar on non-home routes */}
-      {!isHomePage && <Navbar />}
-      <main className={`flex-1 ${!isHomePage ? "pt-16" : ""}`}>
+      {/* Single Navbar for all routes - handles hero/standard styling internally */}
+      <Navbar />
+      <main className={`flex-1 ${!isHeroRoute ? "pt-16" : ""}`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />

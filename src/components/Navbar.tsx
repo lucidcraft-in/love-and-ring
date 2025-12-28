@@ -4,7 +4,7 @@ import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import coupleLogo from "@/assets/couple-logo.png";
+import ringLogo from "@/assets/ring-logo.png";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
@@ -14,26 +14,32 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isHomePage = location.pathname === "/";
+  // Hero routes get special transparent/blur treatment
+  const heroRoutes = ["/", "/login", "/register"];
+  const isHeroRoute = heroRoutes.includes(location.pathname);
 
   // Detect scroll position for hero-aware navbar
   useEffect(() => {
     const handleScroll = () => {
-      const heroSection = document.getElementById("hero-section");
-      if (heroSection && isHomePage) {
-        const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
-        setIsScrolled(window.scrollY > heroBottom - 80);
+      if (isHeroRoute) {
+        const heroSection = document.getElementById("hero-section");
+        if (heroSection) {
+          const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
+          setIsScrolled(window.scrollY > heroBottom - 80);
+        } else {
+          // If no hero section found, consider scrolled after 100px
+          setIsScrolled(window.scrollY > 100);
+        }
       } else {
+        // Non-hero routes are always "scrolled" (solid background)
         setIsScrolled(true);
       }
     };
 
-    // Initial check
     handleScroll();
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isHomePage]);
+  }, [isHeroRoute, location.pathname]);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -49,67 +55,83 @@ const Navbar = () => {
     navigate("/");
   };
 
-  // Dynamic styles based on scroll state
-  const navbarBg = isScrolled || !isHomePage
-    ? "bg-background/95 backdrop-blur-md border-b border-border shadow-sm"
-    : "bg-transparent backdrop-blur-sm";
+  // Determine if we should show hero-style navbar
+  const showHeroStyle = isHeroRoute && !isScrolled;
 
-  const textColor = isScrolled || !isHomePage
-    ? "text-foreground"
-    : "text-white";
+  // Dynamic styles based on route and scroll state
+  const navbarBg = showHeroStyle
+    ? "bg-black/40 backdrop-blur-[6px] border-b border-white/10"
+    : "bg-background border-b border-border shadow-sm";
 
-  const logoTextClass = isScrolled || !isHomePage
-    ? "gradient-text"
-    : "text-white drop-shadow-md";
+  // Text styles for nav links
+  const navLinkClass = showHeroStyle
+    ? "text-white hover:text-white/80 transition-colors duration-300 font-medium text-sm xl:text-base drop-shadow-sm"
+    : "text-foreground hover:text-primary transition-colors duration-300 font-medium text-sm xl:text-base";
+
+  // Logo text styles
+  const logoTextClass = showHeroStyle
+    ? "text-white drop-shadow-md"
+    : "gradient-text";
+
+  // Auth button styles (pill-style)
+  const authButtonClass = showHeroStyle
+    ? "rounded-full px-5 shadow-md bg-black/30 backdrop-blur-sm text-white border border-white/20 hover:bg-black/40 transition-all duration-300"
+    : "rounded-full px-5 shadow-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300";
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${navbarBg}`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          {/* Logo - always use ring logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <img src={coupleLogo} alt="Love & Ring" className="h-8 w-8 sm:h-10 sm:w-10 object-contain drop-shadow-md" />
-            <span className={`text-lg sm:text-xl font-bold transition-colors duration-300 ${logoTextClass}`}>Love & Ring</span>
+            <img 
+              src={ringLogo} 
+              alt="Love & Ring" 
+              className="h-10 w-10 sm:h-12 sm:w-12 object-contain" 
+            />
+            <span className={`text-lg sm:text-xl font-bold transition-colors duration-300 ${logoTextClass}`}>
+              Love & Ring
+            </span>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation - plain text links */}
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`${textColor} hover:text-primary transition-colors duration-300 font-medium text-sm xl:text-base drop-shadow-sm`}
+                className={navLinkClass}
               >
                 {link.name}
               </Link>
             ))}
           </div>
 
-          {/* Desktop Auth Buttons */}
+          {/* Desktop Auth Buttons - pill-style only */}
           <div className="hidden lg:flex items-center space-x-4">
             {isAuthenticated ? (
               <Button 
-                variant={isScrolled || !isHomePage ? "ghost" : "outline"} 
+                variant="secondary"
                 onClick={handleLogout} 
-                className={`gap-2 transition-colors duration-300 ${!isScrolled && isHomePage ? "text-white border-white/30 hover:bg-white/10" : ""}`}
+                className={`gap-2 ${authButtonClass}`}
               >
                 <LogOut className="h-4 w-4" />
                 Logout
               </Button>
             ) : (
               <Button 
-                variant={isScrolled || !isHomePage ? "ghost" : "outline"} 
+                variant="secondary"
                 asChild
-                className={`transition-colors duration-300 ${!isScrolled && isHomePage ? "text-white border-white/30 hover:bg-white/10" : ""}`}
+                className={authButtonClass}
               >
-                <Link to="/">Sign In</Link>
+                <Link to="/login">Sign In</Link>
               </Button>
             )}
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className={`lg:hidden p-2 transition-colors duration-300 ${textColor}`}
+            className={`lg:hidden p-2 transition-colors duration-300 ${showHeroStyle ? "text-white" : "text-foreground"}`}
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle menu"
           >
@@ -124,25 +146,33 @@ const Navbar = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className={`lg:hidden pb-4 ${!isScrolled && isHomePage ? "bg-black/50 backdrop-blur-md -mx-4 px-4 rounded-b-lg" : ""}`}
+              className={`lg:hidden pb-4 ${showHeroStyle ? "bg-black/60 backdrop-blur-md -mx-4 px-4 rounded-b-lg" : ""}`}
             >
-              <div className="flex flex-col space-y-4">
+              <div className="flex flex-col space-y-3">
                 {navLinks.map((link) => (
                   <Link
                     key={link.path}
                     to={link.path}
-                    className={`${textColor} hover:text-primary transition-colors duration-300 font-medium`}
+                    className={`font-medium transition-colors duration-300 py-2 ${
+                      showHeroStyle 
+                        ? "text-white hover:text-white/80" 
+                        : "text-foreground hover:text-primary"
+                    }`}
                     onClick={() => setIsOpen(false)}
                   >
                     {link.name}
                   </Link>
                 ))}
-                <div className={`flex flex-col space-y-2 pt-4 border-t ${!isScrolled && isHomePage ? "border-white/20" : "border-border"}`}>
+                <div className={`flex flex-col space-y-2 pt-4 border-t ${showHeroStyle ? "border-white/20" : "border-border"}`}>
                   {isAuthenticated ? (
                     <Button 
                       variant="ghost" 
                       onClick={handleLogout} 
-                      className={`gap-2 justify-start ${!isScrolled && isHomePage ? "text-white hover:bg-white/10" : ""}`}
+                      className={`gap-2 justify-start rounded-full ${
+                        showHeroStyle 
+                          ? "text-white bg-black/30 border border-white/20 hover:bg-black/40" 
+                          : ""
+                      }`}
                     >
                       <LogOut className="h-4 w-4" />
                       Logout
@@ -151,9 +181,13 @@ const Navbar = () => {
                     <Button 
                       variant="ghost" 
                       asChild
-                      className={`${!isScrolled && isHomePage ? "text-white hover:bg-white/10" : ""}`}
+                      className={`rounded-full ${
+                        showHeroStyle 
+                          ? "text-white bg-black/30 border border-white/20 hover:bg-black/40" 
+                          : ""
+                      }`}
                     >
-                      <Link to="/" onClick={() => setIsOpen(false)}>Sign In</Link>
+                      <Link to="/login" onClick={() => setIsOpen(false)}>Sign In</Link>
                     </Button>
                   )}
                 </div>
