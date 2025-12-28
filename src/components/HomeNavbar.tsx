@@ -4,7 +4,7 @@ import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import coupleLogo from "@/assets/couple-logo.png";
+import ringLogo from "@/assets/ring-logo.png";
 import { useAuth } from "@/contexts/AuthContext";
 
 const HomeNavbar = () => {
@@ -45,13 +45,12 @@ const HomeNavbar = () => {
   // Dynamic styles based on scroll state
   const navbarBg = isScrolled
     ? "bg-background/95 backdrop-blur-md border-b border-border shadow-sm"
-    : "bg-black/20 backdrop-blur-sm";
+    : "bg-transparent";
 
-  const textColor = isScrolled ? "text-foreground" : "text-white";
-
-  const logoTextClass = isScrolled
-    ? "gradient-text"
-    : "text-white drop-shadow-md";
+  // Pill button style for nav links when over hero
+  const navLinkClass = isScrolled
+    ? "text-foreground hover:text-primary transition-colors duration-300 font-medium text-sm xl:text-base px-4 py-2"
+    : "text-white font-medium text-sm xl:text-base px-4 py-2 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 hover:bg-black/40 hover:border-white/30 transition-all duration-300 shadow-sm";
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${navbarBg}`}>
@@ -59,17 +58,19 @@ const HomeNavbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <img src={coupleLogo} alt="Love & Ring" className="h-8 w-8 sm:h-10 sm:w-10 object-contain drop-shadow-md" />
-            <span className={`text-lg sm:text-xl font-bold transition-colors duration-300 ${logoTextClass}`}>Love & Ring</span>
+            <img src={ringLogo} alt="Love & Ring" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" />
+            <span className={`text-lg sm:text-xl font-bold transition-colors duration-300 ${isScrolled ? "gradient-text" : "text-white drop-shadow-md"}`}>
+              Love & Ring
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+          <div className="hidden lg:flex items-center space-x-2 xl:space-x-3">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`${textColor} hover:text-primary transition-colors duration-300 font-medium text-sm xl:text-base drop-shadow-sm`}
+                className={navLinkClass}
               >
                 {link.name}
               </Link>
@@ -82,7 +83,11 @@ const HomeNavbar = () => {
               <Button 
                 variant="secondary"
                 onClick={handleLogout} 
-                className="gap-2 bg-white text-foreground hover:bg-white/90 rounded-full px-5 shadow-md border-0"
+                className={`gap-2 rounded-full px-5 shadow-md border-0 transition-all duration-300 ${
+                  isScrolled 
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                    : "bg-black/30 backdrop-blur-sm text-white border border-white/20 hover:bg-black/40"
+                }`}
               >
                 <LogOut className="h-4 w-4" />
                 Logout
@@ -91,7 +96,11 @@ const HomeNavbar = () => {
               <Button 
                 variant="secondary"
                 asChild
-                className="bg-white text-foreground hover:bg-white/90 rounded-full px-5 shadow-md border-0"
+                className={`rounded-full px-5 shadow-md border-0 transition-all duration-300 ${
+                  isScrolled 
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                    : "bg-black/30 backdrop-blur-sm text-white border border-white/20 hover:bg-black/40"
+                }`}
               >
                 <Link to="/">Sign In</Link>
               </Button>
@@ -100,7 +109,7 @@ const HomeNavbar = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className={`lg:hidden p-2 transition-colors duration-300 ${textColor}`}
+            className={`lg:hidden p-2 transition-colors duration-300 ${isScrolled ? "text-foreground" : "text-white"}`}
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle menu"
           >
@@ -115,14 +124,18 @@ const HomeNavbar = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className={`lg:hidden pb-4 ${!isScrolled ? "bg-black/50 backdrop-blur-md -mx-4 px-4 rounded-b-lg" : ""}`}
+              className={`lg:hidden pb-4 ${!isScrolled ? "bg-black/60 backdrop-blur-md -mx-4 px-4 rounded-b-lg" : ""}`}
             >
-              <div className="flex flex-col space-y-4">
+              <div className="flex flex-col space-y-3">
                 {navLinks.map((link) => (
                   <Link
                     key={link.path}
                     to={link.path}
-                    className={`${textColor} hover:text-primary transition-colors duration-300 font-medium`}
+                    className={`font-medium transition-colors duration-300 px-4 py-2 rounded-full ${
+                      isScrolled 
+                        ? "text-foreground hover:text-primary hover:bg-muted" 
+                        : "text-white bg-black/30 border border-white/20 hover:bg-black/40"
+                    }`}
                     onClick={() => setIsOpen(false)}
                   >
                     {link.name}
@@ -133,7 +146,11 @@ const HomeNavbar = () => {
                     <Button 
                       variant="ghost" 
                       onClick={handleLogout} 
-                      className={`gap-2 justify-start ${!isScrolled ? "text-white hover:bg-white/10" : ""}`}
+                      className={`gap-2 justify-start rounded-full ${
+                        !isScrolled 
+                          ? "text-white bg-black/30 border border-white/20 hover:bg-black/40" 
+                          : ""
+                      }`}
                     >
                       <LogOut className="h-4 w-4" />
                       Logout
@@ -142,7 +159,11 @@ const HomeNavbar = () => {
                     <Button 
                       variant="ghost" 
                       asChild
-                      className={`${!isScrolled ? "text-white hover:bg-white/10" : ""}`}
+                      className={`rounded-full ${
+                        !isScrolled 
+                          ? "text-white bg-black/30 border border-white/20 hover:bg-black/40" 
+                          : ""
+                      }`}
                     >
                       <Link to="/" onClick={() => setIsOpen(false)}>Sign In</Link>
                     </Button>
