@@ -109,14 +109,7 @@ const Login = () => {
           transition={{ duration: 0.6 }}
           className="hidden lg:flex lg:w-[45%] text-white p-12 xl:p-16 flex-col justify-center relative"
         >
-          <div className="relative z-10 max-w-lg">
-            {/* Brand */}
-            <Link to="/" className="inline-block mb-10">
-              <span className="text-2xl font-bold">
-                Love<span className="text-primary">&</span>Ring
-              </span>
-            </Link>
-
+          <div className="relative z-10 max-w-lg mt-10">
             {/* Main Heading */}
             <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-6">
               Welcome Back
