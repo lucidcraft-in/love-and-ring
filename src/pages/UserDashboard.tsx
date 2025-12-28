@@ -56,10 +56,10 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f9fc] dark:bg-background lg:h-screen lg:overflow-hidden">
-      <div className="flex flex-col lg:flex-row lg:min-h-[120vh]">
+    <div className="min-h-screen bg-[#f7f9fc] dark:bg-background md:h-screen md:overflow-hidden">
+      <div className="flex flex-col md:flex-row md:h-full">
         {/* Left: Fixed Profile Sidebar - Desktop/Tablet only */}
-        <div className="hidden lg:block lg:w-[260px] lg:h-screen lg:sticky lg:top-0 lg:overflow-hidden lg:flex-shrink-0">
+        <div className="hidden md:block md:flex-shrink-0">
           <ProfileSidebar 
             isOpen={sidebarOpen} 
             onToggle={() => setSidebarOpen(!sidebarOpen)}
@@ -69,7 +69,7 @@ const UserDashboard = () => {
         </div>
 
         {/* Mobile Sidebar */}
-        <div className="lg:hidden">
+        <div className="md:hidden">
           <ProfileSidebar 
             isOpen={sidebarOpen} 
             onToggle={() => setSidebarOpen(!sidebarOpen)}
@@ -78,24 +78,24 @@ const UserDashboard = () => {
           />
         </div>
 
-        {/* Right: Scrollable Main Content */}
-        <main className="flex-1 lg:overflow-y-auto lg:h-screen">
-          <div className="min-h-[120vh] flex flex-col">
+        {/* Right: Scrollable Main Content - Desktop/Tablet */}
+        <main className="flex-1 md:overflow-y-auto md:h-screen">
+          <div className="min-h-[120vh] md:min-h-[120vh] flex flex-col">
             <div className="flex-1 p-6 lg:p-8">
               {/* Mobile header spacing for menu button */}
-              <div className="lg:hidden h-8" />
+              <div className="md:hidden h-8" />
               
               {renderContent()}
             </div>
 
             {/* Footer inside right content area - Desktop/Tablet only */}
-            <div className="hidden lg:block mt-auto pb-8">
+            <div className="hidden md:block mt-auto">
               <Footer />
             </div>
           </div>
 
           {/* Footer for mobile - normal position */}
-          <div className="lg:hidden">
+          <div className="md:hidden">
             <Footer />
           </div>
         </main>
