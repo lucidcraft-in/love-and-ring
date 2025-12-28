@@ -19,21 +19,22 @@ const UserDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
       {/* Two-column layout */}
       <div className="flex min-h-screen">
-        {/* Left: Fixed Profile Sidebar */}
+        {/* Left: Fixed Profile Sidebar - Hidden on mobile */}
         <ProfileSidebar 
           isOpen={sidebarOpen} 
           onToggle={() => setSidebarOpen(!sidebarOpen)}
           onNavigate={handleNavigate}
         />
 
-        {/* Right: Scrollable Main Content */}
-        <main className="flex-1 lg:ml-0 overflow-y-auto">
-          <div className="container mx-auto px-4 py-8 lg:pl-8">
-            {/* Mobile header spacing for menu button */}
-            <div className="lg:hidden h-12" />
+        {/* Sidebar spacer for desktop/tablet */}
+        <div className="hidden lg:block w-[280px] flex-shrink-0" />
 
+        {/* Right: Scrollable Main Content */}
+        <main className="flex-1 h-screen overflow-y-auto">
+          <div className="p-4 lg:p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <Card className="glass-card p-2 mb-6">
+              {/* Tab navigation - Mobile only */}
+              <Card className="glass-card p-2 mb-6 lg:hidden">
                 <TabsList className="w-full grid grid-cols-3 h-auto bg-transparent gap-2">
                   <TabsTrigger 
                     value="profile"
@@ -56,15 +57,15 @@ const UserDashboard = () => {
                 </TabsList>
               </Card>
 
-              <TabsContent value="profile">
+              <TabsContent value="profile" className="mt-0">
                 <ProfileDashboard />
               </TabsContent>
 
-              <TabsContent value="matches">
+              <TabsContent value="matches" className="mt-0">
                 <Matches />
               </TabsContent>
 
-              <TabsContent value="browse">
+              <TabsContent value="browse" className="mt-0">
                 <BrowseProfiles />
               </TabsContent>
             </Tabs>
