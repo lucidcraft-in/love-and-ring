@@ -188,7 +188,7 @@ const HowItWorks = () => {
                   <img
                     src={steps[activeStep].image}
                     alt={steps[activeStep].title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                   
                   {/* Subtle gradient overlay */}
