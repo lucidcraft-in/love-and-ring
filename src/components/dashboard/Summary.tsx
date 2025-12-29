@@ -38,7 +38,7 @@ const Summary = () => {
       <h2 className="text-2xl font-bold">Summary</h2>
       
       {/* First row: 3 cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {summaryCards.slice(0, 3).map((card) => {
           const Icon = card.icon;
           const isLocked = card.premium && !isPremium;
@@ -77,7 +77,7 @@ const Summary = () => {
       </div>
 
       {/* Second row: 2 cards centered */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 lg:w-2/3 lg:mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:w-2/3 lg:mx-auto">
         {summaryCards.slice(3).map((card) => {
           const Icon = card.icon;
           const isLocked = card.premium && !isPremium;
