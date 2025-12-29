@@ -86,9 +86,9 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
           <div className="pt-3">
             <div className="flex items-center gap-3 p-2 rounded-xl bg-muted/50 hover:bg-muted transition">
               <Avatar className="h-10 w-10">
-                <AvatarImage src="" />
+                <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white text-sm font-semibold">
-                  JD
+                  {user.initials}
                 </AvatarFallback>
               </Avatar>
 
