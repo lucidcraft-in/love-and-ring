@@ -26,6 +26,7 @@ import StepThree from "@/components/registration/StepThree";
 import StepFour from "@/components/registration/StepFour";
 import StepFive from "@/components/registration/StepFive";
 import HomeStoryCarousel from "@/components/HomeStoryCarousel";
+import HowItWorks from "@/components/HowItWorks";
 
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
@@ -615,6 +616,9 @@ const Home = () => {
           </>
         )}
       </section>
+
+      {/* How It Works Section */}
+      <HowItWorks />
 
       {/* Features Section */}
       <section className="py-12 sm:py-16 md:py-20 bg-muted/30">
