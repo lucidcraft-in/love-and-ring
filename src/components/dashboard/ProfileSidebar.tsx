@@ -144,7 +144,11 @@ const ProfileSidebar = ({
         <div className="flex-shrink-0 p-5 border-b border-border">
           <div className="relative mx-auto mb-3 w-fit">
             <Avatar className="h-20 w-20 border-4 border-primary/20">
-              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarImage
+                src={user.avatar}
+                alt={user.name}
+                className="object-cover object-center"
+              />
               <AvatarFallback className="text-xl font-semibold bg-gradient-to-br from-primary to-secondary text-primary-foreground">
                 {user.initials}
               </AvatarFallback>
@@ -194,7 +198,11 @@ const ProfileSidebar = ({
         <div className="flex-shrink-0 p-3 border-t border-border">
           <div className="flex items-center gap-3 p-2 rounded-xl bg-muted/50">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarImage
+                src={user.avatar}
+                alt={user.name}
+                className="object-cover object-center"
+              />
               <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white text-sm font-semibold">
                 {user.initials}
               </AvatarFallback>
