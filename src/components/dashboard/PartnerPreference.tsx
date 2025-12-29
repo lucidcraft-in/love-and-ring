@@ -35,115 +35,118 @@ const PartnerPreference = () => {
         </Button>
       </div>
 
-      {/* Age Range */}
-      <Card className="glass-card p-6">
-        <Label className="text-lg font-semibold mb-4 block">Age Range</Label>
-        <div className="space-y-4">
-          <Slider 
-            value={ageRange}
-            onValueChange={setAgeRange}
-            min={18}
-            max={60}
-            step={1}
-            className="w-full"
-          />
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>{ageRange[0]} years</span>
-            <span>{ageRange[1]} years</span>
+      {/* Preference Cards Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Age Range */}
+        <Card className="glass-card p-6">
+          <Label className="text-lg font-semibold mb-4 block">Age Range</Label>
+          <div className="space-y-4">
+            <Slider 
+              value={ageRange}
+              onValueChange={setAgeRange}
+              min={18}
+              max={60}
+              step={1}
+              className="w-full"
+            />
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>{ageRange[0]} years</span>
+              <span>{ageRange[1]} years</span>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
 
-      {/* Height Range */}
-      <Card className="glass-card p-6">
-        <Label className="text-lg font-semibold mb-4 block">Height Range (cm)</Label>
-        <div className="space-y-4">
-          <Slider 
-            value={heightRange}
-            onValueChange={setHeightRange}
-            min={140}
-            max={200}
-            step={1}
-            className="w-full"
-          />
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>{heightRange[0]} cm</span>
-            <span>{heightRange[1]} cm</span>
+        {/* Height Range */}
+        <Card className="glass-card p-6">
+          <Label className="text-lg font-semibold mb-4 block">Height Range (cm)</Label>
+          <div className="space-y-4">
+            <Slider 
+              value={heightRange}
+              onValueChange={setHeightRange}
+              min={140}
+              max={200}
+              step={1}
+              className="w-full"
+            />
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>{heightRange[0]} cm</span>
+              <span>{heightRange[1]} cm</span>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
 
-      {/* Religion */}
-      <Card className="glass-card p-6">
-        <Label className="text-lg font-semibold mb-4 block">Religion</Label>
-        <div className="flex flex-wrap gap-2">
-          {religions.map(religion => (
-            <Badge
-              key={religion}
-              variant={selectedReligions.includes(religion) ? "default" : "outline"}
-              className={`cursor-pointer text-sm py-2 px-4 ${
-                selectedReligions.includes(religion) 
-                  ? 'bg-gradient-to-r from-primary to-secondary' 
-                  : ''
-              }`}
-              onClick={() => toggleSelection(religion, selectedReligions, setSelectedReligions)}
-            >
-              {religion}
-              {selectedReligions.includes(religion) && (
-                <X className="w-3 h-3 ml-1" />
-              )}
-            </Badge>
-          ))}
-        </div>
-      </Card>
+        {/* Religion */}
+        <Card className="glass-card p-6">
+          <Label className="text-lg font-semibold mb-4 block">Religion</Label>
+          <div className="flex flex-wrap gap-2">
+            {religions.map(religion => (
+              <Badge
+                key={religion}
+                variant={selectedReligions.includes(religion) ? "default" : "outline"}
+                className={`cursor-pointer text-sm py-2 px-4 ${
+                  selectedReligions.includes(religion) 
+                    ? 'bg-gradient-to-r from-primary to-secondary' 
+                    : ''
+                }`}
+                onClick={() => toggleSelection(religion, selectedReligions, setSelectedReligions)}
+              >
+                {religion}
+                {selectedReligions.includes(religion) && (
+                  <X className="w-3 h-3 ml-1" />
+                )}
+              </Badge>
+            ))}
+          </div>
+        </Card>
 
-      {/* Education */}
-      <Card className="glass-card p-6">
-        <Label className="text-lg font-semibold mb-4 block">Education Level</Label>
-        <div className="flex flex-wrap gap-2">
-          {educationLevels.map(edu => (
-            <Badge
-              key={edu}
-              variant={selectedEducation.includes(edu) ? "default" : "outline"}
-              className={`cursor-pointer text-sm py-2 px-4 ${
-                selectedEducation.includes(edu) 
-                  ? 'bg-gradient-to-r from-primary to-secondary' 
-                  : ''
-              }`}
-              onClick={() => toggleSelection(edu, selectedEducation, setSelectedEducation)}
-            >
-              {edu}
-              {selectedEducation.includes(edu) && (
-                <X className="w-3 h-3 ml-1" />
-              )}
-            </Badge>
-          ))}
-        </div>
-      </Card>
+        {/* Education */}
+        <Card className="glass-card p-6">
+          <Label className="text-lg font-semibold mb-4 block">Education Level</Label>
+          <div className="flex flex-wrap gap-2">
+            {educationLevels.map(edu => (
+              <Badge
+                key={edu}
+                variant={selectedEducation.includes(edu) ? "default" : "outline"}
+                className={`cursor-pointer text-sm py-2 px-4 ${
+                  selectedEducation.includes(edu) 
+                    ? 'bg-gradient-to-r from-primary to-secondary' 
+                    : ''
+                }`}
+                onClick={() => toggleSelection(edu, selectedEducation, setSelectedEducation)}
+              >
+                {edu}
+                {selectedEducation.includes(edu) && (
+                  <X className="w-3 h-3 ml-1" />
+                )}
+              </Badge>
+            ))}
+          </div>
+        </Card>
 
-      {/* Interests */}
-      <Card className="glass-card p-6">
-        <Label className="text-lg font-semibold mb-4 block">Interests</Label>
-        <div className="flex flex-wrap gap-2">
-          {interests.map(interest => (
-            <Badge
-              key={interest}
-              variant={selectedInterests.includes(interest) ? "default" : "outline"}
-              className={`cursor-pointer text-sm py-2 px-4 ${
-                selectedInterests.includes(interest) 
-                  ? 'bg-gradient-to-r from-primary to-secondary' 
-                  : ''
-              }`}
-              onClick={() => toggleSelection(interest, selectedInterests, setSelectedInterests)}
-            >
-              {interest}
-              {selectedInterests.includes(interest) && (
-                <X className="w-3 h-3 ml-1" />
-              )}
-            </Badge>
-          ))}
-        </div>
-      </Card>
+        {/* Interests */}
+        <Card className="glass-card p-6 lg:col-span-2">
+          <Label className="text-lg font-semibold mb-4 block">Interests</Label>
+          <div className="flex flex-wrap gap-2">
+            {interests.map(interest => (
+              <Badge
+                key={interest}
+                variant={selectedInterests.includes(interest) ? "default" : "outline"}
+                className={`cursor-pointer text-sm py-2 px-4 ${
+                  selectedInterests.includes(interest) 
+                    ? 'bg-gradient-to-r from-primary to-secondary' 
+                    : ''
+                }`}
+                onClick={() => toggleSelection(interest, selectedInterests, setSelectedInterests)}
+              >
+                {interest}
+                {selectedInterests.includes(interest) && (
+                  <X className="w-3 h-3 ml-1" />
+                )}
+              </Badge>
+            ))}
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };
