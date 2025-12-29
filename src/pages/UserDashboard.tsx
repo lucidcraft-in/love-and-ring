@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Menu, X } from "lucide-react";
 import ProfileSidebar from "@/components/dashboard/ProfileSidebar";
 import Summary from "@/components/dashboard/Summary";
 import EditProfile from "@/components/dashboard/EditProfile";
@@ -70,8 +71,16 @@ const UserDashboard = () => {
         <main className="flex-1 lg:overflow-y-auto lg:h-screen">
           <div className="min-h-[120vh] flex flex-col">
             <div className="flex-1 p-6 lg:p-8">
-              {/* Mobile header spacing for menu button */}
-              <div className="lg:hidden h-8" />
+              {/* Mobile/Tablet Menu Toggle - Under navbar */}
+              <div className="lg:hidden mb-4">
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-card border border-border shadow-sm hover:bg-muted transition-colors"
+                >
+                  {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                  <span className="text-sm font-medium">Menu</span>
+                </button>
+              </div>
               
               {renderContent()}
             </div>
