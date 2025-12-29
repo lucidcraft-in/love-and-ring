@@ -30,14 +30,6 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
 
   return (
     <>
-      {/* Mobile Menu Toggle */}
-      <button
-        onClick={onToggle}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-background/80 backdrop-blur-sm border border-border shadow-md"
-      >
-        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </button>
-
       {/* Mobile Overlay */}
       {isOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-30" onClick={onToggle} />}
 
