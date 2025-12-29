@@ -3,10 +3,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MapPin, GraduationCap, Briefcase, Filter, Check, Sparkles, Lock } from "lucide-react";
+import {
+  Heart,
+  MapPin,
+  GraduationCap,
+  Briefcase,
+  Filter,
+  Check,
+  Sparkles,
+  Lock,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import Anjali from "@/assets/anjali.jpg";
+import Sneha from "@/assets/sneha.jpg";
+import Aparna from "@/assets/aparna.jpg";
+import Athira from "@/assets/athira.jpg";
+import Neethu from "@/assets/neethu.jpg";
+import Meera from "@/assets/meera.jpg";
+import Lakshmi from "@/assets/Lakshmi.jpg";
+import Swathi from "@/assets/swathi.jpg";
+import Divya from "@/assets/divya.jpg";
+import Revathy from "@/assets/anjali.jpg";
 
 const Matches = () => {
   const [activeTab, setActiveTab] = useState("new");
@@ -20,40 +39,124 @@ const Matches = () => {
   // Mock matches data
   const matches = [
     {
-      id: 1,
-      name: "Sarah Johnson",
+      id: 9,
+      name: "Divya Ramesh",
       age: 28,
-      city: "New York",
-      education: "MBA",
-      profession: "Marketing Manager",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
-      matchScore: 95,
-      interests: ["Travel", "Reading", "Yoga"],
-      liked: false
+      city: "Ernakulam, Kerala",
+      education: "B.Arch",
+      profession: "Interior Designer",
+      image: Divya,
+      matchScore: 96,
+      interests: ["Design", "Sketching", "Home Decor"],
+      liked: true,
+    },
+    {
+      id: 8,
+      name: "Swathi Mohan",
+      age: 26,
+      city: "Kannur, Kerala",
+      education: "BSc Nursing",
+      profession: "Staff Nurse",
+      image: Swathi,
+      matchScore: 92,
+      interests: ["Healthcare", "Fitness", "Cooking"],
+      liked: true,
+    },
+    {
+      id: 7,
+      name: "Lakshmi Rajeev",
+      age: 30,
+      city: "Palakkad, Kerala",
+      education: "LLB",
+      profession: "Legal Associate",
+      image: Lakshmi,
+      matchScore: 85,
+      interests: ["Law", "Debates", "Classical Music"],
+      liked: true,
+    },
+    {
+      id: 6,
+      name: "Meera Suresh",
+      age: 27,
+      city: "Calicut, Kerala",
+      education: "MA English",
+      profession: "Content Strategist",
+      image: Meera,
+      matchScore: 88,
+      interests: ["Writing", "Blogging", "Poetry"],
+      liked: true,
+    },
+    {
+      id: 1,
+      name: "Anjali Menon",
+      age: 27,
+      city: "Kochi, Kerala",
+      education: "MBA – HR",
+      profession: "HR Executive",
+      image: Anjali,
+      matchScore: 94,
+      interests: ["Reading", "Yoga", "Travel"],
+      liked: false,
     },
     {
       id: 2,
-      name: "Emily Davis",
+      name: "Sneha Nair",
       age: 26,
-      city: "Los Angeles",
-      education: "B.Tech",
+      city: "Thiruvananthapuram, Kerala",
+      education: "B.Tech (CSE)",
       profession: "Software Engineer",
-      image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400",
-      matchScore: 88,
-      interests: ["Music", "Hiking", "Photography"],
-      liked: true
+      image: Sneha,
+      matchScore: 89,
+      interests: ["Coding", "Music", "Photography"],
+      liked: false,
     },
     {
       id: 3,
-      name: "Jessica Wilson",
+      name: "Aparna Krishnan",
       age: 29,
-      city: "Chicago",
-      education: "MD",
-      profession: "Doctor",
-      image: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=400",
-      matchScore: 92,
-      interests: ["Fitness", "Cooking", "Art"],
-      liked: false
+      city: "Thrissur, Kerala",
+      education: "MSc Psychology",
+      profession: "Counseling Psychologist",
+      image: Aparna,
+      matchScore: 91,
+      interests: ["Mental Wellness", "Journaling", "Art"],
+      liked: false,
+    },
+    {
+      id: 4,
+      name: "Athira Varma",
+      age: 25,
+      city: "Kottayam, Kerala",
+      education: "B.Com",
+      profession: "Accounts Executive",
+      image: Athira,
+      matchScore: 87,
+      interests: ["Finance", "Cooking", "Travel"],
+      liked: false,
+    },
+    {
+      id: 5,
+      name: "Neethu Pillai",
+      age: 28,
+      city: "Alappuzha, Kerala",
+      education: "MBA – Finance",
+      profession: "Banking Officer",
+      image: Neethu,
+      matchScore: 90,
+      interests: ["Investing", "Yoga", "Reading"],
+      liked: false,
+    },
+    {
+      id: 10,
+      name: "Revathi Unnikrishnan",
+      age: 29,
+      city: "Pathanamthitta, Kerala",
+      education: "MSc Mathematics",
+      profession: "Higher Secondary Teacher",
+      image: Revathy,
+      matchScore: 93,
+      interests: ["Teaching", "Puzzles", "Gardening"],
+      liked: false,
     },
   ];
 
@@ -66,10 +169,11 @@ const Matches = () => {
       city: "London, UK",
       education: "MS Computer Science",
       profession: "Data Scientist",
-      image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400",
+      image:
+        "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400",
       matchScore: 94,
       interests: ["Technology", "Travel", "Music"],
-      liked: false
+      liked: false,
     },
     {
       id: 102,
@@ -81,7 +185,7 @@ const Matches = () => {
       image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
       matchScore: 89,
       interests: ["Finance", "Yoga", "Reading"],
-      liked: false
+      liked: false,
     },
     {
       id: 103,
@@ -90,10 +194,11 @@ const Matches = () => {
       city: "Sydney, Australia",
       education: "MBBS, MD",
       profession: "Cardiologist",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+      image:
+        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
       matchScore: 91,
       interests: ["Healthcare", "Swimming", "Cooking"],
-      liked: false
+      liked: false,
     },
     {
       id: 104,
@@ -102,23 +207,24 @@ const Matches = () => {
       city: "Dubai, UAE",
       education: "B.Arch",
       profession: "Senior Architect",
-      image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400",
+      image:
+        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400",
       matchScore: 87,
       interests: ["Architecture", "Art", "Travel"],
-      liked: false
+      liked: false,
     },
   ];
 
-  const likedProfiles = matches.filter(m => m.liked);
+  const likedProfiles = matches.filter((m) => m.liked);
 
   const handleSendInterest = (matchId: number, matchName: string) => {
     if (sentInterests.includes(matchId)) return;
-    
+
     setSendingInterest(matchId);
-    
+
     // Simulate sending interest
     setTimeout(() => {
-      setSentInterests(prev => [...prev, matchId]);
+      setSentInterests((prev) => [...prev, matchId]);
       setSendingInterest(null);
       toast.success(
         <div className="flex items-center gap-2">
@@ -133,7 +239,13 @@ const Matches = () => {
     }, 1000);
   };
 
-  const MatchCard = ({ match, isNRI = false }: { match: typeof matches[0]; isNRI?: boolean }) => {
+  const MatchCard = ({
+    match,
+    isNRI = false,
+  }: {
+    match: (typeof matches)[0];
+    isNRI?: boolean;
+  }) => {
     const isInterestSent = sentInterests.includes(match.id);
     const isSending = sendingInterest === match.id;
     const isLocked = isNRI && !hasNRIPlan;
@@ -141,31 +253,43 @@ const Matches = () => {
     return (
       <Card className="glass-card overflow-hidden hover:shadow-lg transition-all">
         <div className="flex flex-col sm:flex-row">
-          <div className="sm:w-48 h-48 sm:h-auto relative">
-            <img 
-              src={match.image} 
+          <div className="sm:w-48 w-full relative overflow-hidden bg-muted rounded-t-xl sm:rounded-l-xl sm:rounded-t-none">
+            <img
+              src={match.image}
               alt={match.name}
-              className={`w-full h-full object-cover ${isLocked ? 'blur-lg' : ''}`}
+              loading="lazy"
+              className={`w-full h-full object-cover object-center ${
+                isLocked ? "blur-lg" : ""
+              }`}
+              onError={(e) => {
+                e.currentTarget.src =
+                  "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400";
+              }}
             />
-            <div className="absolute top-2 right-2">
+
+            {/* Match Badge */}
+            <div className="absolute top-2 right-2 z-10">
               <Badge className="bg-gradient-to-r from-primary to-secondary">
                 {match.matchScore}% Match
               </Badge>
             </div>
-            {/* Lock Overlay for NRI Profiles */}
+
+            {/* Lock overlay */}
             {isLocked && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
                 <div className="bg-white/90 rounded-full p-4 shadow-lg">
                   <Lock className="w-8 h-8 text-primary" />
                 </div>
               </div>
             )}
           </div>
-          
+
           <div className="flex-1 p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-xl font-bold mb-1">{match.name}, {match.age}</h3>
+                <h3 className="text-xl font-bold mb-1">
+                  {match.name}, {match.age}
+                </h3>
                 <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
@@ -185,9 +309,15 @@ const Matches = () => {
                 <Button
                   size="icon"
                   variant={match.liked ? "default" : "outline"}
-                  className={match.liked ? "bg-gradient-to-r from-primary to-secondary" : ""}
+                  className={
+                    match.liked
+                      ? "bg-gradient-to-r from-primary to-secondary"
+                      : ""
+                  }
                 >
-                  <Heart className={`w-4 h-4 ${match.liked ? 'fill-white' : ''}`} />
+                  <Heart
+                    className={`w-4 h-4 ${match.liked ? "fill-white" : ""}`}
+                  />
                 </Button>
               )}
             </div>
@@ -195,7 +325,7 @@ const Matches = () => {
             <div className="mb-4">
               <p className="text-sm font-semibold mb-2">Interests:</p>
               <div className="flex flex-wrap gap-2">
-                {match.interests.map(interest => (
+                {match.interests.map((interest) => (
                   <Badge key={interest} variant="secondary">
                     {interest}
                   </Badge>
@@ -205,16 +335,16 @@ const Matches = () => {
 
             {/* Action Buttons */}
             {isLocked ? (
-              <Button 
+              <Button
                 className="w-full bg-gradient-to-r from-primary to-secondary"
-                onClick={() => navigate('/pricing')}
+                onClick={() => navigate("/pricing")}
               >
                 <Lock className="w-4 h-4 mr-2" />
                 Upgrade to View Profile
               </Button>
             ) : (
               <div className="flex gap-2">
-                <Button 
+                <Button
                   className="flex-1 bg-gradient-to-r from-primary to-secondary"
                   onClick={() => navigate(`/profile/${match.id}`)}
                 >
@@ -228,8 +358,8 @@ const Matches = () => {
                       animate={{ scale: 1, opacity: 1 }}
                       className="flex-1"
                     >
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="w-full border-green-500 text-green-500 hover:bg-green-500/10"
                         disabled
                       >
@@ -238,12 +368,9 @@ const Matches = () => {
                       </Button>
                     </motion.div>
                   ) : (
-                    <motion.div
-                      key="send"
-                      className="flex-1"
-                    >
-                      <Button 
-                        variant="outline" 
+                    <motion.div key="send" className="flex-1">
+                      <Button
+                        variant="outline"
                         className="w-full relative overflow-hidden"
                         onClick={() => handleSendInterest(match.id, match.name)}
                         disabled={isSending}
@@ -261,7 +388,11 @@ const Matches = () => {
                             <>
                               <motion.div
                                 animate={{ rotate: 360 }}
-                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                transition={{
+                                  duration: 1,
+                                  repeat: Infinity,
+                                  ease: "linear",
+                                }}
                                 className="mr-2"
                               >
                                 <Sparkles className="w-4 h-4" />
@@ -310,7 +441,7 @@ const Matches = () => {
 
         <TabsContent value="new" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {matches.slice(0, 2).map(match => (
+            {matches.slice(0, 2).map((match) => (
               <MatchCard key={match.id} match={match} />
             ))}
           </div>
@@ -318,7 +449,7 @@ const Matches = () => {
 
         <TabsContent value="all" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {matches.map(match => (
+            {matches.map((match) => (
               <MatchCard key={match.id} match={match} />
             ))}
           </div>
@@ -327,14 +458,16 @@ const Matches = () => {
         <TabsContent value="liked" className="mt-6">
           {likedProfiles.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {likedProfiles.map(match => (
+              {likedProfiles.map((match) => (
                 <MatchCard key={match.id} match={match} />
               ))}
             </div>
           ) : (
             <Card className="glass-card p-12 text-center">
               <Heart className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold mb-2">No Liked Profiles Yet</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                No Liked Profiles Yet
+              </h3>
               <p className="text-muted-foreground">
                 Start liking profiles to see them here
               </p>
@@ -344,7 +477,7 @@ const Matches = () => {
 
         <TabsContent value="nri" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {nriProfiles.map(match => (
+            {nriProfiles.map((match) => (
               <MatchCard key={match.id} match={match} isNRI={true} />
             ))}
           </div>
