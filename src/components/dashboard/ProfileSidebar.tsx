@@ -93,16 +93,16 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
         </nav>
       </aside>
 
-      {/* Mobile Sidebar - Preserved old UI */}
+      {/* Mobile Sidebar - Starts below navbar */}
       <aside
         className={cn(
-          "lg:hidden fixed left-0 top-0 h-screen w-[280px] bg-card border-r border-border z-40",
+          "lg:hidden fixed left-0 top-16 h-[calc(100vh-4rem)] w-[280px] bg-card border-r border-border z-40",
           "flex flex-col overflow-hidden transition-transform duration-300 ease-in-out",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {/* Mobile Profile Section */}
-        <div className="p-5 border-b border-border">
+        <div className="flex-shrink-0 p-5 border-b border-border">
           <div className="relative mx-auto mb-3 w-fit">
             <Avatar className="h-20 w-20 border-4 border-primary/20">
               <AvatarImage src={user.avatar} alt={user.name} />
@@ -117,8 +117,8 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        <nav className="flex-1 p-3 overflow-y-auto">
+        {/* Mobile Navigation - Scrollable */}
+        <nav className="flex-1 p-3 overflow-y-auto scrollbar-hide">
           <ul className="space-y-1">
             {navigationItems.map((item) => {
               const Icon = item.icon;
@@ -146,6 +146,22 @@ const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSide
             })}
           </ul>
         </nav>
+
+        {/* Mobile Bottom User Card */}
+        <div className="flex-shrink-0 p-3 border-t border-border">
+          <div className="flex items-center gap-3 p-2 rounded-xl bg-muted/50">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white text-sm font-semibold">
+                {user.initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="leading-tight">
+              <p className="text-sm font-semibold text-foreground">{user.name}</p>
+              <p className="text-xs text-muted-foreground">{user.email}</p>
+            </div>
+          </div>
+        </div>
       </aside>
     </>
   );
