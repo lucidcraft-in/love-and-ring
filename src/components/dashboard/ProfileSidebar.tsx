@@ -19,12 +19,12 @@ const navigationItems = [
 ];
 
 const ProfileSidebar = ({ isOpen, onToggle, activeTab, onNavigate }: ProfileSidebarProps) => {
-  // Mock user data
+  // Mock user data - using a real profile image with fallback to initials
   const user = {
     name: "John Doe",
     profileId: "SM123456",
     email: "johndoe@example.com",
-    avatar: "",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face",
     initials: "JD",
   };
 
