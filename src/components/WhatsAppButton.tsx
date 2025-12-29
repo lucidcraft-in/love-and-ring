@@ -35,7 +35,7 @@ const WhatsAppButton = () => {
         
         {/* Main button */}
         <div
-          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20BD5A] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+          className="relative flex items-center justify-center w-12 h-12 rounded-full bg-[#25D366] hover:bg-[#20BD5A] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
         >
           {/* WhatsApp Icon */}
           <svg
