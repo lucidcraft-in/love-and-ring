@@ -143,7 +143,7 @@ const Register = () => {
 
   const handleSubmit = () => {
     toast.success("Registration successful!");
-    navigate('/dashboard');
+    navigate('/');
   };
 
   const renderStep = () => {
