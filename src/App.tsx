@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import WhatsAppButton from "./components/WhatsAppButton";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import FAQ from "./pages/FAQ";
@@ -28,6 +29,10 @@ const AppLayout = () => {
   // Hero routes have transparent navbar overlay - no padding needed
   const heroRoutes = ["/", "/login", "/register"];
   const isHeroRoute = heroRoutes.includes(location.pathname);
+
+  // Public pages where WhatsApp button should show
+  const publicRoutes = ["/", "/about", "/pricing", "/faq", "/contact", "/success-stories"];
+  const isPublicRoute = publicRoutes.includes(location.pathname);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -52,6 +57,8 @@ const AppLayout = () => {
         </Routes>
       </main>
       <Footer />
+      {/* WhatsApp floating button - only on public pages */}
+      {isPublicRoute && <WhatsAppButton />}
     </div>
   );
 };
