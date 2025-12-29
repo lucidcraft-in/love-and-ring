@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserPlus, Search, MessageCircleHeart } from "lucide-react";
 
-// Import step images - using existing hero slides as placeholders
-import heroSlide1 from "@/assets/hero-slide-1.jpg";
-import heroSlide2 from "@/assets/hero-slide-2.jpg";
-import heroSlide3 from "@/assets/hero-slide-3.jpg";
+// Import step images
+import stepImage1 from "@/assets/how-it-works-step1.png";
+import stepImage2 from "@/assets/how-it-works-step2.png";
+import stepImage3 from "@/assets/how-it-works-step3.png";
 
 const steps = [
   {
@@ -13,21 +13,21 @@ const steps = [
     title: "Create Your Profile",
     description: "Sign up and build your detailed profile with photos, preferences, and personal details to showcase who you are.",
     icon: UserPlus,
-    image: heroSlide1,
+    image: stepImage1,
   },
   {
     number: "02",
     title: "Find Your Match",
     description: "Browse verified profiles and use our smart matching algorithm to discover compatible partners tailored to your preferences.",
     icon: Search,
-    image: heroSlide2,
+    image: stepImage2,
   },
   {
     number: "03",
     title: "Connect Securely",
     description: "Express interest, chat securely, and take the first step towards building a meaningful relationship with complete privacy.",
     icon: MessageCircleHeart,
-    image: heroSlide3,
+    image: stepImage3,
   },
 ];
 
