@@ -298,12 +298,15 @@ const Matches = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="new">New Matches</TabsTrigger>
-          <TabsTrigger value="all">My Matches</TabsTrigger>
-          <TabsTrigger value="liked">Liked Profiles</TabsTrigger>
-          <TabsTrigger value="nri">NRI Profiles</TabsTrigger>
-        </TabsList>
+        {/* Horizontal scroll container for mobile/tablet */}
+        <div className="overflow-x-auto scrollbar-hide lg:overflow-visible px-1 -mx-1">
+          <TabsList className="w-max lg:w-auto flex-nowrap">
+            <TabsTrigger value="new">New Matches</TabsTrigger>
+            <TabsTrigger value="all">My Matches</TabsTrigger>
+            <TabsTrigger value="liked">Liked Profiles</TabsTrigger>
+            <TabsTrigger value="nri">NRI Profiles</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="new" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
