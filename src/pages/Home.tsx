@@ -54,14 +54,16 @@ const Home = () => {
   }, []);
 
   // Auto-rotate hero background slides with pause on hover
+  // 4 seconds for authenticated users, 7 seconds for public view
   useEffect(() => {
     if (isHeroHovered) return;
     
+    const intervalDuration = isAuthenticated ? 4000 : 7000;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 7000);
+    }, intervalDuration);
     return () => clearInterval(interval);
-  }, [isHeroHovered]);
+  }, [isHeroHovered, isAuthenticated]);
 
   const progress = (currentStep / totalSteps) * 100;
 
