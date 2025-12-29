@@ -43,15 +43,7 @@ const Home = () => {
   const [signInData, setSignInData] = useState({ email: "", password: "" });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
-  const [isWelcomeBannerDismissed, setIsWelcomeBannerDismissed] = useState(() => {
-    return localStorage.getItem("welcomeBannerDismissed") === "true";
-  });
   const totalSteps = 5;
-
-  const dismissWelcomeBanner = () => {
-    setIsWelcomeBannerDismissed(true);
-    localStorage.setItem("welcomeBannerDismissed", "true");
-  };
 
   // Preload hero images for smooth transitions
   useEffect(() => {
@@ -573,26 +565,17 @@ const Home = () => {
                   </p>
                 </div>
               </motion.div>
-            ) : isAuthenticated && !isWelcomeBannerDismissed ? (
+            ) : (
               <motion.div
                 key="authenticated"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -30 }}
                 transition={{ duration: 0.8 }}
-                className="relative max-w-2xl mx-auto text-center space-y-4 sm:space-y-5 px-4 py-8 sm:py-10"
+                className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 px-4"
               >
-                {/* Dismiss Button */}
-                <button
-                  onClick={dismissWelcomeBanner}
-                  aria-label="Dismiss welcome banner"
-                  className="absolute top-2 right-2 sm:top-4 sm:right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-colors"
-                >
-                  <X className="h-4 w-4 sm:h-5 sm:w-5 text-white/80 hover:text-white" />
-                </button>
-
                 <h1 
-                  className="text-2xl sm:text-4xl md:text-5xl font-bold"
+                  className="text-3xl sm:text-5xl md:text-7xl font-bold"
                   style={{ 
                     color: '#FFFFFF',
                     textShadow: '0 2px 12px rgba(0,0,0,0.35)'
@@ -601,34 +584,13 @@ const Home = () => {
                   Welcome <span className="gradient-text-light">Back!</span>
                 </h1>
                 <p 
-                  className="text-sm sm:text-lg md:text-xl"
+                  className="text-base sm:text-xl md:text-2xl"
                   style={{ 
                     color: 'rgba(255,255,255,0.85)',
                     textShadow: '0 2px 12px rgba(0,0,0,0.35)'
                   }}
                 >
                   Continue your journey to find your perfect life partner
-                </p>
-                <Button
-                  size="default"
-                  onClick={() => navigate('/dashboard')}
-                  className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-sm sm:text-base px-5 sm:px-6"
-                >
-                  Go to Dashboard
-                </Button>
-              </motion.div>
-            ) : isAuthenticated && isWelcomeBannerDismissed ? (
-              <motion.div
-                key="authenticated-dismissed"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 px-4"
-              >
-                <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white hero-text-shadow">
-                  Find Your <span className="gradient-text-light drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">Perfect Match</span>
-                </h1>
-                <p className="text-base sm:text-xl md:text-2xl hero-subtext">
-                  Join thousands of happy couples who found their life partner through our trusted matrimony platform
                 </p>
                 <Button
                   size="lg"
@@ -638,7 +600,7 @@ const Home = () => {
                   Go to Dashboard
                 </Button>
               </motion.div>
-            ) : null}
+            )}
           </AnimatePresence>
         </div>
 
