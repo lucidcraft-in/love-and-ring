@@ -53,7 +53,7 @@ const Login = () => {
     setTimeout(() => {
       login({ email, name: email.split('@')[0] });
       toast.success("Login successful!");
-      navigate('/dashboard');
+      navigate('/');
       setIsLoading(false);
     }, 1000);
   };
