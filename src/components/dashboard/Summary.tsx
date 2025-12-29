@@ -37,9 +37,48 @@ const Summary = () => {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Summary</h2>
       
-      {/* 5 cards in a single row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {summaryCards.map((card) => {
+      {/* First row: 3 cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {summaryCards.slice(0, 3).map((card) => {
+          const Icon = card.icon;
+          const isLocked = card.premium && !isPremium;
+          
+          return (
+            <Card 
+              key={card.title}
+              className={`glass-card p-4 relative overflow-hidden cursor-pointer hover:shadow-lg transition-all`}
+              onClick={() => handleCardClick(card.title)}
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-10`} />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <Icon className="w-6 h-6 text-primary" />
+                  {isLocked && <Lock className="w-4 h-4 text-muted-foreground" />}
+                </div>
+                <h3 className="text-2xl font-bold mb-1">{isLocked ? '••' : card.count}</h3>
+                <p className="text-xs text-muted-foreground line-clamp-1">{card.title}</p>
+                {isLocked && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-3 w-full text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePremiumFeature();
+                    }}
+                  >
+                    Upgrade
+                  </Button>
+                )}
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Second row: 2 cards centered */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 lg:w-2/3 lg:mx-auto">
+        {summaryCards.slice(3).map((card) => {
           const Icon = card.icon;
           const isLocked = card.premium && !isPremium;
           
