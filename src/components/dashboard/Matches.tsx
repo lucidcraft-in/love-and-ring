@@ -140,16 +140,14 @@ const Matches = () => {
 
     return (
       <Card className="glass-card overflow-hidden hover:shadow-lg transition-all">
-        <div className="flex flex-col">
-          {/* Profile Image */}
-          <div className="w-full h-56 relative">
+        <div className="flex flex-col sm:flex-row">
+          <div className="sm:w-48 h-48 sm:h-auto relative">
             <img 
               src={match.image} 
               alt={match.name}
               className={`w-full h-full object-cover ${isLocked ? 'blur-lg' : ''}`}
             />
-            {/* Match Score Badge */}
-            <div className="absolute top-3 right-3">
+            <div className="absolute top-2 right-2">
               <Badge className="bg-gradient-to-r from-primary to-secondary">
                 {match.matchScore}% Match
               </Badge>
@@ -164,11 +162,10 @@ const Matches = () => {
             )}
           </div>
           
-          {/* Profile Details */}
-          <div className="p-5">
-            <div className="flex items-start justify-between mb-3">
+          <div className="flex-1 p-6">
+            <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-lg font-bold mb-1">{match.name}, {match.age}</h3>
+                <h3 className="text-xl font-bold mb-1">{match.name}, {match.age}</h3>
                 <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
@@ -199,7 +196,7 @@ const Matches = () => {
               <p className="text-sm font-semibold mb-2">Interests:</p>
               <div className="flex flex-wrap gap-2">
                 {match.interests.map(interest => (
-                  <Badge key={interest} variant="secondary" className="text-xs">
+                  <Badge key={interest} variant="secondary">
                     {interest}
                   </Badge>
                 ))}
@@ -216,9 +213,9 @@ const Matches = () => {
                 Upgrade to View Profile
               </Button>
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
                 <Button 
-                  className="w-full bg-gradient-to-r from-primary to-secondary"
+                  className="flex-1 bg-gradient-to-r from-primary to-secondary"
                   onClick={() => navigate(`/profile/${match.id}`)}
                 >
                   View Profile
@@ -229,7 +226,7 @@ const Matches = () => {
                       key="sent"
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      className="w-full"
+                      className="flex-1"
                     >
                       <Button 
                         variant="outline" 
@@ -243,7 +240,7 @@ const Matches = () => {
                   ) : (
                     <motion.div
                       key="send"
-                      className="w-full"
+                      className="flex-1"
                     >
                       <Button 
                         variant="outline" 
@@ -301,7 +298,7 @@ const Matches = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:flex sm:grid-cols-none gap-1">
+        <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="new">New Matches</TabsTrigger>
           <TabsTrigger value="all">My Matches</TabsTrigger>
           <TabsTrigger value="liked">Liked Profiles</TabsTrigger>
