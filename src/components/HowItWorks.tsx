@@ -168,12 +168,12 @@ const HowItWorks = () => {
           {/* Right Side - Images */}
           <div className="lg:col-span-7">
             <div 
-              className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl"
+              className="relative aspect-[4/3] rounded-3xl overflow-hidden"
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
             >
               {/* Decorative border */}
-              <div className="absolute inset-0 rounded-3xl ring-1 ring-primary/10 z-10 pointer-events-none" />
+              {/* <div className="absolute inset-0 rounded-3xl ring-1 ring-primary/10 z-10 pointer-events-none" /> */}
               
               {/* Image Container */}
               <AnimatePresence mode="wait">
@@ -188,11 +188,8 @@ const HowItWorks = () => {
                   <img
                     src={steps[activeStep].image}
                     alt={steps[activeStep].title}
-                    className="w-full h-full object-contain"
+                    className="w-full h-[380px] object-cover object-center rounded-3xl mt-10"
                   />
-                  
-                  {/* Subtle gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
                 </motion.div>
               </AnimatePresence>
 
