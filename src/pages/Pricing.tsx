@@ -1,88 +1,75 @@
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Check, Crown, Diamond, Shield, Star, Users } from "lucide-react";
 
 const Pricing = () => {
   const plans = [
     {
-      name: "Free",
-      price: "₹0",
-      period: "Forever",
-      description: "Perfect for getting started",
+      name: "Normal Plan",
+      icon: Shield,
+      description: "Essential matchmaking service",
       features: [
-        "Create profile",
-        "Browse limited profiles",
-        "Basic search filters",
-        "Send 5 interests per month",
-        "Email support",
+        "Single Profile",
+        "Guaranteed Response",
+        "Mutual Expression of Interest",
+        "Single-Party Fee",
       ],
-      highlighted: false,
+      cta: "Get Started",
+      tier: "standard",
     },
     {
-      name: "Silver",
-      price: "₹999",
-      period: "3 Months",
-      description: "Great for active searchers",
+      name: "Silver Plan",
+      icon: Star,
+      description: "Balanced partnership approach",
       features: [
-        "Everything in Free",
-        "Browse unlimited profiles",
-        "Advanced search filters",
-        "Send unlimited interests",
-        "View contact details (50)",
-        "Chat with matches",
-        "Priority support",
+        "Single Profile",
+        "Guaranteed Response",
+        "Mutual Expression of Interest",
+        "Fee Paid Mutually",
       ],
-      highlighted: false,
+      cta: "Get Started",
+      tier: "standard",
     },
     {
-      name: "Gold",
-      price: "₹2,499",
-      period: "6 Months",
-      description: "Most popular choice",
+      name: "Gold Plan",
+      icon: Crown,
+      description: "Value bundle for families",
       features: [
-        "Everything in Silver",
-        "Highlighted profile",
-        "View contact details (150)",
-        "Profile visibility boost",
-        "Advanced matching algorithm",
-        "Video call feature",
-        "Dedicated relationship advisor",
-        "Premium badge",
+        "Bundle of 10 Profiles",
+        "Response Not Guaranteed",
+        "Single Expression of Interest",
+        "Single-Party Payment",
       ],
-      highlighted: true,
+      cta: "Enquire Now",
+      tier: "standard",
     },
     {
-      name: "Premium",
-      price: "₹4,999",
-      period: "12 Months",
-      description: "Complete matrimony experience",
+      name: "Premium Club",
+      icon: Diamond,
+      description: "Elevated matchmaking experience",
       features: [
-        "Everything in Gold",
-        "Unlimited contact views",
-        "Top profile placement",
-        "Personalized matchmaking",
-        "Background verification",
-        "Astrology matching",
-        "Wedding planning assistance",
-        "Lifetime profile support",
+        "Exclusive lounge area for video call & live chat",
+        "Direct access to a dedicated client manager",
+        "Client-manager coordinated meetings",
+        "Multiple payment options",
       ],
-      highlighted: false,
+      cta: "Contact Us",
+      tier: "premium",
     },
-  ];
-
-  const comparisonFeatures = [
-    { feature: "Profile Creation", free: true, silver: true, gold: true, premium: true },
-    { feature: "Browse Profiles", free: "Limited", silver: "Unlimited", gold: "Unlimited", premium: "Unlimited" },
-    { feature: "Send Interests", free: "5/month", silver: "Unlimited", gold: "Unlimited", premium: "Unlimited" },
-    { feature: "View Contact Details", free: false, silver: "50", gold: "150", premium: "Unlimited" },
-    { feature: "Chat Feature", free: false, silver: true, gold: true, premium: true },
-    { feature: "Video Calls", free: false, silver: false, gold: true, premium: true },
-    { feature: "Profile Boost", free: false, silver: false, gold: true, premium: true },
-    { feature: "Priority Support", free: false, silver: true, gold: true, premium: true },
-    { feature: "Relationship Advisor", free: false, silver: false, gold: true, premium: true },
-    { feature: "Background Verification", free: false, silver: false, gold: false, premium: true },
-    { feature: "Astrology Matching", free: false, silver: false, gold: false, premium: true },
+    {
+      name: "Million Club",
+      icon: Users,
+      description: "Ultra-exclusive concierge service",
+      features: [
+        "Consultant-led client service",
+        "Complete client validation",
+        "Client-specific confidential service",
+        "Legal (pre-nuptial) service",
+      ],
+      cta: "Contact Us",
+      tier: "exclusive",
+    },
   ];
 
   return (
@@ -108,50 +95,128 @@ const Pricing = () => {
       {/* Pricing Cards */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {plans.map((plan, index) => (
+          {/* Standard Plans Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12">
+            {plans.filter(p => p.tier === "standard").map((plan, index) => (
               <motion.div
-                key={index}
+                key={plan.name}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card
-                  className={`p-6 h-full glass-card hover:shadow-xl transition-all relative ${
-                    plan.highlighted ? "border-2 border-primary" : ""
-                  }`}
-                >
-                  {plan.highlighted && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-secondary text-white px-4 py-1 rounded-full text-sm font-semibold">
-                      Recommended
+                <Card className="p-8 h-full bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 flex flex-col">
+                  <div className="mb-6">
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                      <plan.icon className="h-6 w-6 text-primary" />
                     </div>
-                  )}
-                  <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                    <div className="mb-2">
-                      <span className="text-4xl font-bold gradient-text">{plan.price}</span>
-                      <span className="text-muted-foreground">/{plan.period}</span>
-                    </div>
+                    <h3 className="text-xl font-semibold text-foreground mb-2">{plan.name}</h3>
                     <p className="text-sm text-muted-foreground">{plan.description}</p>
                   </div>
-                  <ul className="space-y-3 mb-6">
+                  
+                  <ul className="space-y-4 mb-8 flex-grow">
                     {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">{feature}</span>
+                      <li key={idx} className="flex items-start gap-3">
+                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Check className="h-3 w-3 text-primary" />
+                        </div>
+                        <span className="text-sm text-foreground/80">{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <Button
-                    className={`w-full ${
-                      plan.highlighted
-                        ? "bg-gradient-to-r from-primary to-secondary hover:opacity-90"
-                        : ""
+                  
+                  <Button variant="outline" className="w-full border-primary/30 hover:bg-primary hover:text-primary-foreground transition-colors">
+                    {plan.cta}
+                  </Button>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Premium Plans Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {plans.filter(p => p.tier === "premium" || p.tier === "exclusive").map((plan, index) => (
+              <motion.div
+                key={plan.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card 
+                  className={`p-8 h-full flex flex-col relative overflow-hidden transition-all duration-300 ${
+                    plan.tier === "exclusive" 
+                      ? "bg-gradient-to-br from-slate-900 to-slate-800 border-amber-500/30 text-white" 
+                      : "bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20"
+                  }`}
+                >
+                  {plan.tier === "exclusive" && (
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl" />
+                  )}
+                  
+                  <div className="mb-6 relative z-10">
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${
+                      plan.tier === "exclusive" 
+                        ? "bg-amber-500/20" 
+                        : "bg-primary/10"
+                    }`}>
+                      <plan.icon className={`h-6 w-6 ${
+                        plan.tier === "exclusive" ? "text-amber-400" : "text-primary"
+                      }`} />
+                    </div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className={`text-xl font-semibold ${
+                        plan.tier === "exclusive" ? "text-white" : "text-foreground"
+                      }`}>
+                        {plan.name}
+                      </h3>
+                      {plan.tier === "exclusive" && (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/30">
+                          Exclusive
+                        </span>
+                      )}
+                      {plan.tier === "premium" && (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-primary/20 text-primary rounded-full border border-primary/30">
+                          Premium
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-sm ${
+                      plan.tier === "exclusive" ? "text-slate-300" : "text-muted-foreground"
+                    }`}>
+                      {plan.description}
+                    </p>
+                  </div>
+                  
+                  <ul className="space-y-4 mb-8 flex-grow relative z-10">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          plan.tier === "exclusive" 
+                            ? "bg-amber-500/20" 
+                            : "bg-primary/10"
+                        }`}>
+                          <Check className={`h-3 w-3 ${
+                            plan.tier === "exclusive" ? "text-amber-400" : "text-primary"
+                          }`} />
+                        </div>
+                        <span className={`text-sm ${
+                          plan.tier === "exclusive" ? "text-slate-200" : "text-foreground/80"
+                        }`}>
+                          {feature}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <Button 
+                    className={`w-full relative z-10 ${
+                      plan.tier === "exclusive"
+                        ? "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold border-0"
+                        : "bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground"
                     }`}
-                    variant={plan.highlighted ? "default" : "outline"}
                   >
-                    Choose Plan
+                    {plan.cta}
                   </Button>
                 </Card>
               </motion.div>
@@ -160,85 +225,24 @@ const Pricing = () => {
         </div>
       </section>
 
-      {/* Comparison Table */}
-      <section className="py-20 bg-muted/30">
+      {/* Contact Section */}
+      <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center max-w-2xl mx-auto"
           >
-            <h2 className="text-4xl font-bold mb-4">Feature Comparison</h2>
-            <p className="text-xl text-muted-foreground">
-              Compare all features across different plans
+            <h2 className="text-2xl font-semibold mb-4">Need Help Choosing?</h2>
+            <p className="text-muted-foreground mb-6">
+              Our team is here to help you find the perfect plan for your matchmaking journey. 
+              Get in touch for personalized guidance.
             </p>
+            <Button variant="outline" size="lg" className="border-primary/30 hover:bg-primary hover:text-primary-foreground">
+              Speak with Our Team
+            </Button>
           </motion.div>
-
-          <div className="max-w-6xl mx-auto overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b-2 border-border">
-                  <th className="text-left p-4 font-semibold">Feature</th>
-                  <th className="text-center p-4 font-semibold">Free</th>
-                  <th className="text-center p-4 font-semibold">Silver</th>
-                  <th className="text-center p-4 font-semibold">Gold</th>
-                  <th className="text-center p-4 font-semibold">Premium</th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparisonFeatures.map((row, index) => (
-                  <tr key={index} className="border-b border-border hover:bg-muted/50">
-                    <td className="p-4">{row.feature}</td>
-                    <td className="p-4 text-center">
-                      {typeof row.free === "boolean" ? (
-                        row.free ? (
-                          <Check className="h-5 w-5 text-primary mx-auto" />
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )
-                      ) : (
-                        <span>{row.free}</span>
-                      )}
-                    </td>
-                    <td className="p-4 text-center">
-                      {typeof row.silver === "boolean" ? (
-                        row.silver ? (
-                          <Check className="h-5 w-5 text-primary mx-auto" />
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )
-                      ) : (
-                        <span>{row.silver}</span>
-                      )}
-                    </td>
-                    <td className="p-4 text-center">
-                      {typeof row.gold === "boolean" ? (
-                        row.gold ? (
-                          <Check className="h-5 w-5 text-primary mx-auto" />
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )
-                      ) : (
-                        <span>{row.gold}</span>
-                      )}
-                    </td>
-                    <td className="p-4 text-center">
-                      {typeof row.premium === "boolean" ? (
-                        row.premium ? (
-                          <Check className="h-5 w-5 text-primary mx-auto" />
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )
-                      ) : (
-                        <span>{row.premium}</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
       </section>
     </div>
