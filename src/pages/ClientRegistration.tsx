@@ -338,10 +338,10 @@ const ClientRegistration = () => {
         >
           <div className="relative z-10 max-w-lg">
             {/* Brand */}
-            <Link to="/" className="inline-block mb-10">
-              <span className="text-2xl font-bold">
+            <Link to="/" className="inline-block mb-5">
+              {/* <span className="text-2xl font-bold">
                 Love<span className="text-primary">&</span>Ring
-              </span>
+              </span> */}
             </Link>
 
             {/* Main Heading */}

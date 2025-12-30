@@ -6,7 +6,7 @@ import partnershipIllustration from "@/assets/partnership-illustration.png";
 const ClientRegistrationCTA = () => {
   return (
     <section className="py-12 sm:py-16 md:py-20 bg-muted/30">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 border border-border rounded-2xl p-8 sm:p-12 md:p-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
           {/* Left - Content */}
           <motion.div
