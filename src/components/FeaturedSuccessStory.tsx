@@ -52,9 +52,9 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
       onMouseLeave={() => setIsAutoPlaying(true)}
     >
       {/* Main Featured Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 items-stretch">
         {/* Left - Featured Image */}
-        <div className="relative h-[400px] sm:h-[450px] lg:h-auto">
+        <div className="relative h-[320px] sm:h-[340px] lg:h-[360px]">
           <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl bg-gradient-to-br from-primary/10 to-secondary/10 h-full">
             <AnimatePresence mode="wait">
               <motion.img
@@ -70,16 +70,16 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
             </AnimatePresence>
             
             {/* Subtle gradient overlay at bottom */}
-            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/30 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent" />
           </div>
         </div>
 
         {/* Right - Testimonial Content */}
-        <div className="flex flex-col justify-center space-y-5 lg:space-y-6 py-2 lg:py-4">
+        <div className="flex flex-col justify-center space-y-3 lg:space-y-4 py-1 lg:py-2">
           {/* Quote Icon */}
           <div className="hidden sm:block">
-            <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-              <Quote className="w-7 h-7 lg:w-8 lg:h-8 text-primary" />
+            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+              <Quote className="w-6 h-6 lg:w-7 lg:h-7 text-primary" />
             </div>
           </div>
 
@@ -91,9 +91,9 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4 }}
-              className="space-y-4 lg:space-y-6"
+              className="space-y-3 lg:space-y-4"
             >
-              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed italic">
+              <p className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-normal italic">
                 "{activeStory.fullStory}"
               </p>
 
@@ -107,11 +107,11 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
               </Link>
 
               {/* Couple Name and Date */}
-              <div className="pt-4 lg:pt-6 border-t border-border/50">
-                <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold gradient-text">
+              <div className="pt-3 lg:pt-4 border-t border-border/50">
+                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold gradient-text">
                   {activeStory.names}
                 </h3>
-                <p className="text-sm sm:text-base text-muted-foreground mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                   {activeStory.date}
                 </p>
               </div>
@@ -121,7 +121,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
       </div>
 
       {/* Navigation Section */}
-      <div className="mt-8 lg:mt-12">
+      <div className="mt-6 lg:mt-8">
         <div className="flex items-center justify-center gap-4 lg:gap-6">
           {/* Left Arrow */}
           <button
