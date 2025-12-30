@@ -16,6 +16,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import OptimizedProfileImage from "./OptimizedProfileImage";
+import FiltersModal from "./FiltersModal";
 import Anjali from "@/assets/anjali.jpg";
 import Sneha from "@/assets/sneha.jpg";
 import Aparna from "@/assets/aparna.jpg";
@@ -31,6 +33,7 @@ const Matches = () => {
   const [activeTab, setActiveTab] = useState("new");
   const [sentInterests, setSentInterests] = useState<number[]>([]);
   const [sendingInterest, setSendingInterest] = useState<number | null>(null);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const navigate = useNavigate();
 
   // Mock user NRI plan status - set to false to simulate non-NRI user
@@ -253,18 +256,11 @@ const Matches = () => {
     return (
       <Card className="glass-card overflow-hidden hover:shadow-lg transition-all">
         <div className="flex flex-col sm:flex-row">
-          <div className="sm:w-48 w-full relative overflow-hidden bg-muted rounded-t-xl sm:rounded-l-xl sm:rounded-t-none">
-            <img
+          <div className="sm:w-48 w-full h-48 sm:h-auto relative overflow-hidden bg-muted rounded-t-xl sm:rounded-l-xl sm:rounded-t-none">
+            <OptimizedProfileImage
               src={match.image}
               alt={match.name}
-              loading="lazy"
-              className={`w-full h-full object-cover object-center ${
-                isLocked ? "blur-lg" : ""
-              }`}
-              onError={(e) => {
-                e.currentTarget.src =
-                  "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400";
-              }}
+              isLocked={isLocked}
             />
 
             {/* Match Badge */}
@@ -422,11 +418,24 @@ const Matches = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Matches</h2>
-        <Button variant="outline" className="gap-2">
+        <Button
+          variant="outline"
+          className="gap-2"
+          onClick={() => setIsFiltersOpen(true)}
+        >
           <Filter className="w-4 h-4" />
           Filters
         </Button>
       </div>
+
+      <FiltersModal
+        isOpen={isFiltersOpen}
+        onClose={() => setIsFiltersOpen(false)}
+        onApply={(filters) => {
+          console.log("Applied filters:", filters);
+          toast.success("Filters applied successfully");
+        }}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         {/* Horizontal scroll container for mobile/tablet */}
