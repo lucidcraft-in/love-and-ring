@@ -28,6 +28,7 @@ import StepFive from "@/components/registration/StepFive";
 import HomeStoryCarousel from "@/components/HomeStoryCarousel";
 import HowItWorks from "@/components/HowItWorks";
 import FeaturedSuccessStory from "@/components/FeaturedSuccessStory";
+import ClientRegistrationCTA from "@/components/ClientRegistrationCTA";
 
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
@@ -690,6 +691,9 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Client Registration CTA */}
+      <ClientRegistrationCTA />
 
       {/* About Preview Section */}
       <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
