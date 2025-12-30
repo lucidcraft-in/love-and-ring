@@ -52,10 +52,10 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
       onMouseLeave={() => setIsAutoPlaying(true)}
     >
       {/* Main Featured Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-stretch">
         {/* Left - Featured Image */}
-        <div className="relative">
-          <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl bg-gradient-to-br from-primary/10 to-secondary/10 aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5]">
+        <div className="relative h-[400px] sm:h-[450px] lg:h-auto">
+          <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl bg-gradient-to-br from-primary/10 to-secondary/10 h-full">
             <AnimatePresence mode="wait">
               <motion.img
                 key={activeIndex}
@@ -65,7 +65,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-cover object-top"
               />
             </AnimatePresence>
             
@@ -75,7 +75,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
         </div>
 
         {/* Right - Testimonial Content */}
-        <div className="flex flex-col justify-center space-y-6 lg:space-y-8">
+        <div className="flex flex-col justify-center space-y-5 lg:space-y-6 py-2 lg:py-4">
           {/* Quote Icon */}
           <div className="hidden sm:block">
             <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
