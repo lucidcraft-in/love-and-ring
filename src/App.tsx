@@ -21,6 +21,7 @@ import ContactsViewed from "./pages/ContactsViewed";
 import ChatsPage from "./pages/ChatsPage";
 import ClientTerms from "./pages/ClientTerms";
 import ClientRegistration from "./pages/ClientRegistration";
+import PlanDetail from "./pages/PlanDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const AppLayout = () => {
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/pricing/:plan" element={<PlanDetail />} />
           <Route path="/success-stories" element={<SuccessStories />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/register" element={<Register />} />
