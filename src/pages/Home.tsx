@@ -27,6 +27,7 @@ import StepFour from "@/components/registration/StepFour";
 import StepFive from "@/components/registration/StepFive";
 import HomeStoryCarousel from "@/components/HomeStoryCarousel";
 import HowItWorks from "@/components/HowItWorks";
+import FeaturedSuccessStory from "@/components/FeaturedSuccessStory";
 
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
@@ -178,18 +179,21 @@ const Home = () => {
       images: [homeAthiraVisish1, homeAthiraVisish2, homeAthiraVisish3],
       story: "Love & Ring made our journey calm, reassuring, and truly meaningful.",
       date: "Married: 29th October 2025",
+      fullStory: "Love & Ring made our journey calm, reassuring, and truly meaningful. From the very first interaction, we felt the platform understood what we were looking for in a life partner. The personalized approach and genuine care from the team made all the difference. We never felt rushed or pressured—just supported every step of the way. Today, we're building a beautiful life together, and we owe it all to this wonderful platform that brought us together.",
     },
     {
       names: "Abina & Basil",
       images: [homeAbinaBasil1, homeAbinaBasil2],
       story: "A trustworthy platform that helped us connect naturally and confidently.",
       date: "Married: 9th November 2025",
+      fullStory: "A trustworthy platform that helped us connect naturally and confidently. What stood out to us was how authentic every profile felt—no exaggerations, no false promises, just real people looking for genuine connections. The verification process gave us peace of mind, and the matching algorithm truly understood our preferences. Our families were impressed with the professionalism, and we found in each other exactly what we had been searching for. We're so grateful for Love & Ring.",
     },
     {
       names: "Molex & Roshin",
       images: [homeMolexRoshin1, homeMolexRoshin2, homeMolexRoshin3],
       story: "Thanks to Love & Ring, we found our perfect match with ease and clarity.",
       date: "Married: 10th November 2025",
+      fullStory: "Thanks to Love & Ring, we found our perfect match with ease and clarity. The platform's attention to detail and the way they consider cultural backgrounds, values, and aspirations made the entire experience seamless. We appreciated the privacy controls and the thoughtful communication features that allowed us to get to know each other at our own pace. Love & Ring isn't just a matrimony platform—it's a bridge to finding your soulmate. We couldn't be happier with our journey.",
     },
   ];
 
@@ -661,7 +665,7 @@ const Home = () => {
       </section>
 
       {/* Success Stories Preview */}
-      <section className="py-12 sm:py-16 md:py-20">
+      <section className="py-12 sm:py-16 md:py-20 bg-muted/20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -675,42 +679,11 @@ const Home = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {successStories.map((story, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="overflow-hidden glass-card hover:shadow-xl transition-all">
-                  {story.images.length > 1 ? (
-                    <HomeStoryCarousel images={story.images} names={story.names} />
-                  ) : story.images.length === 1 ? (
-                    <img
-                      src={story.images[0]}
-                      alt={story.names}
-                      className="w-full h-48 sm:h-64 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-48 sm:h-64 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                      <Heart className="h-12 w-12 text-primary/40" />
-                    </div>
-                  )}
-                  <div className="p-4 sm:p-6 space-y-2 sm:space-y-3">
-                    <h3 className="text-xl sm:text-2xl font-semibold gradient-text">{story.names}</h3>
-                    <p className="text-sm sm:text-base text-muted-foreground italic">"{story.story}"</p>
-                    <div className="text-xs sm:text-sm text-muted-foreground">
-                      <p>{story.date}</p>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
+          <div className="max-w-6xl mx-auto">
+            <FeaturedSuccessStory stories={successStories} />
           </div>
 
-          <div className="text-center mt-8 sm:mt-12">
+          <div className="text-center mt-10 sm:mt-14">
             <Button size="lg" variant="outline" asChild className="text-sm sm:text-base">
               <Link to="/success-stories">View All Stories</Link>
             </Button>
