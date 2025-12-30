@@ -19,6 +19,8 @@ import UserDashboard from "./pages/UserDashboard";
 import SingleProfile from "./pages/SingleProfile";
 import ContactsViewed from "./pages/ContactsViewed";
 import ChatsPage from "./pages/ChatsPage";
+import ClientTerms from "./pages/ClientTerms";
+import ClientRegistration from "./pages/ClientRegistration";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,7 +29,7 @@ const AppLayout = () => {
   const location = useLocation();
   
   // Hero routes have transparent navbar overlay - no padding needed
-  const heroRoutes = ["/", "/login", "/register"];
+  const heroRoutes = ["/", "/login", "/register", "/client-terms", "/client-registration"];
   const isHeroRoute = heroRoutes.includes(location.pathname);
 
   // Public pages where WhatsApp button should show
@@ -52,6 +54,8 @@ const AppLayout = () => {
           <Route path="/dashboard/contacts-viewed" element={<ContactsViewed />} />
           <Route path="/dashboard/chats" element={<ChatsPage />} />
           <Route path="/profile/:id" element={<SingleProfile />} />
+          <Route path="/client-terms" element={<ClientTerms />} />
+          <Route path="/client-registration" element={<ClientRegistration />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
