@@ -70,9 +70,9 @@ const HowItWorks = () => {
 
         {/* Main Content - Split Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
-          {/* Left Side - Steps */}
+          {/* Left Side - Steps (Mobile: accordion style with embedded images) */}
           <div 
-            className="lg:col-span-5 space-y-4 md:space-y-6"
+            className="lg:col-span-5 space-y-3 md:space-y-6"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
@@ -89,10 +89,10 @@ const HowItWorks = () => {
                   transition={{ delay: index * 0.1 }}
                   onClick={() => handleStepClick(index)}
                   className={`
-                    relative p-5 md:p-6 rounded-2xl cursor-pointer transition-all duration-300
+                    relative rounded-2xl cursor-pointer transition-all duration-300
                     ${isActive 
                       ? "bg-card shadow-lg border border-primary/20" 
-                      : "bg-transparent hover:bg-card/50"
+                      : "bg-card/50 md:bg-transparent md:hover:bg-card/50"
                     }
                   `}
                 >
@@ -100,52 +100,79 @@ const HowItWorks = () => {
                   {isActive && (
                     <motion.div
                       layoutId="activeIndicator"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-gradient-to-b from-primary to-secondary rounded-full"
+                      className="absolute left-0 top-6 md:top-1/2 md:-translate-y-1/2 w-1 h-12 bg-gradient-to-b from-primary to-secondary rounded-full"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
 
-                  <div className="flex items-start gap-4">
-                    {/* Number Badge */}
-                    <div 
-                      className={`
-                        flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg
-                        transition-all duration-300
-                        ${isActive 
-                          ? "bg-gradient-to-br from-primary to-secondary text-white shadow-md" 
-                          : "bg-muted text-muted-foreground"
-                        }
-                      `}
-                    >
-                      {step.number}
-                    </div>
+                  <div className={`p-4 md:p-6 ${isActive ? '' : 'py-3 md:py-6'}`}>
+                    <div className="flex items-start gap-4">
+                      {/* Number Badge */}
+                      <div 
+                        className={`
+                          flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center font-bold text-base md:text-lg
+                          transition-all duration-300
+                          ${isActive 
+                            ? "bg-gradient-to-br from-primary to-secondary text-white shadow-md" 
+                            : "bg-muted text-muted-foreground"
+                          }
+                        `}
+                      >
+                        {step.number}
+                      </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Icon 
-                          className={`w-5 h-5 transition-colors duration-300 ${
-                            isActive ? "text-primary" : "text-muted-foreground"
-                          }`} 
-                        />
-                        <h3 
-                          className={`font-semibold text-lg transition-colors duration-300 ${
-                            isActive ? "text-foreground" : "text-muted-foreground"
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Icon 
+                            className={`w-4 h-4 md:w-5 md:h-5 transition-colors duration-300 ${
+                              isActive ? "text-primary" : "text-muted-foreground"
+                            }`} 
+                          />
+                          <h3 
+                            className={`font-semibold text-base md:text-lg transition-colors duration-300 ${
+                              isActive ? "text-foreground" : "text-muted-foreground"
+                            }`}
+                          >
+                            {step.title}
+                          </h3>
+                        </div>
+                        {/* Description - hidden on mobile for inactive steps */}
+                        <motion.p 
+                          initial={false}
+                          animate={{ 
+                            opacity: isActive ? 1 : 0.7,
+                            height: isActive ? 'auto' : 0
+                          }}
+                          className={`text-sm leading-relaxed transition-colors duration-300 overflow-hidden md:!h-auto md:!opacity-70 ${
+                            isActive 
+                              ? "text-muted-foreground" 
+                              : "text-muted-foreground/70"
                           }`}
                         >
-                          {step.title}
-                        </h3>
+                          {step.description}
+                        </motion.p>
                       </div>
-                      <p 
-                        className={`text-sm leading-relaxed transition-all duration-300 ${
-                          isActive 
-                            ? "text-muted-foreground opacity-100 max-h-20" 
-                            : "text-muted-foreground/70 opacity-70 max-h-0 overflow-hidden lg:max-h-20 lg:opacity-70"
-                        }`}
-                      >
-                        {step.description}
-                      </p>
                     </div>
+
+                    {/* Mobile: Embedded image inside active card */}
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          className="md:hidden mt-4 overflow-hidden"
+                        >
+                          <img
+                            src={step.image}
+                            alt={step.title}
+                            className="w-full h-auto max-h-[280px] object-contain rounded-xl"
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   {/* Progress bar for active step */}
@@ -165,16 +192,13 @@ const HowItWorks = () => {
             })}
           </div>
 
-          {/* Right Side - Images */}
-          <div className="lg:col-span-7">
+          {/* Right Side - Images (Hidden on mobile, visible on tablet+) */}
+          <div className="hidden md:block lg:col-span-7">
             <div 
               className="relative aspect-[4/3] rounded-3xl overflow-hidden"
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
             >
-              {/* Decorative border */}
-              {/* <div className="absolute inset-0 rounded-3xl ring-1 ring-primary/10 z-10 pointer-events-none" /> */}
-              
               {/* Image Container */}
               <AnimatePresence mode="wait">
                 <motion.div
