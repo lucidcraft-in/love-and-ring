@@ -75,11 +75,11 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
         </div>
 
         {/* Right - Testimonial Content */}
-        <div className="flex flex-col justify-center space-y-5 lg:space-y-6 py-2 lg:py-4">
+        <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10 rounded-2xl lg:rounded-3xl bg-card/60 backdrop-blur-sm border border-border/50 shadow-lg">
           {/* Quote Icon */}
-          <div className="hidden sm:block">
-            <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-              <Quote className="w-7 h-7 lg:w-8 lg:h-8 text-primary" />
+          <div className="hidden sm:block mb-5 lg:mb-6">
+            <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+              <Quote className="w-6 h-6 lg:w-7 lg:h-7 text-primary" />
             </div>
           </div>
 
@@ -91,7 +91,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4 }}
-              className="space-y-4 lg:space-y-6"
+              className="space-y-4 lg:space-y-5"
             >
               <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed italic">
                 "{activeStory.fullStory}"
@@ -107,7 +107,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
               </Link>
 
               {/* Couple Name and Date */}
-              <div className="pt-4 lg:pt-6 border-t border-border/50">
+              <div className="pt-4 lg:pt-5 border-t border-border/50">
                 <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold gradient-text">
                   {activeStory.names}
                 </h3>
