@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import AthiraandVishih from "@/assets/Athiraandvishish.jpg";
+import AibnandBasil from "@/assets/aibnaandbasil.jpg";
+
 
 interface SuccessStory {
   names: string;
@@ -52,7 +55,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
       onMouseLeave={() => setIsAutoPlaying(true)}
     >
       {/* Main Featured Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 jus items-stretch h-[500px] border border-border rounded-2xl p-6 lg:p-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8  items-stretch lg:h-[500px] border border-border rounded-2xl p-6 lg:p-8">
         {/* Left - Featured Image */}
         <div className="relative h-[320px] sm:h-[340px] lg:h-[430px]">
           <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl bg-gradient-to-br from-primary/10 to-secondary/10 h-full">
@@ -121,7 +124,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
       </div>
 
       {/* Navigation Section */}
-      <div className="mt-6 lg:mt-8">
+      <div className="mt-6 lg:mt-8 ">
         <div className="flex items-center justify-center gap-4 lg:gap-6">
           {/* Left Arrow */}
           <button
@@ -133,13 +136,13 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
           </button>
 
           {/* Thumbnail Images */}
-          <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 overflow-x-auto scrollbar-hide py-2">
+          <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 overflow-x-auto scrollbar-hide py-2 pl-2 pr-2">
             {stories.map((story, index) => (
               <button
                 key={index}
                 onClick={() => scrollTo(index)}
                 className={cn(
-                  "relative flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl lg:rounded-2xl overflow-hidden transition-all duration-300",
+                  "relative flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 lg:w-15 lg:h-15 rounded-xl lg:rounded-2xl overflow-hidden transition-all duration-300",
                   activeIndex === index
                     ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-110"
                     : "opacity-60 hover:opacity-100 hover:scale-105"

@@ -679,7 +679,7 @@ const Home = () => {
             </p>
           </motion.div>
 
-          <div className="max-w-6xl mx-auto">
+          <div className="">
             <FeaturedSuccessStory stories={successStories} />
           </div>
 
