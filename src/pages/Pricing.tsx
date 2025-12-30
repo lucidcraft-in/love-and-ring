@@ -1,12 +1,16 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Crown, Diamond, Shield, Star, Users } from "lucide-react";
+import { Check, Crown, Diamond, Shield, Star, Users, Minus } from "lucide-react";
 
 const Pricing = () => {
+  const navigate = useNavigate();
+  
   const plans = [
     {
       name: "Normal Plan",
+      slug: "normal",
       icon: Shield,
       description: "Essential matchmaking service",
       features: [
@@ -20,6 +24,7 @@ const Pricing = () => {
     },
     {
       name: "Silver Plan",
+      slug: "silver",
       icon: Star,
       description: "Balanced partnership approach",
       features: [
@@ -33,6 +38,7 @@ const Pricing = () => {
     },
     {
       name: "Gold Plan",
+      slug: "gold",
       icon: Crown,
       description: "Value bundle for families",
       features: [
@@ -46,6 +52,7 @@ const Pricing = () => {
     },
     {
       name: "Premium Club",
+      slug: "premium-club",
       icon: Diamond,
       description: "Elevated matchmaking experience",
       features: [
@@ -59,6 +66,7 @@ const Pricing = () => {
     },
     {
       name: "Million Club",
+      slug: "million-club",
       icon: Users,
       description: "Ultra-exclusive concierge service",
       features: [
@@ -71,6 +79,100 @@ const Pricing = () => {
       tier: "exclusive",
     },
   ];
+
+  const comparisonFeatures = [
+    { 
+      name: "Number of Profiles", 
+      normal: "1", 
+      silver: "1", 
+      gold: "10", 
+      premium: "Unlimited", 
+      million: "Unlimited" 
+    },
+    { 
+      name: "Guaranteed Response", 
+      normal: true, 
+      silver: true, 
+      gold: false, 
+      premium: true, 
+      million: true 
+    },
+    { 
+      name: "Mutual Expression of Interest", 
+      normal: true, 
+      silver: true, 
+      gold: false, 
+      premium: true, 
+      million: true 
+    },
+    { 
+      name: "Payment Type", 
+      normal: "Single-Party", 
+      silver: "Mutual", 
+      gold: "Single-Party", 
+      premium: "Flexible", 
+      million: "Custom" 
+    },
+    { 
+      name: "Profile Bundle", 
+      normal: false, 
+      silver: false, 
+      gold: true, 
+      premium: false, 
+      million: false 
+    },
+    { 
+      name: "Video Call & Live Chat", 
+      normal: false, 
+      silver: false, 
+      gold: false, 
+      premium: true, 
+      million: true 
+    },
+    { 
+      name: "Dedicated Client Manager", 
+      normal: false, 
+      silver: false, 
+      gold: false, 
+      premium: true, 
+      million: true 
+    },
+    { 
+      name: "Meeting Coordination", 
+      normal: false, 
+      silver: false, 
+      gold: false, 
+      premium: true, 
+      million: true 
+    },
+    { 
+      name: "Confidential Handling", 
+      normal: false, 
+      silver: false, 
+      gold: false, 
+      premium: true, 
+      million: true 
+    },
+    { 
+      name: "Legal / Pre-Nuptial Support", 
+      normal: false, 
+      silver: false, 
+      gold: false, 
+      premium: false, 
+      million: true 
+    },
+  ];
+
+  const renderComparisonValue = (value: boolean | string) => {
+    if (typeof value === "boolean") {
+      return value ? (
+        <Check className="h-5 w-5 text-primary mx-auto" />
+      ) : (
+        <Minus className="h-5 w-5 text-muted-foreground/40 mx-auto" />
+      );
+    }
+    return <span className="text-sm text-foreground">{value}</span>;
+  };
 
   return (
     <div className="min-h-screen">
@@ -114,7 +216,7 @@ const Pricing = () => {
                     <p className="text-sm text-muted-foreground">{plan.description}</p>
                   </div>
                   
-                  <ul className="space-y-4 mb-8 flex-grow">
+                  <ul className="space-y-4 mb-6 flex-grow">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-3">
                         <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -125,9 +227,21 @@ const Pricing = () => {
                     ))}
                   </ul>
                   
-                  <Button variant="outline" className="w-full border-primary/30 hover:bg-primary hover:text-primary-foreground transition-colors">
-                    {plan.cta}
-                  </Button>
+                  <div className="space-y-3">
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-primary/30 hover:bg-primary hover:text-primary-foreground transition-colors"
+                    >
+                      {plan.cta}
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-primary hover:text-primary hover:bg-primary/5"
+                      onClick={() => navigate(`/pricing/${plan.slug}`)}
+                    >
+                      View Details
+                    </Button>
+                  </div>
                 </Card>
               </motion.div>
             ))}
@@ -188,7 +302,7 @@ const Pricing = () => {
                     </p>
                   </div>
                   
-                  <ul className="space-y-4 mb-8 flex-grow relative z-10">
+                  <ul className="space-y-4 mb-6 flex-grow relative z-10">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-3">
                         <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
@@ -209,19 +323,162 @@ const Pricing = () => {
                     ))}
                   </ul>
                   
-                  <Button 
-                    className={`w-full relative z-10 ${
-                      plan.tier === "exclusive"
-                        ? "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold border-0"
-                        : "bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground"
-                    }`}
-                  >
-                    {plan.cta}
-                  </Button>
+                  <div className="space-y-3 relative z-10">
+                    <Button 
+                      className={`w-full ${
+                        plan.tier === "exclusive"
+                          ? "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold border-0"
+                          : "bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground"
+                      }`}
+                    >
+                      {plan.cta}
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className={`w-full ${
+                        plan.tier === "exclusive"
+                          ? "text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"
+                          : "text-primary hover:text-primary hover:bg-primary/5"
+                      }`}
+                      onClick={() => navigate(`/pricing/${plan.slug}`)}
+                    >
+                      View Details
+                    </Button>
+                  </div>
                 </Card>
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Comparison Table Section */}
+      <section className="py-20 bg-muted/20">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl font-bold mb-4">Compare Plans</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              See how our plans compare side by side to find the perfect fit for your needs
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-6xl mx-auto"
+          >
+            <div className="overflow-x-auto rounded-xl border border-border/50 bg-card">
+              <table className="w-full min-w-[800px]">
+                <thead>
+                  <tr className="border-b border-border/50">
+                    <th className="text-left p-4 font-semibold text-foreground bg-muted/30">
+                      Features
+                    </th>
+                    <th className="p-4 text-center font-semibold text-foreground bg-muted/30">
+                      Normal
+                    </th>
+                    <th className="p-4 text-center font-semibold text-foreground bg-muted/30">
+                      Silver
+                    </th>
+                    <th className="p-4 text-center font-semibold text-foreground bg-muted/30">
+                      Gold
+                    </th>
+                    <th className="p-4 text-center font-semibold text-primary bg-primary/5">
+                      Premium Club
+                    </th>
+                    <th className="p-4 text-center font-semibold bg-gradient-to-r from-amber-500/10 to-amber-600/10">
+                      <span className="text-amber-600">Million Club</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparisonFeatures.map((feature, index) => (
+                    <tr 
+                      key={feature.name}
+                      className={`border-b border-border/30 ${index % 2 === 0 ? "" : "bg-muted/10"}`}
+                    >
+                      <td className="p-4 text-sm font-medium text-foreground">
+                        {feature.name}
+                      </td>
+                      <td className="p-4 text-center">
+                        {renderComparisonValue(feature.normal)}
+                      </td>
+                      <td className="p-4 text-center">
+                        {renderComparisonValue(feature.silver)}
+                      </td>
+                      <td className="p-4 text-center">
+                        {renderComparisonValue(feature.gold)}
+                      </td>
+                      <td className="p-4 text-center bg-primary/5">
+                        {renderComparisonValue(feature.premium)}
+                      </td>
+                      <td className="p-4 text-center bg-gradient-to-r from-amber-500/5 to-amber-600/5">
+                        {renderComparisonValue(feature.million)}
+                      </td>
+                    </tr>
+                  ))}
+                  {/* CTA Row */}
+                  <tr>
+                    <td className="p-4"></td>
+                    <td className="p-4 text-center">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => navigate("/pricing/normal")}
+                        className="border-primary/30 hover:bg-primary hover:text-primary-foreground"
+                      >
+                        Learn More
+                      </Button>
+                    </td>
+                    <td className="p-4 text-center">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => navigate("/pricing/silver")}
+                        className="border-primary/30 hover:bg-primary hover:text-primary-foreground"
+                      >
+                        Learn More
+                      </Button>
+                    </td>
+                    <td className="p-4 text-center">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => navigate("/pricing/gold")}
+                        className="border-primary/30 hover:bg-primary hover:text-primary-foreground"
+                      >
+                        Learn More
+                      </Button>
+                    </td>
+                    <td className="p-4 text-center bg-primary/5">
+                      <Button 
+                        size="sm"
+                        onClick={() => navigate("/pricing/premium-club")}
+                        className="bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                      >
+                        Learn More
+                      </Button>
+                    </td>
+                    <td className="p-4 text-center bg-gradient-to-r from-amber-500/5 to-amber-600/5">
+                      <Button 
+                        size="sm"
+                        onClick={() => navigate("/pricing/million-club")}
+                        className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900"
+                      >
+                        Learn More
+                      </Button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
         </div>
       </section>
 
