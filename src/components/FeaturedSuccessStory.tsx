@@ -55,7 +55,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
       onMouseLeave={() => setIsAutoPlaying(true)}
     >
       {/* Main Featured Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8  items-stretch lg:h-[500px] border border-border rounded-2xl p-6 lg:p-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8  items-stretch  border border-border rounded-2xl p-6 lg:p-8">
         {/* Left - Featured Image */}
         <div className="relative h-[320px] sm:h-[340px] lg:h-[430px]">
           <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl bg-gradient-to-br from-primary/10 to-secondary/10 h-full">
