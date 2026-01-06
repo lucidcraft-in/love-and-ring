@@ -92,7 +92,7 @@ const Login = () => {
       </div>
 
       {/* Floating Brand Logo */}
-      <FloatingBrandLogo className="z-[5]" />
+      <FloatingBrandLogo variant="auth" className="z-[5]" />
 
       {/* Desktop/Tablet Close Button - Top Right of Screen */}
       <Button
