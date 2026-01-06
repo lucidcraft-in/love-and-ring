@@ -3,6 +3,12 @@ import ringLogo from "@/assets/ring-logo.png";
 
 interface FloatingBrandLogoProps {
   className?: string;
+  /** 
+   * Variant for different page contexts:
+   * - "hero": Two floating logos (top-left + bottom-right) for Home page
+   * - "auth": Single subtle logo in bottom-right above WhatsApp for auth pages
+   */
+  variant?: "hero" | "auth";
 }
 
 /**
@@ -10,10 +16,39 @@ interface FloatingBrandLogoProps {
  * Displays subtle, animated brand logos with glow effects.
  * Respects reduced-motion user preferences.
  */
-const FloatingBrandLogo = ({ className = "" }: FloatingBrandLogoProps) => {
+const FloatingBrandLogo = ({ className = "", variant = "hero" }: FloatingBrandLogoProps) => {
   // CSS filter to convert purple logo to light lavender/white
   const lightLogoFilter = "brightness(0) invert(1) sepia(1) saturate(0.3) hue-rotate(200deg) brightness(1.5)";
   
+  // Auth variant: single subtle logo in bottom-right, above WhatsApp button
+  if (variant === "auth") {
+    return (
+      <div className={`pointer-events-none select-none ${className}`}>
+        <motion.div
+          className="absolute bottom-32 right-4 sm:right-6 opacity-40 sm:opacity-45"
+          initial={{ y: 0 }}
+          animate={{ y: [0, 8, 0] }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          style={{
+            filter: `${lightLogoFilter} drop-shadow(0 0 20px hsl(270 65% 70% / 0.4))`,
+          }}
+        >
+          <img
+            src={ringLogo}
+            alt=""
+            aria-hidden="true"
+            className="h-10 w-10 sm:h-14 sm:w-14 object-contain motion-reduce:animate-none"
+          />
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Hero variant: two floating logos for Home page
   return (
     <div className={`pointer-events-none select-none ${className}`}>
       {/* Top-left floating logo */}

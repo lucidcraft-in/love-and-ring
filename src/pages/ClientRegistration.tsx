@@ -319,7 +319,7 @@ const ClientRegistration = () => {
       </div>
 
       {/* Floating Brand Logo */}
-      <FloatingBrandLogo className="z-[5]" />
+      <FloatingBrandLogo variant="auth" className="z-[5]" />
 
       {/* Close Button */}
       <Button
