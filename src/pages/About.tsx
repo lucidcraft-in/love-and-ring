@@ -11,18 +11,18 @@ const About = () => {
     },
     {
       icon: Heart,
-      title: "Genuine Connections",
+      title: "Genuine Profiles",
       description: "Helping people find meaningful relationships based on shared values",
     },
     {
       icon: Users,
       title: "Community First",
-      description: "Building a supportive community where everyone feels welcome",
+      description: "Building a community that is welcoming, supportive and spreading human spirit",
     },
     {
       icon: Award,
       title: "Excellence",
-      description: "Committed to providing the best matrimony experience possible",
+      description: "Committed to bring best match finding experience ",
     },
   ];
 
@@ -37,7 +37,7 @@ const About = () => {
             className="max-w-3xl mx-auto text-center space-y-6"
           >
             <h1 className="text-5xl md:text-6xl font-bold">
-              About <span className="gradient-text">MatrimonyHub</span>
+              About <span className="gradient-text">Love & Ring</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
               Your trusted partner in finding the perfect life match
@@ -58,7 +58,7 @@ const About = () => {
             >
               <h2 className="text-4xl font-bold">Our Mission</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                At MatrimonyHub, our mission is to help individuals find their perfect life partner through a secure, 
+                At Love & Ring, our mission is to help individuals find their perfect life partner through a secure, 
                 trustworthy, and culturally sensitive platform. We believe that every person deserves to find true love 
                 and companionship.
               </p>
