@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, ChevronRight, X, AlertCircle, Shield, Users, Lock, CheckCircle } from "lucide-react";
+import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
@@ -316,6 +317,9 @@ const ClientRegistration = () => {
         {/* Dark Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
       </div>
+
+      {/* Floating Brand Logo */}
+      <FloatingBrandLogo className="z-[5]" />
 
       {/* Close Button */}
       <Button
