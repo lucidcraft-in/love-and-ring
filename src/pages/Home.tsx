@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, Users, Lock, CheckCircle, Heart, Star, ChevronLeft, ChevronRight, X, Eye, EyeOff, Headset } from "lucide-react";
+import { Shield, Users, Lock, CheckCircle, ChevronLeft, ChevronRight, X, Eye, EyeOff, Headset } from "lucide-react";
+import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
@@ -611,17 +612,8 @@ const Home = () => {
           </AnimatePresence>
         </div>
 
-        {/* Decorative floating elements */}
-        {formMode === "hero" && !isAuthenticated && (
-          <>
-            <div className="absolute top-20 left-4 sm:left-10 opacity-20">
-              <Heart className="h-10 w-10 sm:h-16 sm:w-16 text-primary animate-float" />
-            </div>
-            <div className="absolute bottom-20 right-4 sm:right-10 opacity-20">
-              <Star className="h-12 w-12 sm:h-20 sm:w-20 text-secondary animate-float" style={{ animationDelay: "1s" }} />
-            </div>
-          </>
-        )}
+        {/* Floating brand logo */}
+        {formMode === "hero" && !isAuthenticated && <FloatingBrandLogo />}
       </section>
 
       {/* How It Works Section */}

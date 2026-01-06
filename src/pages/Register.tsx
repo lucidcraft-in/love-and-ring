@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, X, AlertCircle, Shield, Users, Lock, CheckCircle } from "lucide-react";
+import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import StepOne from "@/components/registration/StepOne";
@@ -197,6 +198,9 @@ const Register = () => {
         {/* Dark Overlay for Readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
       </div>
+
+      {/* Floating Brand Logo */}
+      <FloatingBrandLogo className="z-[5]" />
 
       {/* Desktop/Tablet Close Button - Top Right of Screen */}
       <Button

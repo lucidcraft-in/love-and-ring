@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Eye, EyeOff, X, Shield, Users, Lock, CheckCircle } from "lucide-react";
+import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import { useAuth } from "@/contexts/AuthContext";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
@@ -89,6 +90,9 @@ const Login = () => {
         {/* Dark Overlay for Readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
       </div>
+
+      {/* Floating Brand Logo */}
+      <FloatingBrandLogo className="z-[5]" />
 
       {/* Desktop/Tablet Close Button - Top Right of Screen */}
       <Button
