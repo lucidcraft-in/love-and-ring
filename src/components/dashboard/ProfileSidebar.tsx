@@ -60,7 +60,7 @@ const ProfileSidebar = ({
         )}
       >
         {/* Fixed Profile Header Section - Never scrolls */}
-        <div className="flex-shrink-0 flex flex-col items-center pt-8 pb-4 px-4 border-b border-border bg-card">
+        <div className="flex-shrink-0 flex flex-col items-center pt-4 pb-4 px-4 border-b border-border bg-card">
           <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-lg">
             <AvatarImage
               src={user.avatar}
