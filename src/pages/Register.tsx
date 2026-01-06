@@ -401,7 +401,12 @@ const Register = () => {
 
             {/* Help Text */}
             <div className="text-center mt-4 text-xs text-white/60">
-              <p>Need help? Contact us at <span className="text-primary">support@lovering.com</span></p>
+              <p>
+                Need help creating your account?{" "}
+                <Link to="/support?from=registration" className="text-primary hover:underline">
+                  Get help
+                </Link>
+              </p>
             </div>
           </motion.div>
         </div>

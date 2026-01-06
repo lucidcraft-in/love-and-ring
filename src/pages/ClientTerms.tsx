@@ -276,8 +276,10 @@ const ClientTerms = () => {
             {/* Help Text */}
             <div className="text-center mt-4 text-xs text-white/60">
               <p>
-                Need help? Contact us at{" "}
-                <span className="text-primary">support@lovering.com</span>
+                Questions about our partnership terms?{" "}
+                <Link to="/support?from=client-terms" className="text-primary hover:underline">
+                  Get help
+                </Link>
               </p>
             </div>
           </motion.div>
