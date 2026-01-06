@@ -22,6 +22,7 @@ import ChatsPage from "./pages/ChatsPage";
 import ClientTerms from "./pages/ClientTerms";
 import ClientRegistration from "./pages/ClientRegistration";
 import PlanDetail from "./pages/PlanDetail";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const AppLayout = () => {
           <Route path="/profile/:id" element={<SingleProfile />} />
           <Route path="/client-terms" element={<ClientTerms />} />
           <Route path="/client-registration" element={<ClientRegistration />} />
+          <Route path="/support" element={<Support />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

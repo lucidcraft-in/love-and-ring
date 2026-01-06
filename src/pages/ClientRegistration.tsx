@@ -511,8 +511,10 @@ const ClientRegistration = () => {
             {/* Help Text */}
             <div className="text-center mt-4 text-xs text-white/60">
               <p>
-                Need help? Contact us at{" "}
-                <span className="text-primary">support@lovering.com</span>
+                Need help with partner registration?{" "}
+                <Link to="/support?from=client-registration" className="text-primary hover:underline">
+                  Get help
+                </Link>
               </p>
             </div>
           </motion.div>
