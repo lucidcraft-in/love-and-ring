@@ -11,11 +11,14 @@ interface FloatingBrandLogoProps {
  * Respects reduced-motion user preferences.
  */
 const FloatingBrandLogo = ({ className = "" }: FloatingBrandLogoProps) => {
+  // CSS filter to convert purple logo to light lavender/white
+  const lightLogoFilter = "brightness(0) invert(1) sepia(1) saturate(0.3) hue-rotate(200deg) brightness(1.5)";
+  
   return (
     <div className={`pointer-events-none select-none ${className}`}>
       {/* Top-left floating logo */}
       <motion.div
-        className="absolute top-24 left-4 sm:left-10 opacity-10 sm:opacity-15"
+        className="absolute top-24 left-4 sm:left-10 opacity-20 sm:opacity-25"
         initial={{ y: 0 }}
         animate={{ y: [0, -12, 0] }}
         transition={{
@@ -24,7 +27,7 @@ const FloatingBrandLogo = ({ className = "" }: FloatingBrandLogoProps) => {
           ease: "easeInOut",
         }}
         style={{
-          filter: "drop-shadow(0 0 20px hsl(270 65% 70% / 0.4))",
+          filter: `${lightLogoFilter} drop-shadow(0 0 30px hsl(270 65% 70% / 0.6)) drop-shadow(0 0 60px hsl(270 65% 70% / 0.3))`,
         }}
       >
         <img
@@ -37,7 +40,7 @@ const FloatingBrandLogo = ({ className = "" }: FloatingBrandLogoProps) => {
 
       {/* Bottom-right floating logo */}
       <motion.div
-        className="absolute bottom-24 right-4 sm:right-10 opacity-10 sm:opacity-[0.12]"
+        className="absolute bottom-24 right-4 sm:right-10 opacity-15 sm:opacity-20"
         initial={{ y: 0 }}
         animate={{ y: [0, 10, 0] }}
         transition={{
@@ -47,7 +50,7 @@ const FloatingBrandLogo = ({ className = "" }: FloatingBrandLogoProps) => {
           delay: 1.5,
         }}
         style={{
-          filter: "drop-shadow(0 0 25px hsl(220 70% 65% / 0.5))",
+          filter: `${lightLogoFilter} drop-shadow(0 0 35px hsl(220 70% 75% / 0.5)) drop-shadow(0 0 70px hsl(270 65% 70% / 0.25))`,
         }}
       >
         <img
