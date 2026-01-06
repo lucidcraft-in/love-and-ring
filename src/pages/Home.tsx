@@ -612,8 +612,8 @@ const Home = () => {
           </AnimatePresence>
         </div>
 
-        {/* Floating brand logo */}
-        {formMode === "hero" && !isAuthenticated && <FloatingBrandLogo />}
+        {/* Floating brand logo - show for public hero AND authenticated home */}
+        {(formMode === "hero" || isAuthenticated) && formMode !== "signin" && formMode !== "registration" && <FloatingBrandLogo />}
       </section>
 
       {/* How It Works Section */}
