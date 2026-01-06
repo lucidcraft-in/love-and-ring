@@ -38,6 +38,12 @@ const AppLayout = () => {
   const publicRoutes = ["/", "/about", "/pricing", "/faq", "/contact", "/success-stories"];
   const isPublicRoute = publicRoutes.includes(location.pathname);
 
+  // Dashboard routes have their own footer - hide global footer
+  const dashboardRoutes = ["/dashboard", "/dashboard/contacts-viewed", "/dashboard/chats"];
+  const isDashboardRoute = dashboardRoutes.some(route => 
+    location.pathname === route || location.pathname.startsWith(route + "/")
+  );
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Single Navbar for all routes - handles hero/standard styling internally */}
@@ -64,7 +70,8 @@ const AppLayout = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      <Footer />
+      {/* Hide global footer on dashboard routes - they have their own */}
+      {!isDashboardRoute && <Footer />}
       {/* WhatsApp floating button - only on public pages */}
       {isPublicRoute && <WhatsAppButton />}
     </div>
