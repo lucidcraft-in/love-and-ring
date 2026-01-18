@@ -2,26 +2,25 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Shield, RotateCcw, CheckCircle, Loader2 } from "lucide-react";
+import { Mail, RotateCcw, CheckCircle, Loader2 } from "lucide-react";
 
 interface OTPVerificationProps {
-  mobile: string;
-  countryCode: string;
+  email: string;
   onVerified: () => void;
   onBack: () => void;
 }
 
-const OTPVerification = ({ mobile, countryCode, onVerified, onBack }: OTPVerificationProps) => {
+const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) => {
   const [otp, setOtp] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
   const [error, setError] = useState("");
 
-  // Mask mobile number for display
-  const maskedMobile = mobile.length > 4 
-    ? mobile.slice(0, 2) + "XXXX" + mobile.slice(-2) 
-    : "XXXXXXXX";
+  // Mask email for display
+  const maskedEmail = email.length > 4 
+    ? email.slice(0, 3) + "***" + email.slice(email.indexOf("@")) 
+    : email;
 
   // Countdown timer for resend
   useEffect(() => {
@@ -66,24 +65,24 @@ const OTPVerification = ({ mobile, countryCode, onVerified, onBack }: OTPVerific
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6"
+      className="space-y-5"
     >
       {/* Header */}
       <div className="text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-          <Shield className="w-8 h-8 text-primary" />
+        <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+          <Mail className="w-7 h-7 text-primary" />
         </div>
-        <h2 className="text-xl font-bold mb-2">Verify Your Account</h2>
+        <h2 className="text-lg font-bold mb-1">Verify Your Email</h2>
         <p className="text-muted-foreground text-sm">
           Enter the 6-digit verification code sent to
         </p>
-        <p className="font-semibold text-foreground mt-1">
-          {countryCode} {maskedMobile}
+        <p className="font-semibold text-foreground mt-1 text-sm">
+          {maskedEmail}
         </p>
       </div>
 
       {/* OTP Input */}
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-3">
         <InputOTP
           maxLength={6}
           value={otp}
@@ -93,17 +92,17 @@ const OTPVerification = ({ mobile, countryCode, onVerified, onBack }: OTPVerific
           }}
         >
           <InputOTPGroup>
-            <InputOTPSlot index={0} className="w-10 h-12 sm:w-12 sm:h-14 text-lg font-semibold border-border/50" />
-            <InputOTPSlot index={1} className="w-10 h-12 sm:w-12 sm:h-14 text-lg font-semibold border-border/50" />
-            <InputOTPSlot index={2} className="w-10 h-12 sm:w-12 sm:h-14 text-lg font-semibold border-border/50" />
-            <InputOTPSlot index={3} className="w-10 h-12 sm:w-12 sm:h-14 text-lg font-semibold border-border/50" />
-            <InputOTPSlot index={4} className="w-10 h-12 sm:w-12 sm:h-14 text-lg font-semibold border-border/50" />
-            <InputOTPSlot index={5} className="w-10 h-12 sm:w-12 sm:h-14 text-lg font-semibold border-border/50" />
+            <InputOTPSlot index={0} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
+            <InputOTPSlot index={1} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
+            <InputOTPSlot index={2} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
+            <InputOTPSlot index={3} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
+            <InputOTPSlot index={4} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
+            <InputOTPSlot index={5} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
           </InputOTPGroup>
         </InputOTP>
 
         {error && (
-          <p className="text-destructive text-sm text-center">{error}</p>
+          <p className="text-destructive text-xs text-center">{error}</p>
         )}
       </div>
 
@@ -114,24 +113,24 @@ const OTPVerification = ({ mobile, countryCode, onVerified, onBack }: OTPVerific
             variant="ghost"
             size="sm"
             onClick={handleResendOTP}
-            className="text-primary hover:text-primary/80 gap-2"
+            className="text-primary hover:text-primary/80 gap-2 h-8 text-xs"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5" />
             Resend OTP
           </Button>
         ) : (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Resend OTP in <span className="font-semibold text-foreground">{resendTimer}s</span>
           </p>
         )}
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col gap-3 pt-2">
+      <div className="flex flex-col gap-2.5 pt-1">
         <Button
           onClick={handleVerify}
           disabled={otp.length !== 6 || isVerifying}
-          className="w-full h-11 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white font-semibold rounded-xl shadow-lg shadow-primary/25 gap-2"
+          className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white font-semibold rounded-lg shadow-lg shadow-primary/25 gap-2 text-sm"
         >
           {isVerifying ? (
             <>
@@ -149,15 +148,15 @@ const OTPVerification = ({ mobile, countryCode, onVerified, onBack }: OTPVerific
         <Button
           variant="ghost"
           onClick={onBack}
-          className="text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground h-8 text-xs"
         >
-          Edit Contact Details
+          Edit Email Address
         </Button>
       </div>
 
       {/* Security Note */}
-      <p className="text-xs text-center text-muted-foreground pt-2">
-        By verifying, you confirm ownership of this contact.
+      <p className="text-[11px] text-center text-muted-foreground">
+        By verifying, you confirm ownership of this email address.
       </p>
     </motion.div>
   );
