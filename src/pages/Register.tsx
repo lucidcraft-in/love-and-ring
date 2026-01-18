@@ -399,12 +399,12 @@ const Register = () => {
                 <>
                   {!canProceed && !isLastStep && (
                     <motion.div
-                      initial={{ opacity: 0, y: -10 }}
+                      initial={{ opacity: 0, y: -5 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center gap-2 mt-4 p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-600 dark:text-amber-400"
+                      className="flex items-center gap-1.5 mt-3 py-1.5 px-2.5 bg-amber-500/10 border border-amber-500/20 rounded-md text-amber-600 dark:text-amber-400"
                     >
-                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                      <p className="text-xs">Please fill all required fields to continue</p>
+                      <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                      <p className="text-[11px]">Please fill all required fields to continue</p>
                     </motion.div>
                   )}
 
