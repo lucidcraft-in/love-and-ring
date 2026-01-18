@@ -11,6 +11,7 @@ import StepTwo from "@/components/registration/StepTwo";
 import StepThree from "@/components/registration/StepThree";
 import StepFour from "@/components/registration/StepFour";
 import StepFive from "@/components/registration/StepFive";
+import OTPVerification from "@/components/registration/OTPVerification";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
 import heroSlide3 from "@/assets/hero-slide-3.jpg";
@@ -45,13 +46,15 @@ export interface RegistrationData {
 const Register = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [showOTPVerification, setShowOTPVerification] = useState(false);
+  const [isOTPVerified, setIsOTPVerified] = useState(false);
   const [stepErrors, setStepErrors] = useState<{ [key: string]: string }>({});
   const [isStepValid, setIsStepValid] = useState(false);
   const [formData, setFormData] = useState<RegistrationData>({
     accountFor: "",
     fullName: "",
     email: "",
-    countryCode: "",
+    countryCode: "+91",
     mobile: "",
     gender: "",
     dob: "",
@@ -95,7 +98,7 @@ const Register = () => {
   const getRequiredFieldsForStep = (step: number): (keyof RegistrationData)[] => {
     switch (step) {
       case 1:
-        return ["accountFor", "fullName", "email", "countryCode", "mobile", "gender", "dob", "language"];
+        return ["accountFor", "fullName", "countryCode", "mobile", "gender"];
       case 2:
         return ["religion", "caste", "motherTongue"];
       case 3:
@@ -129,14 +132,33 @@ const Register = () => {
   };
 
   const nextStep = () => {
+    // On Step 1, show OTP verification instead of going to Step 2
+    if (currentStep === 1 && !isOTPVerified) {
+      setShowOTPVerification(true);
+      return;
+    }
+    
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
       setStepErrors({});
     }
   };
 
+  const handleOTPVerified = () => {
+    setIsOTPVerified(true);
+    setShowOTPVerification(false);
+    setCurrentStep(2);
+    setStepErrors({});
+    toast.success("Mobile number verified successfully!");
+  };
+
+  const handleBackFromOTP = () => {
+    setShowOTPVerification(false);
+  };
+
   const prevStep = () => {
     if (currentStep > 1) {
+      // If going back to step 1, keep OTP verified status
       setCurrentStep(currentStep - 1);
       setStepErrors({});
     }
@@ -352,55 +374,67 @@ const Register = () => {
 
               {/* Form Content */}
               <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentStep}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="[&_label]:text-sm [&_label]:mb-1 [&_.space-y-4]:space-y-3 [&_.space-y-6]:space-y-4 [&_input]:h-9 [&_select]:h-9 [&_.grid.gap-4]:gap-3 [&_.grid.gap-6]:gap-4"
-                >
-                  {renderStep()}
-                </motion.div>
+                {showOTPVerification ? (
+                  <OTPVerification
+                    mobile={formData.mobile}
+                    countryCode={formData.countryCode}
+                    onVerified={handleOTPVerified}
+                    onBack={handleBackFromOTP}
+                  />
+                ) : (
+                  <motion.div
+                    key={currentStep}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {renderStep()}
+                  </motion.div>
+                )}
               </AnimatePresence>
 
-              {/* Validation Message */}
-              {!canProceed && !isLastStep && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center gap-2 mt-4 p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-600 dark:text-amber-400"
-                >
-                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                  <p className="text-xs">Please fill all required fields to continue</p>
-                </motion.div>
+              {/* Validation Message & Navigation - Hide during OTP verification */}
+              {!showOTPVerification && (
+                <>
+                  {!canProceed && !isLastStep && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-2 mt-4 p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-600 dark:text-amber-400"
+                    >
+                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                      <p className="text-xs">Please fill all required fields to continue</p>
+                    </motion.div>
+                  )}
+
+                  {/* Navigation Buttons */}
+                  <div className="flex justify-between mt-5 pt-4 border-t border-border/50">
+                    <Button
+                      variant="outline"
+                      onClick={prevStep}
+                      disabled={currentStep === 1}
+                      className="gap-1.5 rounded-lg px-4 h-9 text-sm disabled:opacity-40"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+
+                    <Button
+                      onClick={isLastStep ? handleSubmit : nextStep}
+                      disabled={!canProceed}
+                      className={`gap-1.5 rounded-lg px-6 h-9 text-sm ${
+                        canProceed 
+                          ? 'bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25' 
+                          : 'opacity-40 cursor-not-allowed'
+                      }`}
+                    >
+                      {isLastStep ? "Submit" : currentStep === 1 ? "Get OTP" : "Continue"}
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </>
               )}
-
-              {/* Navigation Buttons */}
-              <div className="flex justify-between mt-5 pt-4 border-t border-border/50">
-                <Button
-                  variant="outline"
-                  onClick={prevStep}
-                  disabled={currentStep === 1}
-                  className="gap-1.5 rounded-lg px-4 h-9 text-sm disabled:opacity-40"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous
-                </Button>
-
-                <Button
-                  onClick={isLastStep ? handleSubmit : nextStep}
-                  disabled={!canProceed}
-                  className={`gap-1.5 rounded-lg px-6 h-9 text-sm ${
-                    canProceed 
-                      ? 'bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25' 
-                      : 'opacity-40 cursor-not-allowed'
-                  }`}
-                >
-                  {isLastStep ? "Submit" : "Continue"}
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
             </Card>
 
             {/* Help Text */}
