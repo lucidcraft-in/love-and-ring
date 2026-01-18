@@ -130,12 +130,6 @@ const StepOne = ({ errors = {}, formData, updateFormData }: StepOneProps) => {
         </div>
       </div>
 
-      {/* Info Note */}
-      <div className="bg-primary/5 rounded-xl p-3 border border-primary/10">
-        <p className="text-xs text-muted-foreground text-center">
-          An OTP will be sent to verify your mobile number
-        </p>
-      </div>
     </div>
   );
 };
