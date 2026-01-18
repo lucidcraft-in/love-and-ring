@@ -73,9 +73,9 @@ const OTPVerification = ({ mobile, countryCode, onVerified, onBack }: OTPVerific
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
           <Shield className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-xl font-bold mb-2">Verify Your Number</h2>
+        <h2 className="text-xl font-bold mb-2">Verify Your Account</h2>
         <p className="text-muted-foreground text-sm">
-          Enter the 6-digit OTP sent to
+          Enter the 6-digit verification code sent to
         </p>
         <p className="font-semibold text-foreground mt-1">
           {countryCode} {maskedMobile}
@@ -151,13 +151,13 @@ const OTPVerification = ({ mobile, countryCode, onVerified, onBack }: OTPVerific
           onClick={onBack}
           className="text-muted-foreground hover:text-foreground"
         >
-          Change Mobile Number
+          Edit Contact Details
         </Button>
       </div>
 
       {/* Security Note */}
       <p className="text-xs text-center text-muted-foreground pt-2">
-        By verifying, you confirm that this mobile number belongs to you.
+        By verifying, you confirm ownership of this contact.
       </p>
     </motion.div>
   );
