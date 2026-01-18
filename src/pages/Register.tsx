@@ -98,7 +98,7 @@ const Register = () => {
   const getRequiredFieldsForStep = (step: number): (keyof RegistrationData)[] => {
     switch (step) {
       case 1:
-        return ["accountFor", "fullName", "countryCode", "mobile", "gender"];
+        return ["accountFor", "fullName", "email", "countryCode", "mobile", "gender"];
       case 2:
         return ["religion", "caste", "motherTongue"];
       case 3:
@@ -376,8 +376,7 @@ const Register = () => {
               <AnimatePresence mode="wait">
                 {showOTPVerification ? (
                   <OTPVerification
-                    mobile={formData.mobile}
-                    countryCode={formData.countryCode}
+                    email={formData.email}
                     onVerified={handleOTPVerified}
                     onBack={handleBackFromOTP}
                   />
