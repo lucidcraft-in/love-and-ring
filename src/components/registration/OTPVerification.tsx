@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Mail, RotateCcw, CheckCircle, Loader2 } from "lucide-react";
+import { Mail, RotateCcw, CheckCircle, Loader2, Lock, Eye, EyeOff } from "lucide-react";
 
 interface OTPVerificationProps {
   email: string;
-  onVerified: () => void;
+  onVerified: (password: string) => void;
   onBack: () => void;
 }
 
@@ -16,6 +18,15 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
   const [resendTimer, setResendTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
   const [error, setError] = useState("");
+  
+  // Password state
+  const [isOTPVerified, setIsOTPVerified] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [isCreatingPassword, setIsCreatingPassword] = useState(false);
 
   // Mask email for display
   const maskedEmail = email.length > 4 
@@ -24,15 +35,27 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
 
   // Countdown timer for resend
   useEffect(() => {
-    if (resendTimer > 0) {
+    if (resendTimer > 0 && !isOTPVerified) {
       const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
       return () => clearTimeout(timer);
-    } else {
+    } else if (!isOTPVerified) {
       setCanResend(true);
     }
-  }, [resendTimer]);
+  }, [resendTimer, isOTPVerified]);
 
-  const handleVerify = async () => {
+  // Password validation
+  const validatePassword = (pass: string): boolean => {
+    const hasMinLength = pass.length >= 8;
+    const hasLetter = /[a-zA-Z]/.test(pass);
+    const hasNumber = /[0-9]/.test(pass);
+    return hasMinLength && hasLetter && hasNumber;
+  };
+
+  const isPasswordValid = validatePassword(password);
+  const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
+  const canCreatePassword = isPasswordValid && passwordsMatch;
+
+  const handleVerifyOTP = async () => {
     if (otp.length !== 6) {
       setError("Please enter a valid 6-digit OTP");
       return;
@@ -46,7 +69,27 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
     
     // For demo, accept any 6-digit OTP
     setIsVerifying(false);
-    onVerified();
+    setIsOTPVerified(true);
+  };
+
+  const handleCreatePassword = async () => {
+    if (!canCreatePassword) {
+      if (!isPasswordValid) {
+        setPasswordError("Password must be at least 8 characters with letters and numbers");
+      } else if (!passwordsMatch) {
+        setPasswordError("Passwords do not match");
+      }
+      return;
+    }
+
+    setIsCreatingPassword(true);
+    setPasswordError("");
+
+    // Simulate password creation (replace with actual API call)
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    setIsCreatingPassword(false);
+    onVerified(password);
   };
 
   const handleResendOTP = async () => {
@@ -67,97 +110,271 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
       transition={{ duration: 0.3 }}
       className="space-y-5"
     >
-      {/* Header */}
-      <div className="text-center">
-        <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-          <Mail className="w-7 h-7 text-primary" />
-        </div>
-        <h2 className="text-lg font-bold mb-1">Verify Your Email</h2>
-        <p className="text-muted-foreground text-sm">
-          Enter the 6-digit verification code sent to
-        </p>
-        <p className="font-semibold text-foreground mt-1 text-sm">
-          {maskedEmail}
-        </p>
-      </div>
-
-      {/* OTP Input */}
-      <div className="flex flex-col items-center gap-3">
-        <InputOTP
-          maxLength={6}
-          value={otp}
-          onChange={(value) => {
-            setOtp(value);
-            setError("");
-          }}
-        >
-          <InputOTPGroup>
-            <InputOTPSlot index={0} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
-            <InputOTPSlot index={1} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
-            <InputOTPSlot index={2} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
-            <InputOTPSlot index={3} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
-            <InputOTPSlot index={4} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
-            <InputOTPSlot index={5} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
-          </InputOTPGroup>
-        </InputOTP>
-
-        {error && (
-          <p className="text-destructive text-xs text-center">{error}</p>
-        )}
-      </div>
-
-      {/* Resend Timer */}
-      <div className="text-center">
-        {canResend ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleResendOTP}
-            className="text-primary hover:text-primary/80 gap-2 h-8 text-xs"
+      <AnimatePresence mode="wait">
+        {!isOTPVerified ? (
+          /* OTP Verification Section */
+          <motion.div
+            key="otp-section"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-5"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Resend OTP
-          </Button>
+            {/* Header */}
+            <div className="text-center">
+              <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                <Mail className="w-7 h-7 text-primary" />
+              </div>
+              <h2 className="text-lg font-bold mb-1">Verify Your Email</h2>
+              <p className="text-muted-foreground text-sm">
+                Enter the 6-digit verification code sent to
+              </p>
+              <p className="font-semibold text-foreground mt-1 text-sm">
+                {maskedEmail}
+              </p>
+            </div>
+
+            {/* OTP Input */}
+            <div className="flex flex-col items-center gap-3">
+              <InputOTP
+                maxLength={6}
+                value={otp}
+                onChange={(value) => {
+                  setOtp(value);
+                  setError("");
+                }}
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
+                  <InputOTPSlot index={1} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
+                  <InputOTPSlot index={2} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
+                  <InputOTPSlot index={3} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
+                  <InputOTPSlot index={4} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
+                  <InputOTPSlot index={5} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
+                </InputOTPGroup>
+              </InputOTP>
+
+              {error && (
+                <p className="text-destructive text-xs text-center">{error}</p>
+              )}
+            </div>
+
+            {/* Resend Timer */}
+            <div className="text-center">
+              {canResend ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleResendOTP}
+                  className="text-primary hover:text-primary/80 gap-2 h-8 text-xs"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Resend OTP
+                </Button>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Resend OTP in <span className="font-semibold text-foreground">{resendTimer}s</span>
+                </p>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-2.5 pt-1">
+              <Button
+                onClick={handleVerifyOTP}
+                disabled={otp.length !== 6 || isVerifying}
+                className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white font-semibold rounded-lg shadow-lg shadow-primary/25 gap-2 text-sm"
+              >
+                {isVerifying ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    Verify OTP
+                  </>
+                )}
+              </Button>
+
+              <Button
+                variant="ghost"
+                onClick={onBack}
+                className="text-muted-foreground hover:text-foreground h-8 text-xs"
+              >
+                Edit Email Address
+              </Button>
+            </div>
+
+            {/* Security Note */}
+            <p className="text-[11px] text-center text-muted-foreground">
+              By verifying, you confirm ownership of this email address.
+            </p>
+          </motion.div>
         ) : (
-          <p className="text-xs text-muted-foreground">
-            Resend OTP in <span className="font-semibold text-foreground">{resendTimer}s</span>
-          </p>
+          /* Password Creation Section */
+          <motion.div
+            key="password-section"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-5"
+          >
+            {/* Header */}
+            <div className="text-center">
+              <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-green-500/20 to-primary/20 flex items-center justify-center">
+                <Lock className="w-7 h-7 text-primary" />
+              </div>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-xs text-green-600 font-medium">Email Verified</span>
+              </div>
+              <h2 className="text-lg font-bold mb-1">Create Password</h2>
+              <p className="text-muted-foreground text-sm">
+                Set a secure password for your account
+              </p>
+            </div>
+
+            {/* Password Fields */}
+            <div className="space-y-4">
+              {/* Password Field */}
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-sm font-medium">
+                  Password <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create a password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordError("");
+                    }}
+                    className="h-10 pr-10 bg-background/50 border-border/50 focus:border-primary/50"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-10 w-10 px-0 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Password must be at least 8 characters and include a mix of letters and numbers.
+                </p>
+                {/* Password Strength Indicators */}
+                {password.length > 0 && (
+                  <div className="flex gap-2 mt-2">
+                    <div className={`flex-1 h-1 rounded-full transition-colors ${
+                      password.length >= 8 ? 'bg-green-500' : 'bg-muted'
+                    }`} />
+                    <div className={`flex-1 h-1 rounded-full transition-colors ${
+                      /[a-zA-Z]/.test(password) ? 'bg-green-500' : 'bg-muted'
+                    }`} />
+                    <div className={`flex-1 h-1 rounded-full transition-colors ${
+                      /[0-9]/.test(password) ? 'bg-green-500' : 'bg-muted'
+                    }`} />
+                  </div>
+                )}
+              </div>
+
+              {/* Confirm Password Field */}
+              <div className="space-y-1.5">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                  Confirm Password <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      setPasswordError("");
+                    }}
+                    className="h-10 pr-10 bg-background/50 border-border/50 focus:border-primary/50"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-10 w-10 px-0 hover:bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                </div>
+                {/* Match indicator */}
+                {confirmPassword.length > 0 && (
+                  <p className={`text-[11px] flex items-center gap-1 ${
+                    passwordsMatch ? 'text-green-600' : 'text-destructive'
+                  }`}>
+                    {passwordsMatch ? (
+                      <>
+                        <CheckCircle className="w-3 h-3" />
+                        Passwords match
+                      </>
+                    ) : (
+                      "Passwords do not match"
+                    )}
+                  </p>
+                )}
+              </div>
+
+              {passwordError && (
+                <p className="text-destructive text-xs text-center">{passwordError}</p>
+              )}
+            </div>
+
+            {/* Action Button */}
+            <div className="pt-1">
+              <Button
+                onClick={handleCreatePassword}
+                disabled={!canCreatePassword || isCreatingPassword}
+                className={`w-full h-10 font-semibold rounded-lg gap-2 text-sm transition-all ${
+                  canCreatePassword
+                    ? 'bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25'
+                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                }`}
+              >
+                {isCreatingPassword ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Creating Account...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    Create Password & Continue
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Security Note */}
+            <p className="text-[11px] text-center text-muted-foreground">
+              Your password is encrypted and securely stored.
+            </p>
+          </motion.div>
         )}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex flex-col gap-2.5 pt-1">
-        <Button
-          onClick={handleVerify}
-          disabled={otp.length !== 6 || isVerifying}
-          className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white font-semibold rounded-lg shadow-lg shadow-primary/25 gap-2 text-sm"
-        >
-          {isVerifying ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Verifying...
-            </>
-          ) : (
-            <>
-              <CheckCircle className="w-4 h-4" />
-              Verify & Continue
-            </>
-          )}
-        </Button>
-
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          className="text-muted-foreground hover:text-foreground h-8 text-xs"
-        >
-          Edit Email Address
-        </Button>
-      </div>
-
-      {/* Security Note */}
-      <p className="text-[11px] text-center text-muted-foreground">
-        By verifying, you confirm ownership of this email address.
-      </p>
+      </AnimatePresence>
     </motion.div>
   );
 };
