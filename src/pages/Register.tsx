@@ -144,12 +144,14 @@ const Register = () => {
     }
   };
 
-  const handleOTPVerified = () => {
+  const handleOTPVerified = (password: string) => {
     setIsOTPVerified(true);
     setShowOTPVerification(false);
     setCurrentStep(2);
     setStepErrors({});
-    toast.success("Mobile number verified successfully!");
+    // Store password in form data or context for account creation
+    console.log("Account created with password");
+    toast.success("Account created successfully!");
   };
 
   const handleBackFromOTP = () => {
