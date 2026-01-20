@@ -1,18 +1,49 @@
+import Axios from "@/axios/axios";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { RegistrationData } from "@/pages/Register";
+import { set } from "date-fns";
+import { useEffect, useState } from "react";
 
 interface StepTwoProps {
   formData?: RegistrationData;
   updateFormData?: (field: keyof RegistrationData, value: string) => void;
 }
 
+interface Religion {
+  _id: string;
+  name: string;
+}
 const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
+  const [religions, setReligions] = useState<Religion[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (field: keyof RegistrationData, value: string) => {
     if (updateFormData) {
       updateFormData(field, value);
     }
   };
+
+  useEffect(() => {
+    const fetchReligions = async () => {
+      try {
+        setLoading(true);
+        const response = await Axios.get("/api/master/religions");
+        setReligions(response.data);
+      } catch (err) {
+        console.error("Failed to fetch religions");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReligions();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -24,25 +55,32 @@ const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="religion">Religion *</Label>
-          <Select value={formData?.religion} onValueChange={(value) => handleChange("religion", value)}>
+          <Select
+            value={formData?.religion}
+            onValueChange={(value) => handleChange("religion", value)}
+            disabled={loading}
+          >
             <SelectTrigger>
-              <SelectValue placeholder="Select religion" />
+              <SelectValue
+                placeholder={loading ? "Loading..." : "Select religion"}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="hindu">Hindu</SelectItem>
-              <SelectItem value="muslim">Muslim</SelectItem>
-              <SelectItem value="christian">Christian</SelectItem>
-              <SelectItem value="sikh">Sikh</SelectItem>
-              <SelectItem value="buddhist">Buddhist</SelectItem>
-              <SelectItem value="jain">Jain</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              {religions.map((religion) => (
+                <SelectItem key={religion._id} value={religion.name}>
+                  {religion.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="caste">Caste *</Label>
-          <Select value={formData?.caste} onValueChange={(value) => handleChange("caste", value)}>
+          <Select
+            value={formData?.caste}
+            onValueChange={(value) => handleChange("caste", value)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select caste" />
             </SelectTrigger>
@@ -55,12 +93,17 @@ const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
               <SelectItem value="prefer-not">Prefer not to say</SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">Options vary based on selected religion</p>
+          <p className="text-xs text-muted-foreground">
+            Options vary based on selected religion
+          </p>
         </div>
 
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="motherTongue">Mother Tongue *</Label>
-          <Select value={formData?.motherTongue} onValueChange={(value) => handleChange("motherTongue", value)}>
+          <Select
+            value={formData?.motherTongue}
+            onValueChange={(value) => handleChange("motherTongue", value)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select mother tongue" />
             </SelectTrigger>

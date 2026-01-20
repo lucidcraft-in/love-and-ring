@@ -3,22 +3,38 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Mail, RotateCcw, CheckCircle, Loader2, Lock, Eye, EyeOff } from "lucide-react";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import {
+  Mail,
+  RotateCcw,
+  CheckCircle,
+  Loader2,
+  Lock,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 interface OTPVerificationProps {
   email: string;
-  onVerified: (password: string) => void;
+  onVerified: (otp: string, password: string) => void;
   onBack: () => void;
 }
 
-const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) => {
+const OTPVerification = ({
+  email,
+  onVerified,
+  onBack,
+}: OTPVerificationProps) => {
   const [otp, setOtp] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
   const [error, setError] = useState("");
-  
+
   // Password state
   const [isOTPVerified, setIsOTPVerified] = useState(false);
   const [password, setPassword] = useState("");
@@ -29,9 +45,10 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
   const [isCreatingPassword, setIsCreatingPassword] = useState(false);
 
   // Mask email for display
-  const maskedEmail = email.length > 4 
-    ? email.slice(0, 3) + "***" + email.slice(email.indexOf("@")) 
-    : email;
+  const maskedEmail =
+    email.length > 4
+      ? email.slice(0, 3) + "***" + email.slice(email.indexOf("@"))
+      : email;
 
   // Countdown timer for resend
   useEffect(() => {
@@ -52,7 +69,8 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
   };
 
   const isPasswordValid = validatePassword(password);
-  const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
+  const passwordsMatch =
+    password === confirmPassword && confirmPassword.length > 0;
   const canCreatePassword = isPasswordValid && passwordsMatch;
 
   const handleVerifyOTP = async () => {
@@ -65,8 +83,8 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
     setError("");
 
     // Simulate OTP verification (replace with actual API call)
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     // For demo, accept any 6-digit OTP
     setIsVerifying(false);
     setIsOTPVerified(true);
@@ -75,7 +93,9 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
   const handleCreatePassword = async () => {
     if (!canCreatePassword) {
       if (!isPasswordValid) {
-        setPasswordError("Password must be at least 8 characters with letters and numbers");
+        setPasswordError(
+          "Password must be at least 8 characters with letters and numbers",
+        );
       } else if (!passwordsMatch) {
         setPasswordError("Passwords do not match");
       }
@@ -86,10 +106,10 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
     setPasswordError("");
 
     // Simulate password creation (replace with actual API call)
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     setIsCreatingPassword(false);
-    onVerified(password);
+    onVerified(otp, password);
   };
 
   const handleResendOTP = async () => {
@@ -97,9 +117,9 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
     setResendTimer(30);
     setOtp("");
     setError("");
-    
+
     // Simulate resend (replace with actual API call)
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
   };
 
   return (
@@ -146,12 +166,30 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
                 }}
               >
                 <InputOTPGroup>
-                  <InputOTPSlot index={0} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
-                  <InputOTPSlot index={1} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
-                  <InputOTPSlot index={2} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
-                  <InputOTPSlot index={3} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
-                  <InputOTPSlot index={4} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
-                  <InputOTPSlot index={5} className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50" />
+                  <InputOTPSlot
+                    index={0}
+                    className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50"
+                  />
+                  <InputOTPSlot
+                    index={1}
+                    className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50"
+                  />
+                  <InputOTPSlot
+                    index={2}
+                    className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50"
+                  />
+                  <InputOTPSlot
+                    index={3}
+                    className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50"
+                  />
+                  <InputOTPSlot
+                    index={4}
+                    className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50"
+                  />
+                  <InputOTPSlot
+                    index={5}
+                    className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50"
+                  />
                 </InputOTPGroup>
               </InputOTP>
 
@@ -174,7 +212,10 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
                 </Button>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  Resend OTP in <span className="font-semibold text-foreground">{resendTimer}s</span>
+                  Resend OTP in{" "}
+                  <span className="font-semibold text-foreground">
+                    {resendTimer}s
+                  </span>
                 </p>
               )}
             </div>
@@ -230,7 +271,9 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
               </div>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-xs text-green-600 font-medium">Email Verified</span>
+                <span className="text-xs text-green-600 font-medium">
+                  Email Verified
+                </span>
               </div>
               <h2 className="text-lg font-bold mb-1">Create Password</h2>
               <p className="text-muted-foreground text-sm">
@@ -272,27 +315,37 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
                   </Button>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Password must be at least 8 characters and include a mix of letters and numbers.
+                  Password must be at least 8 characters and include a mix of
+                  letters and numbers.
                 </p>
                 {/* Password Strength Indicators */}
                 {password.length > 0 && (
                   <div className="flex gap-2 mt-2">
-                    <div className={`flex-1 h-1 rounded-full transition-colors ${
-                      password.length >= 8 ? 'bg-green-500' : 'bg-muted'
-                    }`} />
-                    <div className={`flex-1 h-1 rounded-full transition-colors ${
-                      /[a-zA-Z]/.test(password) ? 'bg-green-500' : 'bg-muted'
-                    }`} />
-                    <div className={`flex-1 h-1 rounded-full transition-colors ${
-                      /[0-9]/.test(password) ? 'bg-green-500' : 'bg-muted'
-                    }`} />
+                    <div
+                      className={`flex-1 h-1 rounded-full transition-colors ${
+                        password.length >= 8 ? "bg-green-500" : "bg-muted"
+                      }`}
+                    />
+                    <div
+                      className={`flex-1 h-1 rounded-full transition-colors ${
+                        /[a-zA-Z]/.test(password) ? "bg-green-500" : "bg-muted"
+                      }`}
+                    />
+                    <div
+                      className={`flex-1 h-1 rounded-full transition-colors ${
+                        /[0-9]/.test(password) ? "bg-green-500" : "bg-muted"
+                      }`}
+                    />
                   </div>
                 )}
               </div>
 
               {/* Confirm Password Field */}
               <div className="space-y-1.5">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-sm font-medium"
+                >
                   Confirm Password <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
@@ -323,9 +376,11 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
                 </div>
                 {/* Match indicator */}
                 {confirmPassword.length > 0 && (
-                  <p className={`text-[11px] flex items-center gap-1 ${
-                    passwordsMatch ? 'text-green-600' : 'text-destructive'
-                  }`}>
+                  <p
+                    className={`text-[11px] flex items-center gap-1 ${
+                      passwordsMatch ? "text-green-600" : "text-destructive"
+                    }`}
+                  >
                     {passwordsMatch ? (
                       <>
                         <CheckCircle className="w-3 h-3" />
@@ -339,7 +394,9 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
               </div>
 
               {passwordError && (
-                <p className="text-destructive text-xs text-center">{passwordError}</p>
+                <p className="text-destructive text-xs text-center">
+                  {passwordError}
+                </p>
               )}
             </div>
 
@@ -350,8 +407,8 @@ const OTPVerification = ({ email, onVerified, onBack }: OTPVerificationProps) =>
                 disabled={!canCreatePassword || isCreatingPassword}
                 className={`w-full h-10 font-semibold rounded-lg gap-2 text-sm transition-all ${
                   canCreatePassword
-                    ? 'bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25'
-                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                    ? "bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25"
+                    : "bg-muted text-muted-foreground cursor-not-allowed"
                 }`}
               >
                 {isCreatingPassword ? (

@@ -24,9 +24,11 @@ import OTPVerification from "@/components/registration/OTPVerification";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
 import heroSlide3 from "@/assets/hero-slide-3.jpg";
-
-import { SendSignUpOtp } from "@/services/AuthServices";
-import { registerUser } from "@/services/UserServices";
+import {
+  completeUserProfile,
+  sendRegistrationOtp,
+  verifyRegistrationOtp,
+} from "@/services/UserServices";
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
@@ -62,6 +64,7 @@ const Register = () => {
   const [isOTPVerified, setIsOTPVerified] = useState(false);
   const [stepErrors, setStepErrors] = useState<{ [key: string]: string }>({});
   const [isStepValid, setIsStepValid] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const [formData, setFormData] = useState<RegistrationData>({
     accountFor: "",
     fullName: "",
@@ -109,6 +112,22 @@ const Register = () => {
   }, []);
 
   const progress = (currentStep / totalSteps) * 100;
+
+  const handleSendOtp = async () => {
+    if (!formData.email) {
+      toast.error("Email required");
+      return;
+    }
+
+    try {
+      await sendRegistrationOtp(formData.email);
+      setOtpSent(true);
+      setShowOTPVerification(true);
+      toast.success("OTP sent to email");
+    } catch (err) {
+      toast.error("Failed to send OTP");
+    }
+  };
 
   const getRequiredFieldsForStep = (
     step: number,
@@ -170,33 +189,6 @@ const Register = () => {
       setStepErrors({});
     }
   };
-  const handleSendOtp = async () => {
-    if (!formData?.email) {
-      toast.error("Please enter your email address first.");
-      return;
-    }
-    try {
-      setSendingOtp(true);
-      await SendSignUpOtp(formData?.email);
-      localStorage.setItem("signupEmail", formData?.email);
-      setOtpSent(true);
-      toast.success("OTP sent successfully.");
-    } catch (error) {
-      toast.error("Failed to send OTP. Please try again.");
-    } finally {
-      setSendingOtp(false);
-    }
-  };
-
-  const handleOTPVerified = (password: string) => {
-    setIsOTPVerified(true);
-    setShowOTPVerification(false);
-    setCurrentStep(2);
-    setStepErrors({});
-    // Store password in form data or context for account creation
-    console.log("Account created with password");
-    toast.success("Account created successfully!");
-  };
 
   const handleBackFromOTP = () => {
     setShowOTPVerification(false);
@@ -210,14 +202,60 @@ const Register = () => {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleOTPVerified = async (otp: string, password: string) => {
     try {
-      await registerUser(formData);
-      toast.success("Registration successful! Please login to continue.");
+      const res = await verifyRegistrationOtp({
+        email: formData.email,
+        otp,
+        password,
+        accountFor:
+          formData.accountFor.charAt(0).toUpperCase() +
+          formData.accountFor.slice(1),
+        gender:
+          formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1),
+        fullName: formData.fullName,
+        mobile: formData.mobile,
+        countryCode: formData.countryCode,
+      });
+
+      setUserId(res.data.user._id);
+      setIsOTPVerified(true);
+      setShowOTPVerification(false);
+      setCurrentStep(2);
+
+      toast.success("Account created successfully");
+    } catch (err) {
+      toast.error("OTP verification failed");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!userId) {
+      toast.error("User not created");
+      return;
+    }
+
+    try {
+      await completeUserProfile(userId, {
+        religion: formData.religion,
+        caste: formData.caste,
+        motherTongue: formData.motherTongue,
+        height: formData.height,
+        weight: formData.weight,
+        maritalStatus: formData.maritalStatus,
+        bodyType: formData.bodyType,
+        city: formData.city,
+        education: formData.education,
+        profession: formData.profession,
+        interests: formData.interests,
+        traits: formData.traits,
+        diets: formData.diets,
+      });
+
+      toast.success("Profile completed successfully");
       navigate("/login");
-    } catch (error) {
-      toast.error("Registration failed. Please try again.");
-      console.log(error, "submit error");
+    } catch (err) {
+      toast.error("Failed to complete profile");
     }
   };
 

@@ -1,42 +1,28 @@
 import Axios from "@/axios/axios";
 import type { RegistrationData } from "@/pages/Register";
 
-export const registerUser = async (data: RegistrationData) => {
-  const payload = {
-    accountFor: data.accountFor,
-    fullName: data.fullName,
-    email: data.email,
-    mobile: data.countryCode + data.mobile,
-    gender: data.gender,
+export const sendRegistrationOtp = (email: string) => {
+  return Axios.post("/api/users/send-otp", { email });
+};
 
-    dateOfBirth: data.dob,
-    branch: data.city,
+export const verifyRegistrationOtp = (
+  data: {
+    email: string;
+    otp: string;
+    password: string;
+    accountFor: string;
+    fullName: string;
+    mobile: string;
+    countryCode: string;
+    gender: string;
+  }
+) => {
+  return Axios.post("/api/users/verify-otp", data);
+};
 
-    religion: data.religion,
-    caste: data.caste,
-    motherTongue: data.motherTongue,
-
-    height: data.height,
-    weight: data.weight,
-    maritalStatus: data.maritalStatus,
-    bodyType: data.bodyType,
-
-    education: data.education,
-    profession: data.profession,
-
-    interests: data.interests,
-    traits: data.traits,
-    diets: data.diets,
-  };
-
-  const response = await Axios.post("/api/users", payload);
-  return response.data;
-}
-
-export const loginUser = async (email: string, password: string) => {
-  const response = await Axios.post("/api/users/login", {
-    email,
-    password,
-  });
-  return response.data;
+export const completeUserProfile = (
+  userId: string,
+  data: Partial<RegistrationData>
+) => {
+  return Axios.put(`/api/users/${userId}/complete-profile`, data);
 };
