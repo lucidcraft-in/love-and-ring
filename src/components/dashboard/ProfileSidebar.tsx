@@ -48,30 +48,24 @@ const ProfileSidebar = ({
   const [loading, setLoading] = useState(false);
 
   const fetchUser = async () => {
-    setLoading(true);
     try {
       const storedUser = localStorage.getItem("user");
-      if (!storedUser) return;
+      if (!storedUser) {
+        console.warn("No user in localStorage");
+        return;
+      }
 
       const parsedUser = JSON.parse(storedUser);
-      const userId = parsedUser.id || parsedUser._id;
-      const email = parsedUser.email;
+      const userId = parsedUser._id;
 
-      const response = await Axios.get("/api/users?take=100&skip=0");
+      console.log("Fetching user with id:", userId);
 
-      const users = response.data?.data || response.data;
+      const response = await Axios.get(`/api/users/${userId}`);
 
-      const matchedUser = users.find(
-        (u: any) => u._id === userId || u.email === email,
-      );
-
-      if (matchedUser) {
-        setUserData(matchedUser);
-      }
+      console.log("Fetched user:", response.data);
+      setUserData(response.data);
     } catch (error) {
       console.error("Failed to fetch user", error);
-    } finally {
-      setLoading(false);
     }
   };
 

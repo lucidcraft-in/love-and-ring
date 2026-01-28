@@ -50,16 +50,40 @@ const Matches = () => {
   const [matches, setMatches] = useState<MatchItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [likingProfile, setLikingProfile] = useState<string | null>(null);
+  const [likedUserIds, setLikedUserIds] = useState<Set<string>>(new Set());
 
   const navigate = useNavigate();
 
   // Mock user NRI plan status - set to false to simulate non-NRI user
   const hasNRIPlan = false;
+  const fetchLikedProfiles = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await Axios.get("/api/user/profile-likes/sent", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const ids = res.data.map((item: any) => item.likedUser._id);
+
+      setLikedUserIds(new Set(ids));
+    } catch (err) {
+      console.error("Failed to fetch liked profiles", err);
+    }
+  };
 
   const fetchMatches = async () => {
     setLoading(true);
     try {
-      const res = await Axios.get("/api/user/matches");
+      const token = localStorage.getItem("token"); // 👈 get token
+
+      const res = await Axios.get("/api/user/matches", {
+        headers: {
+          Authorization: `Bearer ${token}`, // 👈 attach token
+        },
+      });
 
       const raw = Array.isArray(res.data?.data) ? res.data.data : [];
 
@@ -73,13 +97,13 @@ const Matches = () => {
           education: item.user.highestEducation
             ? { name: item.user.highestEducation.name }
             : undefined,
-          profession: undefined, // backend doesn't send this yet
-          city: item.user.city, // currently ID
+          profession: undefined,
+          city: item.user.city,
           state: "",
           photos: item.user.photos || [],
         },
         matchScore: item.matchPercentage ?? 0,
-        liked: item.liked || false, // Check if already liked
+        liked: likedUserIds.has(item.user._id),
       }));
 
       setMatches(normalized);
@@ -93,8 +117,12 @@ const Matches = () => {
   };
 
   useEffect(() => {
-    fetchMatches();
+    fetchLikedProfiles();
   }, []);
+
+  useEffect(() => {
+    fetchMatches();
+  }, [likedUserIds]);
 
   const calculateAge = (dob: string) => {
     const birth = new Date(dob);
@@ -190,7 +218,11 @@ const Matches = () => {
   };
 
   const handleLikeProfile = async (targetUserId: string) => {
-    // Check if already liked
+    console.log("LIKING USER ID:", targetUserId);
+    console.log(
+      "MATCH OBJECT:",
+      matches.find((m) => m.user._id === targetUserId),
+    );
     const match = matches.find((m) => m.user._id === targetUserId);
     if (match?.liked) {
       toast.info("Profile already liked");
@@ -200,37 +232,28 @@ const Matches = () => {
     setLikingProfile(targetUserId);
 
     try {
-      // Try the endpoint from your Postman
+      const token = localStorage.getItem("token");
+
       const response = await Axios.post(
-        `/api/user/profile-likes/${targetUserId}`
+        `/api/user/profile-likes/${targetUserId}`,
+        {}, // 👈 POST body empty
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // ✅ token added
+          },
+        },
       );
 
-      console.log("Like response:", response.data);
-
-      // Update local state
       setMatches((prev) =>
         prev.map((m) =>
-          m.user._id === targetUserId ? { ...m, liked: true } : m
-        )
+          m.user._id === targetUserId ? { ...m, liked: true } : m,
+        ),
       );
 
       toast.success("Profile liked ❤️");
     } catch (err: any) {
       console.error("Failed to like profile:", err);
-      
-      // Better error handling
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          "Failed to like profile";
-      
-      toast.error(errorMessage);
-      
-      // Log detailed error for debugging
-      console.error("Error details:", {
-        status: err.response?.status,
-        data: err.response?.data,
-        message: err.message,
-      });
+      toast.error(err.response?.data?.message || "Failed to like profile");
     } finally {
       setLikingProfile(null);
     }
@@ -240,14 +263,18 @@ const Matches = () => {
     setLikingProfile(targetUserId);
 
     try {
-      // Try DELETE endpoint (common pattern for removing likes)
-      await Axios.delete(`/api/user/profile-likes/${targetUserId}`);
+      const token = localStorage.getItem("token");
 
-      // Update local state
+      await Axios.delete(`/api/user/profile-likes/${targetUserId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ token added
+        },
+      });
+
       setMatches((prev) =>
         prev.map((m) =>
-          m.user._id === targetUserId ? { ...m, liked: false } : m
-        )
+          m.user._id === targetUserId ? { ...m, liked: false } : m,
+        ),
       );
 
       toast.success("Profile unliked");
@@ -408,7 +435,10 @@ const Matches = () => {
                         variant="outline"
                         className="w-full relative overflow-hidden"
                         onClick={() =>
-                          handleSendInterest(match.user._id, match.user.fullName)
+                          handleSendInterest(
+                            match.user._id,
+                            match.user.fullName,
+                          )
                         }
                         disabled={isSending}
                       >
