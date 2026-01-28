@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,150 +18,97 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import OptimizedProfileImage from "./OptimizedProfileImage";
 import FiltersModal from "./FiltersModal";
-import Anjali from "@/assets/anjali.jpg";
-import Sneha from "@/assets/sneha.jpg";
-import Aparna from "@/assets/aparna.jpg";
-import Athira from "@/assets/athira.jpg";
-import Neethu from "@/assets/neethu.jpg";
-import Meera from "@/assets/meera.jpg";
-import Lakshmi from "@/assets/Lakshmi.jpg";
-import Swathi from "@/assets/swathi.jpg";
-import Divya from "@/assets/divya.jpg";
-import Revathy from "@/assets/anjali.jpg";
+import Axios from "@/axios/axios";
+
+interface MatchUser {
+  _id: string;
+  fullName: string;
+  dateOfBirth: string;
+  heightCm?: number;
+  interests: string[];
+  education?: { name: string };
+  profession?: { name: string };
+  city?: string;
+  state?: string;
+  photos?: {
+    url: string;
+    isPrimary: boolean;
+  }[];
+}
+
+interface MatchItem {
+  user: MatchUser;
+  matchScore: number;
+  liked: boolean;
+}
 
 const Matches = () => {
   const [activeTab, setActiveTab] = useState("new");
-  const [sentInterests, setSentInterests] = useState<number[]>([]);
-  const [sendingInterest, setSendingInterest] = useState<number | null>(null);
+  const [sentInterests, setSentInterests] = useState<string[]>([]);
+  const [sendingInterest, setSendingInterest] = useState<string | null>(null);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [matches, setMatches] = useState<MatchItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [likingProfile, setLikingProfile] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
   // Mock user NRI plan status - set to false to simulate non-NRI user
   const hasNRIPlan = false;
 
-  // Mock matches data
-  const matches = [
-    {
-      id: 9,
-      name: "Divya Ramesh",
-      age: 28,
-      city: "Ernakulam, Kerala",
-      education: "B.Arch",
-      profession: "Interior Designer",
-      image: Divya,
-      matchScore: 96,
-      interests: ["Design", "Sketching", "Home Decor"],
-      liked: true,
-    },
-    {
-      id: 8,
-      name: "Swathi Mohan",
-      age: 26,
-      city: "Kannur, Kerala",
-      education: "BSc Nursing",
-      profession: "Staff Nurse",
-      image: Swathi,
-      matchScore: 92,
-      interests: ["Healthcare", "Fitness", "Cooking"],
-      liked: true,
-    },
-    {
-      id: 7,
-      name: "Lakshmi Rajeev",
-      age: 30,
-      city: "Palakkad, Kerala",
-      education: "LLB",
-      profession: "Legal Associate",
-      image: Lakshmi,
-      matchScore: 85,
-      interests: ["Law", "Debates", "Classical Music"],
-      liked: true,
-    },
-    {
-      id: 6,
-      name: "Meera Suresh",
-      age: 27,
-      city: "Calicut, Kerala",
-      education: "MA English",
-      profession: "Content Strategist",
-      image: Meera,
-      matchScore: 88,
-      interests: ["Writing", "Blogging", "Poetry"],
-      liked: true,
-    },
-    {
-      id: 1,
-      name: "Anjali Menon",
-      age: 27,
-      city: "Kochi, Kerala",
-      education: "MBA – HR",
-      profession: "HR Executive",
-      image: Anjali,
-      matchScore: 94,
-      interests: ["Reading", "Yoga", "Travel"],
-      liked: false,
-    },
-    {
-      id: 2,
-      name: "Sneha Nair",
-      age: 26,
-      city: "Thiruvananthapuram, Kerala",
-      education: "B.Tech (CSE)",
-      profession: "Software Engineer",
-      image: Sneha,
-      matchScore: 89,
-      interests: ["Coding", "Music", "Photography"],
-      liked: false,
-    },
-    {
-      id: 3,
-      name: "Aparna Krishnan",
-      age: 29,
-      city: "Thrissur, Kerala",
-      education: "MSc Psychology",
-      profession: "Counseling Psychologist",
-      image: Aparna,
-      matchScore: 91,
-      interests: ["Mental Wellness", "Journaling", "Art"],
-      liked: false,
-    },
-    {
-      id: 4,
-      name: "Athira Varma",
-      age: 25,
-      city: "Kottayam, Kerala",
-      education: "B.Com",
-      profession: "Accounts Executive",
-      image: Athira,
-      matchScore: 87,
-      interests: ["Finance", "Cooking", "Travel"],
-      liked: false,
-    },
-    {
-      id: 5,
-      name: "Neethu Pillai",
-      age: 28,
-      city: "Alappuzha, Kerala",
-      education: "MBA – Finance",
-      profession: "Banking Officer",
-      image: Neethu,
-      matchScore: 90,
-      interests: ["Investing", "Yoga", "Reading"],
-      liked: false,
-    },
-    {
-      id: 10,
-      name: "Revathi Unnikrishnan",
-      age: 29,
-      city: "Pathanamthitta, Kerala",
-      education: "MSc Mathematics",
-      profession: "Higher Secondary Teacher",
-      image: Revathy,
-      matchScore: 93,
-      interests: ["Teaching", "Puzzles", "Gardening"],
-      liked: false,
-    },
-  ];
+  const fetchMatches = async () => {
+    setLoading(true);
+    try {
+      const res = await Axios.get("/api/user/matches");
+
+      const raw = Array.isArray(res.data?.data) ? res.data.data : [];
+
+      const normalized: MatchItem[] = raw.map((item: any) => ({
+        user: {
+          _id: item.user._id,
+          fullName: item.user.fullName,
+          dateOfBirth: item.user.dateOfBirth,
+          heightCm: item.user.heightCm,
+          interests: item.user.interests || [],
+          education: item.user.highestEducation
+            ? { name: item.user.highestEducation.name }
+            : undefined,
+          profession: undefined, // backend doesn't send this yet
+          city: item.user.city, // currently ID
+          state: "",
+          photos: item.user.photos || [],
+        },
+        matchScore: item.matchPercentage ?? 0,
+        liked: item.liked || false, // Check if already liked
+      }));
+
+      setMatches(normalized);
+    } catch (err: any) {
+      console.error("Failed to load matches", err);
+      toast.error(err.response?.data?.message || "Failed to load matches");
+      setMatches([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMatches();
+  }, []);
+
+  const calculateAge = (dob: string) => {
+    const birth = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  };
+
+  const getProfilePhoto = (photos?: any[]) => {
+    if (!photos || photos.length === 0) return "/placeholder-user.jpg";
+    return photos.find((p) => p.isPrimary)?.url || photos[0].url;
+  };
 
   // Mock NRI profiles data
   const nriProfiles = [
@@ -220,7 +167,7 @@ const Matches = () => {
 
   const likedProfiles = matches.filter((m) => m.liked);
 
-  const handleSendInterest = (matchId: number, matchName: string) => {
+  const handleSendInterest = (matchId: string, matchName: string) => {
     if (sentInterests.includes(matchId)) return;
 
     setSendingInterest(matchId);
@@ -237,29 +184,100 @@ const Matches = () => {
         {
           description: "They will be notified about your interest.",
           duration: 3000,
-        }
+        },
       );
     }, 1000);
+  };
+
+  const handleLikeProfile = async (targetUserId: string) => {
+    // Check if already liked
+    const match = matches.find((m) => m.user._id === targetUserId);
+    if (match?.liked) {
+      toast.info("Profile already liked");
+      return;
+    }
+
+    setLikingProfile(targetUserId);
+
+    try {
+      // Try the endpoint from your Postman
+      const response = await Axios.post(
+        `/api/user/profile-likes/${targetUserId}`
+      );
+
+      console.log("Like response:", response.data);
+
+      // Update local state
+      setMatches((prev) =>
+        prev.map((m) =>
+          m.user._id === targetUserId ? { ...m, liked: true } : m
+        )
+      );
+
+      toast.success("Profile liked ❤️");
+    } catch (err: any) {
+      console.error("Failed to like profile:", err);
+      
+      // Better error handling
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.error || 
+                          "Failed to like profile";
+      
+      toast.error(errorMessage);
+      
+      // Log detailed error for debugging
+      console.error("Error details:", {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message,
+      });
+    } finally {
+      setLikingProfile(null);
+    }
+  };
+
+  const handleUnlikeProfile = async (targetUserId: string) => {
+    setLikingProfile(targetUserId);
+
+    try {
+      // Try DELETE endpoint (common pattern for removing likes)
+      await Axios.delete(`/api/user/profile-likes/${targetUserId}`);
+
+      // Update local state
+      setMatches((prev) =>
+        prev.map((m) =>
+          m.user._id === targetUserId ? { ...m, liked: false } : m
+        )
+      );
+
+      toast.success("Profile unliked");
+    } catch (err: any) {
+      console.error("Failed to unlike profile:", err);
+      toast.error(err.response?.data?.message || "Failed to unlike profile");
+    } finally {
+      setLikingProfile(null);
+    }
   };
 
   const MatchCard = ({
     match,
     isNRI = false,
   }: {
-    match: (typeof matches)[0];
+    match: MatchItem;
     isNRI?: boolean;
   }) => {
-    const isInterestSent = sentInterests.includes(match.id);
-    const isSending = sendingInterest === match.id;
+    const isInterestSent = sentInterests.includes(match.user._id);
+    const isSending = sendingInterest === match.user._id;
     const isLocked = isNRI && !hasNRIPlan;
+    const isLiking = likingProfile === match.user._id;
 
     return (
       <Card className="glass-card overflow-hidden hover:shadow-lg transition-all">
         <div className="flex flex-col sm:flex-row">
           <div className="sm:w-48 w-full h-48 sm:h-auto relative overflow-hidden bg-muted rounded-t-xl sm:rounded-l-xl sm:rounded-t-none">
             <OptimizedProfileImage
-              src={match.image}
-              alt={match.name}
+              src={getProfilePhoto(match.user.photos)}
+              alt={match.user.fullName}
               isLocked={isLocked}
             />
 
@@ -284,20 +302,20 @@ const Matches = () => {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="text-xl font-bold mb-1">
-                  {match.name}, {match.age}
+                  {match.user.fullName}, {calculateAge(match.user.dateOfBirth)}
                 </h3>
                 <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
-                    {match.city}
+                    {match.user.city}, {match.user.state}
                   </span>
                   <span className="flex items-center gap-1">
                     <GraduationCap className="w-4 h-4" />
-                    {match.education}
+                    {match.user.education?.name || "—"}
                   </span>
                   <span className="flex items-center gap-1">
                     <Briefcase className="w-4 h-4" />
-                    {match.profession}
+                    {match.user.profession?.name || "—"}
                   </span>
                 </div>
               </div>
@@ -310,10 +328,31 @@ const Matches = () => {
                       ? "bg-gradient-to-r from-primary to-secondary"
                       : ""
                   }
+                  disabled={isLiking}
+                  onClick={() => {
+                    if (match.liked) {
+                      handleUnlikeProfile(match.user._id);
+                    } else {
+                      handleLikeProfile(match.user._id);
+                    }
+                  }}
                 >
-                  <Heart
-                    className={`w-4 h-4 ${match.liked ? "fill-white" : ""}`}
-                  />
+                  {isLiking ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    >
+                      <Heart className="w-4 h-4" />
+                    </motion.div>
+                  ) : (
+                    <Heart
+                      className={`w-4 h-4 ${match.liked ? "fill-white" : ""}`}
+                    />
+                  )}
                 </Button>
               )}
             </div>
@@ -321,8 +360,8 @@ const Matches = () => {
             <div className="mb-4">
               <p className="text-sm font-semibold mb-2">Interests:</p>
               <div className="flex flex-wrap gap-2">
-                {match.interests.map((interest) => (
-                  <Badge key={interest} variant="secondary">
+                {match.user.interests.map((interest, idx) => (
+                  <Badge key={`${interest}-${idx}`} variant="secondary">
                     {interest}
                   </Badge>
                 ))}
@@ -342,7 +381,7 @@ const Matches = () => {
               <div className="flex gap-2">
                 <Button
                   className="flex-1 bg-gradient-to-r from-primary to-secondary"
-                  onClick={() => navigate(`/profile/${match.id}`)}
+                  onClick={() => navigate(`/profile/${match.user._id}`)}
                 >
                   View Profile
                 </Button>
@@ -368,7 +407,9 @@ const Matches = () => {
                       <Button
                         variant="outline"
                         className="w-full relative overflow-hidden"
-                        onClick={() => handleSendInterest(match.id, match.name)}
+                        onClick={() =>
+                          handleSendInterest(match.user._id, match.user.fullName)
+                        }
                         disabled={isSending}
                       >
                         {isSending ? (
@@ -414,6 +455,14 @@ const Matches = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <p className="text-muted-foreground">Finding your matches… 💜</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -451,7 +500,7 @@ const Matches = () => {
         <TabsContent value="new" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {matches.slice(0, 2).map((match) => (
-              <MatchCard key={match.id} match={match} />
+              <MatchCard key={match.user._id} match={match} />
             ))}
           </div>
         </TabsContent>
@@ -459,7 +508,7 @@ const Matches = () => {
         <TabsContent value="all" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {matches.map((match) => (
-              <MatchCard key={match.id} match={match} />
+              <MatchCard key={match.user._id} match={match} />
             ))}
           </div>
         </TabsContent>
@@ -468,7 +517,7 @@ const Matches = () => {
           {likedProfiles.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {likedProfiles.map((match) => (
-                <MatchCard key={match.id} match={match} />
+                <MatchCard key={match.user._id} match={match} />
               ))}
             </div>
           ) : (
@@ -486,9 +535,30 @@ const Matches = () => {
 
         <TabsContent value="nri" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {nriProfiles.map((match) => (
-              <MatchCard key={match.id} match={match} isNRI={true} />
-            ))}
+            {nriProfiles.map((profile) => {
+              const match: MatchItem = {
+                user: {
+                  _id: profile.id.toString(),
+                  fullName: profile.name,
+                  dateOfBirth:
+                    new Date().getFullYear() - profile.age + "-01-01",
+                  city: profile.city.split(",")[0],
+                  state: profile.city.split(",")[1]?.trim() || "",
+                  interests: profile.interests,
+                  education: { name: profile.education },
+                  profession: { name: profile.profession },
+                  photos: [
+                    {
+                      url: profile.image,
+                      isPrimary: true,
+                    },
+                  ],
+                },
+                matchScore: profile.matchScore,
+                liked: profile.liked,
+              };
+              return <MatchCard key={profile.id} match={match} isNRI={true} />;
+            })}
           </div>
         </TabsContent>
       </Tabs>

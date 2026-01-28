@@ -1,5 +1,16 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { getProfileStatus, getNextIncompleteStep, type UserProfile, type ProfileStatus } from "@/utils/profileStatus";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import {
+  getProfileStatus,
+  getNextIncompleteStep,
+  type UserProfile,
+  type ProfileStatus,
+} from "@/utils/profileStatus";
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -11,16 +22,27 @@ interface AuthContextType {
   updateProfile: (data: Partial<UserProfile>) => void;
 }
 
+export interface User {
+  _id: string;
+  email: string;
+  fullName?: string;
+  emailVerified?: boolean;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    // Check for existing session in localStorage
     const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+
+    if (savedUser && savedUser !== "undefined") {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {
+        localStorage.removeItem("user");
+      }
     }
   }, []);
 
@@ -46,15 +68,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const nextIncompleteStep = getNextIncompleteStep(user);
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        isAuthenticated: !!user, 
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
         profileStatus,
         nextIncompleteStep,
-        login, 
+        login,
         logout,
-        updateProfile 
+        updateProfile,
       }}
     >
       {children}

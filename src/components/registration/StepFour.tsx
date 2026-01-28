@@ -1,6 +1,14 @@
+import Axios from "@/axios/axios";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { RegistrationData } from "@/pages/Register";
+import { useEffect, useState } from "react";
 
 interface StepFourProps {
   formData?: RegistrationData;
@@ -8,40 +16,82 @@ interface StepFourProps {
 }
 
 const StepFour = ({ formData, updateFormData }: StepFourProps) => {
+  const [Education, setEducation] = useState<any>([]);
+  const [professions, setProfessions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (field: keyof RegistrationData, value: string) => {
-    if (updateFormData) {
-      updateFormData(field, value);
-    }
+    updateFormData?.(field, value);
   };
+
+  useEffect(() => {
+    const fetchEducation = async () => {
+      try {
+        const { data } = await Axios.get("/api/master/educations");
+        setEducation(data.data);
+      } catch (error) {
+        console.error("Error fetching education:", error);
+      }
+    };
+
+    fetchEducation();
+  }, []);
+
+  useEffect(() => {
+    const fetchProfessions = async () => {
+      try {
+        setLoading(true);
+        const { data } = await Axios.get("/api/master/occupations");
+        setProfessions(data.data);
+      } catch (error) {
+        console.error("Error fetching professions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfessions();
+  }, []);
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold mb-2">Educational Details</h2>
-        <p className="text-muted-foreground">Tell us about your education and profession</p>
+        <p className="text-muted-foreground">
+          Tell us about your education and profession
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Education */}
+
         <div className="space-y-2">
-          <Label htmlFor="education">Highest Education *</Label>
-          <Select value={formData?.education} onValueChange={(value) => handleChange("education", value)}>
+          <Label>Highest Education *</Label>
+          <Select
+            value={formData?.education}
+            onValueChange={(v) => handleChange("education", v)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select education level" />
             </SelectTrigger>
+
             <SelectContent>
-              <SelectItem value="high-school">High School</SelectItem>
-              <SelectItem value="diploma">Diploma</SelectItem>
-              <SelectItem value="bachelors">Bachelor's Degree</SelectItem>
-              <SelectItem value="masters">Master's Degree</SelectItem>
-              <SelectItem value="doctorate">Doctorate/PhD</SelectItem>
-              <SelectItem value="professional">Professional Degree</SelectItem>
+              {Education.map((item: any) => (
+                <SelectItem key={item._id} value={item._id}>
+                  {item.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
 
+        {/* Course */}
         <div className="space-y-2">
-          <Label htmlFor="course">Course/Specialization</Label>
-          <Select>
+          <Label>Course / Specialization</Label>
+          <Select
+            value={formData?.course}
+            onValueChange={(v) => handleChange("course", v)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select course" />
             </SelectTrigger>
@@ -59,24 +109,28 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
           </Select>
         </div>
 
+        {/* Profession */}
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="profession">Profession *</Label>
-          <Select value={formData?.profession} onValueChange={(value) => handleChange("profession", value)}>
+          <Label>Profession *</Label>
+          <Select
+            value={formData?.profession}
+            onValueChange={(v) => handleChange("profession", v)}
+            disabled={loading}
+          >
             <SelectTrigger>
-              <SelectValue placeholder="Select profession" />
+              <SelectValue
+                placeholder={
+                  loading ? "Loading professions..." : "Select profession"
+                }
+              />
             </SelectTrigger>
+
             <SelectContent>
-              <SelectItem value="software-engineer">Software Engineer</SelectItem>
-              <SelectItem value="doctor">Doctor</SelectItem>
-              <SelectItem value="teacher">Teacher</SelectItem>
-              <SelectItem value="business-owner">Business Owner</SelectItem>
-              <SelectItem value="chartered-accountant">Chartered Accountant</SelectItem>
-              <SelectItem value="lawyer">Lawyer</SelectItem>
-              <SelectItem value="government-employee">Government Employee</SelectItem>
-              <SelectItem value="private-employee">Private Employee</SelectItem>
-              <SelectItem value="self-employed">Self Employed</SelectItem>
-              <SelectItem value="not-working">Not Working</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              {professions.map((item) => (
+                <SelectItem key={item._id} value={item._id}>
+                  {item.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

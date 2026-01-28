@@ -16,13 +16,16 @@ interface StepTwoProps {
   updateFormData?: (field: keyof RegistrationData, value: string) => void;
 }
 
-interface Religion {
+interface MotherTongue {
   _id: string;
   name: string;
 }
 const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
-  const [religions, setReligions] = useState<Religion[]>([]);
+  const [religions, setReligions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [castes, setCastes] = useState<any[]>([]);
+  const [loadingCastes, setLoadingCastes] = useState(false);
+  const [motherTongues, setMotherTongues] = useState<MotherTongue[]>([]);
 
   const handleChange = (field: keyof RegistrationData, value: string) => {
     if (updateFormData) {
@@ -35,7 +38,7 @@ const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
       try {
         setLoading(true);
         const response = await Axios.get("/api/master/religions");
-        setReligions(response.data);
+        setReligions(response.data.data);
       } catch (err) {
         console.error("Failed to fetch religions");
       } finally {
@@ -43,6 +46,52 @@ const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
       }
     };
     fetchReligions();
+  }, []);
+
+  const safeReligions = Array.isArray(religions) ? religions : [];
+
+  useEffect(() => {
+    if (!formData?.religion) {
+      setCastes([]);
+      return;
+    }
+
+    const fetchCastes = async () => {
+      try {
+        const res = await Axios.get(
+          `/api/master/castes?religion=${formData.religion}`,
+        );
+        setCastes(res.data.data);
+      } catch (err) {
+        console.error("Failed to fetch castes");
+        setCastes([]);
+      }
+    };
+
+    fetchCastes();
+  }, [formData?.religion]);
+
+  useEffect(() => {
+    const fetchMotherTongues = async () => {
+      try {
+        const response = await Axios.get("/api/master/languages");
+
+        const list = response.data?.data;
+
+        if (Array.isArray(list)) {
+          setMotherTongues(list);
+          console.log("Mother tongues:", list);
+        } else {
+          console.error("Unexpected response shape:", response.data);
+          setMotherTongues([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch mother tongues", err);
+        setMotherTongues([]);
+      }
+    };
+
+    fetchMotherTongues();
   }, []);
 
   return (
@@ -66,8 +115,8 @@ const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
               />
             </SelectTrigger>
             <SelectContent>
-              {religions.map((religion) => (
-                <SelectItem key={religion._id} value={religion.name}>
+              {safeReligions.map((religion) => (
+                <SelectItem key={religion._id} value={religion._id}>
                   {religion.name}
                 </SelectItem>
               ))}
@@ -80,19 +129,31 @@ const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
           <Select
             value={formData?.caste}
             onValueChange={(value) => handleChange("caste", value)}
+            disabled={!formData?.religion}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select caste" />
+              <SelectValue
+                placeholder={
+                  formData?.religion ? "Select caste" : "Select religion first"
+                }
+              />
             </SelectTrigger>
+
             <SelectContent>
-              <SelectItem value="brahmin">Brahmin</SelectItem>
-              <SelectItem value="kshatriya">Kshatriya</SelectItem>
-              <SelectItem value="vaishya">Vaishya</SelectItem>
-              <SelectItem value="shudra">Shudra</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-              <SelectItem value="prefer-not">Prefer not to say</SelectItem>
+              {castes.length === 0 ? (
+                <SelectItem value="no-data" disabled>
+                  No castes available
+                </SelectItem>
+              ) : (
+                castes.map((caste) => (
+                  <SelectItem key={caste._id} value={caste._id}>
+                    {caste.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
+
           <p className="text-xs text-muted-foreground">
             Options vary based on selected religion
           </p>
@@ -101,24 +162,24 @@ const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="motherTongue">Mother Tongue *</Label>
           <Select
-            value={formData?.motherTongue}
+            value={formData?.motherTongue || undefined}
             onValueChange={(value) => handleChange("motherTongue", value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select mother tongue" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="hindi">Hindi</SelectItem>
-              <SelectItem value="english">English</SelectItem>
-              <SelectItem value="tamil">Tamil</SelectItem>
-              <SelectItem value="telugu">Telugu</SelectItem>
-              <SelectItem value="bengali">Bengali</SelectItem>
-              <SelectItem value="marathi">Marathi</SelectItem>
-              <SelectItem value="gujarati">Gujarati</SelectItem>
-              <SelectItem value="kannada">Kannada</SelectItem>
-              <SelectItem value="malayalam">Malayalam</SelectItem>
-              <SelectItem value="punjabi">Punjabi</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              {motherTongues.length === 0 ? (
+                <SelectItem value="no-data" disabled>
+                  No mother tongues available
+                </SelectItem>
+              ) : (
+                motherTongues.map((tongue) => (
+                  <SelectItem key={tongue._id} value={String(tongue._id)}>
+                    {tongue.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>

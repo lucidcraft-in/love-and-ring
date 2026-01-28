@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
 import heroSlide3 from "@/assets/hero-slide-3.jpg";
+import { loginUserApi } from "@/services/AuthServices";
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
@@ -42,28 +43,48 @@ const Login = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    setIsLoading(true);
-    
-    // Simulate login - in production this would call an API
-    setTimeout(() => {
-      login({ email, name: email.split('@')[0] });
-      toast.success("Login successful!");
-      navigate('/');
+    try {
+      setIsLoading(true);
+
+      const response = await loginUserApi(email, password);
+
+      const { user, token } = response.data;
+
+      
+      localStorage.setItem("token", token);
+
+      
+      login(user);
+
+      toast.success("Logged in successfully");
+      navigate("/"); // Home page
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Login failed");
+      console.error("Login error:", error);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const features = [
-    { icon: Shield, title: "Verified Profiles", desc: "100% authenticated members" },
+    {
+      icon: Shield,
+      title: "Verified Profiles",
+      desc: "100% authenticated members",
+    },
     { icon: Users, title: "Smart Matching", desc: "AI-powered compatibility" },
     { icon: Lock, title: "Complete Privacy", desc: "Your data stays secure" },
-    { icon: CheckCircle, title: "Premium Support", desc: "24/7 dedicated assistance" },
+    {
+      icon: CheckCircle,
+      title: "Premium Support",
+      desc: "24/7 dedicated assistance",
+    },
   ];
 
   return (
@@ -86,7 +107,7 @@ const Login = () => {
             />
           </motion.div>
         </AnimatePresence>
-        
+
         {/* Dark Overlay for Readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
       </div>
@@ -99,7 +120,7 @@ const Login = () => {
         variant="ghost"
         size="icon"
         className="hidden lg:flex absolute top-6 right-6 z-20 text-white/80 hover:text-white hover:bg-white/10 rounded-full h-10 w-10 backdrop-blur-sm border border-white/20"
-        onClick={() => navigate('/')}
+        onClick={() => navigate("/")}
       >
         <X className="h-5 w-5" />
       </Button>
@@ -107,7 +128,7 @@ const Login = () => {
       {/* Content Layer */}
       <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
         {/* Left Section - Marketing Content */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
@@ -125,14 +146,14 @@ const Login = () => {
 
             {/* Supporting Text */}
             <p className="text-lg text-white/80 leading-relaxed mb-10">
-              Your perfect match is waiting. Sign in to continue your journey 
+              Your perfect match is waiting. Sign in to continue your journey
               and discover meaningful connections tailored to your preferences.
             </p>
 
             {/* Feature Highlights */}
             <div className="grid grid-cols-2 gap-4 mb-10">
               {features.map((feature, index) => (
-                <motion.div 
+                <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -143,7 +164,9 @@ const Login = () => {
                     <feature.icon className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white text-sm">{feature.title}</h3>
+                    <h3 className="font-semibold text-white text-sm">
+                      {feature.title}
+                    </h3>
                     <p className="text-white/60 text-xs">{feature.desc}</p>
                   </div>
                 </motion.div>
@@ -154,7 +177,10 @@ const Login = () => {
             <div className="pt-6 border-t border-white/10">
               <p className="text-white/70">
                 Don't have an account?{" "}
-                <Link to="/register" className="text-primary hover:text-primary/80 font-semibold transition-colors">
+                <Link
+                  to="/register"
+                  className="text-primary hover:text-primary/80 font-semibold transition-colors"
+                >
                   Register Now
                 </Link>
               </p>
@@ -182,7 +208,10 @@ const Login = () => {
               </h1>
               <p className="text-white/70 text-sm">
                 Don't have an account?{" "}
-                <Link to="/register" className="text-primary hover:underline font-medium">
+                <Link
+                  to="/register"
+                  className="text-primary hover:underline font-medium"
+                >
                   Register
                 </Link>
               </p>
@@ -193,7 +222,7 @@ const Login = () => {
               variant="ghost"
               size="icon"
               className="lg:hidden absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-sm"
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
             >
               <X className="h-5 w-5" />
             </Button>
@@ -213,7 +242,9 @@ const Login = () => {
               {/* Form */}
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-sm">Email Address</Label>
+                  <Label htmlFor="email" className="text-sm">
+                    Email Address
+                  </Label>
                   <Input
                     id="email"
                     type="email"
@@ -227,8 +258,13 @@ const Login = () => {
 
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-sm">Password</Label>
-                    <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                    <Label htmlFor="password" className="text-sm">
+                      Password
+                    </Label>
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs text-primary hover:underline"
+                    >
                       Forgot password?
                     </Link>
                   </div>
@@ -247,7 +283,11 @@ const Login = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -267,17 +307,35 @@ const Login = () => {
                   <div className="w-full border-t border-border/50" />
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="px-3 bg-card text-muted-foreground">or continue with</span>
+                  <span className="px-3 bg-card text-muted-foreground">
+                    or continue with
+                  </span>
                 </div>
               </div>
 
               {/* Social Login */}
-              <Button variant="outline" className="w-full h-10 rounded-lg" type="button">
+              <Button
+                variant="outline"
+                className="w-full h-10 rounded-lg"
+                type="button"
+              >
                 <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  <path
+                    fill="currentColor"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
                 </svg>
                 Continue with Google
               </Button>
@@ -285,7 +343,10 @@ const Login = () => {
               {/* Register Link - Mobile/Tablet visible inside card */}
               <p className="text-center mt-5 text-sm text-muted-foreground lg:hidden">
                 Don't have an account?{" "}
-                <Link to="/register" className="text-primary hover:underline font-medium">
+                <Link
+                  to="/register"
+                  className="text-primary hover:underline font-medium"
+                >
                   Register Now
                 </Link>
               </p>
@@ -295,7 +356,10 @@ const Login = () => {
             <div className="text-center mt-4 text-xs text-white/60">
               <p>
                 Need help signing in?{" "}
-                <Link to="/support?from=signin" className="text-primary hover:underline">
+                <Link
+                  to="/support?from=signin"
+                  className="text-primary hover:underline"
+                >
                   Get help
                 </Link>
               </p>

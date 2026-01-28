@@ -1,5 +1,12 @@
 import Axios from "../axios/axios";
 
+export const loginUserApi = async (email: string, password: string) => {
+  const response = await Axios.post("/api/user/auth/login", {
+    email,
+    password,
+  });
+  return response.data;
+}
 export const SendSignUpOtp=async(email:string)=>{
     const response= await Axios.post("/api/user/auth/signup/send-otp",{email});
     return response.data;

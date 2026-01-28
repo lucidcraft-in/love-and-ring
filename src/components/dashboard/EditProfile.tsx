@@ -5,12 +5,140 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Crown, Edit, Upload } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Axios from "@/axios/axios";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+
+interface UserProfile {
+  fullName: string;
+  email: string;
+  mobile: string;
+  dob?: string;
+  height?: string;
+  weight?: string;
+  religion?: string;
+  caste?: string;
+  address?: string;
+  bio?: string;
+  education?: string;
+  profession?: string;
+  profileImage?: string;
+  membership?: string;
+}
+
+interface Option {
+  _id: string;
+  name: string;
+}
 
 const EditProfile = () => {
   const navigate = useNavigate();
-  const [currentMembership] = useState("Free");
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [religions, setReligions] = useState<Option[]>([]);
+  const [castes, setCastes] = useState<Option[]>([]);
+  const [educations, setEducations] = useState<Option[]>([]);
+  const [professions, setProfessions] = useState<Option[]>([]);
+
+  const currentMembership = profile?.membership || "Free";
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const userId = user._id;
+
+  const fetchProfile = async () => {
+    setLoading(true);
+    try {
+      const res = await Axios.get(`/api/users/${userId}`);
+      const user = res.data;
+      setProfile({
+        fullName: user.fullName || "",
+        email: user.email || "",
+        mobile: user.mobile || "",
+        dob: user.dateOfBirth ? user.dateOfBirth.slice(0, 10) : "",
+        height: user.heightCm ? String(user.heightCm) : "",
+        weight: user.weightKg ? String(user.weightKg) : "",
+        religion: user.religion?._id || user.religion || "",
+        caste: user.caste?._id || user.caste || "",
+        education: user.highestEducation?._id || "",
+        profession: user.profession?._id || "",
+        address: user.address || "",
+        bio: user.bio || "",
+        membership: user.profileStatus === "BASIC" ? "Free" : "Premium",
+      });
+    } catch (err) {
+      console.error("Failed to fetch profile", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchMasterData = async () => {
+    try {
+      const [religionRes, educationRes, professionRes] = await Promise.all([
+        Axios.get("/api/master/religions"),
+        Axios.get("/api/master/educations"),
+        Axios.get("/api/master/occupations"),
+      ]);
+      setReligions(religionRes.data.data);
+      setEducations(educationRes.data.data);
+      setProfessions(professionRes.data.data);
+    } catch (err) {
+      console.error("Failed to load master data", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchMasterData();
+  }, []);
+
+  useEffect(() => {
+    if (!profile?.religion) return;
+
+    Axios.get(`/api/master/castes?religionId=${profile.religion}`)
+      .then((res) => setCastes(res.data.data))
+      .catch(console.error);
+  }, [profile?.religion]);
+
+  const handleSave = async () => {
+    try {
+      await Axios.put(`/api/users/${userId}`, {
+        fullName: profile.fullName,
+        mobile: profile.mobile,
+
+        dateOfBirth: profile.dob,
+        heightCm: Number(profile.height),
+        weightKg: Number(profile.weight),
+
+        religion: profile.religion,
+        caste: profile.caste,
+        highestEducation: profile.education,
+        profession: profile.profession,
+        address: profile.address,
+      });
+
+      alert("Profile updated successfully");
+    } catch (err) {
+      console.error("Update failed", err);
+    }
+  };
+
+  if (loading || !profile) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <p className="text-muted-foreground">Loading profile…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -26,12 +154,14 @@ const EditProfile = () => {
       <Card className="glass-card p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold mb-2">Current Membership: {currentMembership}</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Current Membership: {currentMembership}
+            </h3>
             <p className="text-sm text-muted-foreground">
               Upgrade to unlock premium features and find your match faster
             </p>
           </div>
-          <Button 
+          <Button
             className="bg-gradient-to-r from-primary to-secondary"
             onClick={() => navigate("/pricing")}
           >
@@ -71,19 +201,49 @@ const EditProfile = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="fullName">Full Name</Label>
-            <Input id="fullName" defaultValue="John Doe" />
+            <Input
+              id="fullName"
+              value={profile?.fullName || ""}
+              onChange={(e) =>
+                setProfile((prev) =>
+                  prev ? { ...prev, fullName: e.target.value } : prev,
+                )
+              }
+            />
           </div>
           <div>
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" defaultValue="john@example.com" />
+            <Input
+              id="email"
+              type="email"
+              value={profile?.email || ""}
+              disabled
+            />
           </div>
           <div>
             <Label htmlFor="mobile">Mobile Number</Label>
-            <Input id="mobile" defaultValue="+1 234 567 8900" />
+            <Input
+              id="mobile"
+              value={profile?.mobile || ""}
+              onChange={(e) =>
+                setProfile((prev) =>
+                  prev ? { ...prev, mobile: e.target.value } : prev,
+                )
+              }
+            />
           </div>
           <div>
             <Label htmlFor="dob">Date of Birth</Label>
-            <Input id="dob" type="date" />
+            <Input
+              id="dob"
+              type="date"
+              value={profile?.dob?.slice(0, 10) || ""}
+              onChange={(e) =>
+                setProfile((prev) =>
+                  prev ? { ...prev, dob: e.target.value } : prev,
+                )
+              }
+            />
           </div>
         </div>
       </Card>
@@ -94,23 +254,84 @@ const EditProfile = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="height">Height</Label>
-            <Input id="height" defaultValue="5'10&quot;" />
+            <Input
+              id="height"
+              value={profile.height || ""}
+              onChange={(e) =>
+                setProfile((p) => (p ? { ...p, height: e.target.value } : p))
+              }
+            />{" "}
           </div>
           <div>
             <Label htmlFor="weight">Weight</Label>
-            <Input id="weight" defaultValue="75 kg" />
+            <Input
+              id="weight"
+              value={profile.weight || ""}
+              onChange={(e) =>
+                setProfile((p) => (p ? { ...p, weight: e.target.value } : p))
+              }
+            />{" "}
           </div>
           <div>
             <Label htmlFor="religion">Religion</Label>
-            <Input id="religion" defaultValue="Christian" />
+            <Select
+              value={profile?.religion || ""}
+              onValueChange={(value) =>
+                setProfile((p) => p && { ...p, religion: value, caste: "" })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Religion" />
+              </SelectTrigger>
+              <SelectContent>
+                {religions.map((r) => (
+                  <SelectItem key={r._id} value={r._id}>
+                    {r.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="caste">Caste</Label>
-            <Input id="caste" defaultValue="N/A" />
+            <Select
+              value={profile.caste || ""}
+              onValueChange={(value) =>
+                setProfile((p) => (p ? { ...p, caste: value } : p))
+              }
+              disabled={!profile.religion}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Caste" />
+              </SelectTrigger>
+              <SelectContent>
+                {castes.map((c) => (
+                  <SelectItem key={c._id} value={c._id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="md:col-span-2">
             <Label htmlFor="address">Address</Label>
-            <Textarea id="address" defaultValue="123 Main Street, New York, NY" />
+            <Textarea
+              id="address"
+              value={profile?.address || ""}
+              onChange={(e) =>
+                setProfile((p) => (p ? { ...p, address: e.target.value } : p))
+              }
+            />
+          </div>
+          <div className="md:col-span-2">
+            <Label htmlFor="address">Bio</Label>
+            <Textarea
+              id="bio"
+              value={profile?.bio || ""}
+              onChange={(e) =>
+                setProfile((p) => (p ? { ...p, bio: e.target.value } : p))
+              }
+            />
           </div>
         </div>
       </Card>
@@ -121,11 +342,43 @@ const EditProfile = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="education">Highest Education</Label>
-            <Input id="education" defaultValue="Master's Degree" />
+            <Select
+              value={profile.education || ""}
+              onValueChange={(value) =>
+                setProfile((p) => (p ? { ...p, education: value } : p))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Education" />
+              </SelectTrigger>
+              <SelectContent>
+                {educations.map((e) => (
+                  <SelectItem key={e._id} value={e._id}>
+                    {e.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="profession">Profession</Label>
-            <Input id="profession" defaultValue="Software Engineer" />
+            <Select
+              value={profile.profession || ""}
+              onValueChange={(value) =>
+                setProfile((p) => (p ? { ...p, profession: value } : p))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Profession" />
+              </SelectTrigger>
+              <SelectContent>
+                {professions.map((p) => (
+                  <SelectItem key={p._id} value={p._id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </Card>
@@ -133,7 +386,10 @@ const EditProfile = () => {
       {/* Save Button */}
       <div className="flex justify-end gap-4">
         <Button variant="outline">Cancel</Button>
-        <Button className="bg-gradient-to-r from-primary to-secondary">
+        <Button
+          className="bg-gradient-to-r from-primary to-secondary"
+          onClick={handleSave}
+        >
           Save Changes
         </Button>
       </div>

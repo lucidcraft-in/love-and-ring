@@ -2,44 +2,56 @@
 // A user is COMPLETED only if ALL required fields are filled
 
 export interface UserProfile {
+  _id: string;
   email: string;
-  name: string;
-  // Profile fields
+
+  // Step 1
   accountFor?: string;
   fullName?: string;
   gender?: string;
+
+  // Step 2 / 3
   dateOfBirth?: string;
   preferredLanguage?: string;
-  heightCm?: string;
-  weightKg?: string;
   maritalStatus?: string;
-  physicallyChallenged?: string;
+  physicallyChallenged?: boolean;
+
+  // Step 3
+  heightCm?: number;
+  weightKg?: number;
+
+  // Step 4
   course?: string;
-  income?: string;
+  profession?: string;
+  income?: number;
+
+  // Step 5
   interests?: string[];
   personalityTraits?: string[];
   dietPreference?: string[];
-  // Registration mapping fields (from RegistrationData)
+
+  /* ---- Registration alias fields (UI only) ---- */
   dob?: string;
   language?: string;
-  height?: string;
-  weight?: string;
+  height?: number;
+  weight?: number;
   education?: string;
-  profession?: string;
   traits?: string[];
   diets?: string[];
 }
 
 export type ProfileStatus = "BASIC" | "COMPLETED";
 
-// Required fields for profile completion
+/* ---------------- REQUIRED FIELDS ---------------- */
+
 const REQUIRED_FIELDS: (keyof UserProfile)[] = [
   "accountFor",
   "fullName",
   "gender",
 ];
 
-// Fields that map from registration to profile
+/* ---------------- FIELD MAPPINGS ---------------- */
+
 const PROFILE_FIELD_MAPPINGS: Record<string, keyof UserProfile> = {
   dob: "dateOfBirth",
   language: "preferredLanguage",
@@ -50,7 +62,8 @@ const PROFILE_FIELD_MAPPINGS: Record<string, keyof UserProfile> = {
   diets: "dietPreference",
 };
 
-// Check if a field value is considered "filled"
+/* ---------------- HELPERS ---------------- */
+
 const isFieldFilled = (value: unknown): boolean => {
   if (value === undefined || value === null) return false;
   if (typeof value === "string") return value.trim() !== "";
@@ -58,62 +71,64 @@ const isFieldFilled = (value: unknown): boolean => {
   return true;
 };
 
-// Get the effective value of a field (considering mappings)
-const getFieldValue = (profile: UserProfile, field: keyof UserProfile): unknown => {
-  // Direct field
+const getFieldValue = (
+  profile: UserProfile,
+  field: keyof UserProfile
+): unknown => {
   if (profile[field] !== undefined) return profile[field];
-  
-  // Check mapped fields
-  for (const [regField, profileField] of Object.entries(PROFILE_FIELD_MAPPINGS)) {
-    if (profileField === field && profile[regField as keyof UserProfile] !== undefined) {
+
+  for (const [regField, profileField] of Object.entries(
+    PROFILE_FIELD_MAPPINGS
+  )) {
+    if (
+      profileField === field &&
+      profile[regField as keyof UserProfile] !== undefined
+    ) {
       return profile[regField as keyof UserProfile];
     }
   }
-  
   return undefined;
 };
 
-// Determine profile status based on filled fields
-export const getProfileStatus = (profile: UserProfile | null): ProfileStatus => {
+/* ---------------- PROFILE STATUS ---------------- */
+
+export const getProfileStatus = (
+  profile: UserProfile | null
+): ProfileStatus => {
   if (!profile) return "BASIC";
-  
-  // Check all required fields
-  const allFieldsFilled = REQUIRED_FIELDS.every((field) => {
-    const value = getFieldValue(profile, field);
-    return isFieldFilled(value);
-  });
-  
-  // Additional check for array fields
-  const interestsField = profile.interests;
-  const traitsField = profile.personalityTraits || profile.traits;
-  const dietField = profile.dietPreference || profile.diets;
-  
-  const arrayFieldsFilled = 
-    isFieldFilled(interestsField) &&
-    isFieldFilled(traitsField) &&
-    isFieldFilled(dietField);
-  
-  // Check date of birth
+
+  const basicFilled = REQUIRED_FIELDS.every((field) =>
+    isFieldFilled(getFieldValue(profile, field))
+  );
+
+  const arraysFilled =
+    isFieldFilled(profile.interests) &&
+    isFieldFilled(profile.personalityTraits || profile.traits) &&
+    isFieldFilled(profile.dietPreference || profile.diets);
+
   const dobFilled = isFieldFilled(profile.dateOfBirth || profile.dob);
-  
-  // Check height/weight
   const heightFilled = isFieldFilled(profile.heightCm || profile.height);
   const weightFilled = isFieldFilled(profile.weightKg || profile.weight);
-  
-  // Check marital status
   const maritalFilled = isFieldFilled(profile.maritalStatus);
-  
-  // Check education/profession
   const educationFilled = isFieldFilled(profile.course || profile.education);
-  
-  if (allFieldsFilled && arrayFieldsFilled && dobFilled && heightFilled && weightFilled && maritalFilled && educationFilled) {
+
+  if (
+    basicFilled &&
+    arraysFilled &&
+    dobFilled &&
+    heightFilled &&
+    weightFilled &&
+    maritalFilled &&
+    educationFilled
+  ) {
     return "COMPLETED";
   }
-  
+
   return "BASIC";
 };
 
-// Step requirements mapping for registration flow
+/* ---------------- NEXT INCOMPLETE STEP ---------------- */
+
 interface StepRequirement {
   step: number;
   fields: (keyof UserProfile)[];
@@ -121,41 +136,34 @@ interface StepRequirement {
 
 const STEP_REQUIREMENTS: StepRequirement[] = [
   { step: 1, fields: ["accountFor", "fullName", "gender"] },
-  { step: 2, fields: [] }, // Religion, caste, motherTongue - treating as optional for now
+  { step: 2, fields: [] },
   { step: 3, fields: ["maritalStatus"] },
-  { step: 4, fields: [] }, // Education - treating as optional for base completion
+  { step: 4, fields: [] },
   { step: 5, fields: ["interests", "traits", "diets"] },
 ];
 
-// Get the first incomplete step for a user
-export const getNextIncompleteStep = (profile: UserProfile | null): number => {
-  if (!profile) return 2; // Start from step 2 (after email/password verification)
-  
-  // Step 1 is always done if user exists (email verified + password created)
-  
-  // Check step by step
+export const getNextIncompleteStep = (
+  profile: UserProfile | null
+): number => {
+  if (!profile) return 2;
+
   for (const { step, fields } of STEP_REQUIREMENTS) {
-    if (step === 1) continue; // Skip step 1, already done
-    
-    const stepComplete = fields.every((field) => {
-      const value = getFieldValue(profile, field);
-      return isFieldFilled(value);
-    });
-    
-    if (!stepComplete && fields.length > 0) {
-      return step;
-    }
+    if (step === 1) continue;
+
+    const complete = fields.every((field) =>
+      isFieldFilled(getFieldValue(profile, field))
+    );
+
+    if (!complete && fields.length > 0) return step;
   }
-  
-  // Check array fields specifically for step 5
-  const interestsFilled = isFieldFilled(profile.interests);
-  const traitsFilled = isFieldFilled(profile.personalityTraits || profile.traits);
-  const dietFilled = isFieldFilled(profile.dietPreference || profile.diets);
-  
-  if (!interestsFilled || !traitsFilled || !dietFilled) {
+
+  if (
+    !isFieldFilled(profile.interests) ||
+    !isFieldFilled(profile.personalityTraits || profile.traits) ||
+    !isFieldFilled(profile.dietPreference || profile.diets)
+  ) {
     return 5;
   }
-  
-  // All steps complete
-  return 0; // 0 means all complete
+
+  return 0;
 };

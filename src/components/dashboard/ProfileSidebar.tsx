@@ -11,12 +11,22 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import Profile from "@/assets/Profile2.jpg";
+import { useEffect, useState } from "react";
+import Axios from "@/axios/axios";
 
 interface ProfileSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   activeTab: string;
   onNavigate: (tab: string) => void;
+}
+
+interface User {
+  _id: string;
+  fullName: string;
+  email: string;
+  profileId?: string;
+  profileImage?: string;
 }
 
 const navigationItems = [
@@ -34,13 +44,52 @@ const ProfileSidebar = ({
   activeTab,
   onNavigate,
 }: ProfileSidebarProps) => {
-  // Mock user data - using a real profile image with fallback to initials
+  const [userData, setUserData] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchUser = async () => {
+    setLoading(true);
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) return;
+
+      const parsedUser = JSON.parse(storedUser);
+      const userId = parsedUser.id || parsedUser._id;
+      const email = parsedUser.email;
+
+      const response = await Axios.get("/api/users?take=100&skip=0");
+
+      const users = response.data?.data || response.data;
+
+      const matchedUser = users.find(
+        (u: any) => u._id === userId || u.email === email,
+      );
+
+      if (matchedUser) {
+        setUserData(matchedUser);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
   const user = {
-    name: "Arun Kumar",
-    profileId: "SM123456",
-    email: "Arunkumar@gmail.com",
-    avatar: Profile,
-    initials: "AK",
+    name: userData?.fullName || "User",
+    email: userData?.email || "",
+    profileId: userData?.profileId || userData?._id || "—",
+    avatar: userData?.profileImage || Profile,
+    initials:
+      userData?.fullName
+        ?.split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase() || "U",
   };
 
   return (
@@ -56,7 +105,7 @@ const ProfileSidebar = ({
       {/* Desktop/Tablet Sidebar - ChatGPT style fixed sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex flex-col w-[280px] h-screen bg-card border-r border-border"
+          "hidden lg:flex flex-col w-[280px] h-screen bg-card border-r border-border",
         )}
       >
         {/* Fixed Profile Header Section - Never scrolls */}
@@ -97,7 +146,7 @@ const ProfileSidebar = ({
                       "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                       isActive
                         ? "bg-gradient-to-r from-primary to-secondary text-white shadow-md"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
                     <Icon className="h-5 w-5 flex-shrink-0" />
@@ -137,7 +186,7 @@ const ProfileSidebar = ({
         className={cn(
           "lg:hidden fixed left-0 top-16 h-[calc(100vh-4rem)] w-[280px] bg-card border-r border-border z-40",
           "flex flex-col overflow-hidden transition-transform duration-300 ease-in-out",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {/* Mobile Profile Section */}
@@ -182,7 +231,7 @@ const ProfileSidebar = ({
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                       isActive
                         ? "bg-gradient-to-r from-primary to-secondary text-white shadow-md"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
                     <Icon className="h-4 w-4 flex-shrink-0" />

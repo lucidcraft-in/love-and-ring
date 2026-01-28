@@ -13,7 +13,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import StepOne from "@/components/registration/StepOne";
 import StepTwo from "@/components/registration/StepTwo";
@@ -51,20 +51,33 @@ export interface RegistrationData {
   city: string;
   profileImage: string;
   education: string;
+  course: string;
   profession: string;
+  physicallyChallenged: boolean;
+  liveWithFamily: boolean;
   interests: string[];
   traits: string[];
   diets: string[];
+  income: {
+    amount: number;
+    type: "Monthly" | "Yearly";
+  } | null;
 }
 
 const Register = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
+  const location = useLocation();
+  const [currentStep, setCurrentStep] = useState<number>(() => {
+    return location.state?.step ?? 1;
+  });
   const [showOTPVerification, setShowOTPVerification] = useState(false);
   const [isOTPVerified, setIsOTPVerified] = useState(false);
   const [stepErrors, setStepErrors] = useState<{ [key: string]: string }>({});
   const [isStepValid, setIsStepValid] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(() => {
+    return location.state?.userId ?? null;
+  });
+
   const [formData, setFormData] = useState<RegistrationData>({
     accountFor: "",
     fullName: "",
@@ -84,10 +97,14 @@ const Register = () => {
     city: "",
     profileImage: "",
     education: "",
+    course: "",
     profession: "",
+    physicallyChallenged: false,
+    liveWithFamily: true,
     interests: [],
     traits: [],
     diets: [],
+    income: null,
   });
   const totalSteps = 5;
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -157,12 +174,23 @@ const Register = () => {
 
   const checkStepValidity = (step: number): boolean => {
     const requiredFields = getRequiredFieldsForStep(step);
+
     return requiredFields.every((field) => {
       const value = formData[field];
+
       if (Array.isArray(value)) {
         return value.length > 0;
       }
-      return value && value.trim() !== "";
+
+      if (typeof value === "string") {
+        return value.trim() !== "";
+      }
+
+      if (typeof value === "object" && value !== null) {
+        return true; // for income or future objects
+      }
+
+      return false;
     });
   };
 
@@ -242,14 +270,20 @@ const Register = () => {
         motherTongue: formData.motherTongue,
         height: formData.height,
         weight: formData.weight,
+        dob: formData.dob,
         maritalStatus: formData.maritalStatus,
         bodyType: formData.bodyType,
         city: formData.city,
         education: formData.education,
+        course: formData.course,
         profession: formData.profession,
+        profileImage: formData.profileImage,
+        physicallyChallenged: formData.physicallyChallenged,
+        liveWithFamily: formData.liveWithFamily,
         interests: formData.interests,
         traits: formData.traits,
         diets: formData.diets,
+        income: formData.income,
       });
 
       toast.success("Profile completed successfully");
@@ -285,7 +319,7 @@ const Register = () => {
       case 5:
         return (
           <StepFive
-            errors={stepErrors}
+            // errors={stepErrors}
             formData={formData}
             updateFormData={updateFormData}
           />
