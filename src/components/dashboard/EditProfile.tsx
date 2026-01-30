@@ -84,16 +84,23 @@ const EditProfile = () => {
 
   const fetchMasterData = async () => {
     try {
+      const token = localStorage.getItem("token");
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
       const [religionRes, educationRes, professionRes] = await Promise.all([
-        Axios.get("/api/master/religions"),
-        Axios.get("/api/master/educations"),
-        Axios.get("/api/master/occupations"),
+        Axios.get("/api/master/religions", { headers }),
+        Axios.get("/api/master/educations", { headers }),
+        Axios.get("/api/master/occupations", { headers }),
       ]);
+
       setReligions(religionRes.data.data);
       setEducations(educationRes.data.data);
       setProfessions(professionRes.data.data);
-    } catch (err) {
-      console.error("Failed to load master data", err);
+    } catch (err: any) {
+      console.error("Failed to load master data", err?.response || err);
     }
   };
 
@@ -104,9 +111,17 @@ const EditProfile = () => {
   useEffect(() => {
     if (!profile?.religion) return;
 
-    Axios.get(`/api/master/castes?religionId=${profile.religion}`)
+    const token = localStorage.getItem("token");
+
+    Axios.get(`/api/master/castes?religionId=${profile.religion}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => setCastes(res.data.data))
-      .catch(console.error);
+      .catch((err) =>
+        console.error("Failed to load castes", err?.response || err),
+      );
   }, [profile?.religion]);
 
   const handleSave = async () => {
@@ -124,6 +139,7 @@ const EditProfile = () => {
         highestEducation: profile.education,
         profession: profile.profession,
         address: profile.address,
+        bio: profile.bio,
       });
 
       alert("Profile updated successfully");
@@ -171,7 +187,7 @@ const EditProfile = () => {
       </Card>
 
       {/* Profile Image */}
-      <Card className="glass-card p-6">
+      {/* <Card className="glass-card p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Upload className="w-5 h-5" />
           Profile Image
@@ -190,7 +206,7 @@ const EditProfile = () => {
             </p>
           </div>
         </div>
-      </Card>
+      </Card> */}
 
       {/* Basic Details */}
       <Card className="glass-card p-6">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Heart } from "lucide-react";
@@ -24,9 +24,11 @@ import nimishaJestin1 from "@/assets/nimisha-jestin-1.png";
 import nimishaJestin2 from "@/assets/nimisha-jestin-2.png";
 import nimishaJestin3 from "@/assets/nimisha-jestin-3.png";
 import nimishaJestin4 from "@/assets/nimisha-jestin-4.png";
+import Axios from "@/axios/axios";
 
 interface Story {
   names: string;
+  coupleName: string;
   images: string[];
   story: string;
   date: string;
@@ -35,44 +37,71 @@ interface Story {
 
 const SuccessStories = () => {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
-  const stories: Story[] = [
-    {
-      names: "Abina & Basil",
-      images: [abinaBasil1, abinaBasil2],
-      story: "We found each other on Love & Ring and it's been a beautiful journey ever since.",
-      date: "Married: 9th November 2025",
-    },
-    {
-      names: "Molex & Roshin",
-      images: [molexRoshin1, molexRoshin2, molexRoshin3],
-      story: "Thanks to Love & Ring, we found our perfect match. Couldn't be happier!",
-      date: "Married: 10th November 2025",
-    },
-    {
-      names: "Sheen & Bibin",
-      images: [sheenBibin1, sheenBibin2],
-      story: "We are incredibly grateful to Love & Ring for bringing us together. From the very beginning, the platform felt trustworthy and easy to use. It helped us connect naturally and confidently, making our journey truly special.",
-      date: "Married: 6th December 2025",
-    },
-    {
-      names: "Athira & Visish",
-      images: [athiraVisish1, athiraVisish2, athiraVisish3],
-      story: "Love & Ring made the entire process feel calm and reassuring. The genuine profiles and thoughtful matching gave us clarity and comfort throughout our search. We're thankful for such a smooth and meaningful experience.",
-      date: "Married: 29th October 2025",
-    },
-    {
-      names: "Jesna & Alias",
-      images: [jesnaAlias1],
-      story: "From start to finish, Love & Ring offered a respectful and well-guided experience. The platform was simple to navigate and made it easy for our families to be involved, which meant a lot to us.",
-      date: "Married: 6th January 2025",
-    },
-    {
-      names: "Nimisha & Jestin",
-      images: [nimishaJestin1, nimishaJestin2, nimishaJestin3, nimishaJestin4],
-      story: "Finding the right partner felt effortless with Love & Ring. The personalized approach and transparent process gave us confidence at every step. We're grateful for a platform that truly understands relationships.",
-      date: "Married: 2nd January 2025",
-    },
-  ];
+  const [stories, setStories] = useState<Story[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchStories = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await Axios.get("/api/cms/success-stories", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const normalized = (response.data || []).map((item: any) => ({
+        ...item,
+        images: Array.isArray(item.images) ? item.images : [],
+      }));
+
+      setStories(normalized);
+    } catch (error: any) {
+      console.error("Error:", error.response);
+    }
+  };
+
+  useEffect(() => {
+    fetchStories();
+  }, []);
+  // const stories: Story[] = [
+  //   {
+  //     names: "Abina & Basil",
+  //     images: [abinaBasil1, abinaBasil2],
+  //     story: "We found each other on Love & Ring and it's been a beautiful journey ever since.",
+  //     date: "Married: 9th November 2025",
+  //   },
+  //   {
+  //     names: "Molex & Roshin",
+  //     images: [molexRoshin1, molexRoshin2, molexRoshin3],
+  //     story: "Thanks to Love & Ring, we found our perfect match. Couldn't be happier!",
+  //     date: "Married: 10th November 2025",
+  //   },
+  //   {
+  //     names: "Sheen & Bibin",
+  //     images: [sheenBibin1, sheenBibin2],
+  //     story: "We are incredibly grateful to Love & Ring for bringing us together. From the very beginning, the platform felt trustworthy and easy to use. It helped us connect naturally and confidently, making our journey truly special.",
+  //     date: "Married: 6th December 2025",
+  //   },
+  //   {
+  //     names: "Athira & Visish",
+  //     images: [athiraVisish1, athiraVisish2, athiraVisish3],
+  //     story: "Love & Ring made the entire process feel calm and reassuring. The genuine profiles and thoughtful matching gave us clarity and comfort throughout our search. We're thankful for such a smooth and meaningful experience.",
+  //     date: "Married: 29th October 2025",
+  //   },
+  //   {
+  //     names: "Jesna & Alias",
+  //     images: [jesnaAlias1],
+  //     story: "From start to finish, Love & Ring offered a respectful and well-guided experience. The platform was simple to navigate and made it easy for our families to be involved, which meant a lot to us.",
+  //     date: "Married: 6th January 2025",
+  //   },
+  //   {
+  //     names: "Nimisha & Jestin",
+  //     images: [nimishaJestin1, nimishaJestin2, nimishaJestin3, nimishaJestin4],
+  //     story: "Finding the right partner felt effortless with Love & Ring. The personalized approach and transparent process gave us confidence at every step. We're grateful for a platform that truly understands relationships.",
+  //     date: "Married: 2nd January 2025",
+  //   },
+  // ];
 
   return (
     <div className="min-h-screen">
@@ -91,7 +120,8 @@ const SuccessStories = () => {
               Success <span className="gradient-text">Stories</span>
             </h1>
             <p className="text-xl text-muted-foreground">
-              Real couples, real happiness - read their inspiring journeys to finding true love
+              Real couples, real happiness - read their inspiring journeys to
+              finding true love
             </p>
           </motion.div>
         </div>
@@ -112,8 +142,12 @@ const SuccessStories = () => {
                 >
                   <Card className="overflow-hidden glass-card hover:shadow-xl transition-all h-full flex flex-col">
                     <div className="relative">
-                      {story.images.length > 1 ? (
-                        <SuccessStoryCarousel images={story.images} names={story.names} />
+                      {Array.isArray(story.images) &&
+                      story.images.length > 1 ? (
+                        <SuccessStoryCarousel
+                          images={story.images}
+                          names={story.names}
+                        />
                       ) : story.images.length === 1 ? (
                         <img
                           src={story.images[0]}
@@ -127,8 +161,14 @@ const SuccessStories = () => {
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                       <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
-                        <h3 className="text-2xl font-bold text-white mb-1">{story.names}</h3>
-                        {story.location && <p className="text-white/90 text-sm">{story.location}</p>}
+                        <h3 className="text-2xl font-bold text-white mb-1">
+                          {story.coupleName}
+                        </h3>
+                        {story.location && (
+                          <p className="text-white/90 text-sm">
+                            {story.location}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="p-6 flex flex-col flex-1">
@@ -146,7 +186,9 @@ const SuccessStories = () => {
                         )}
                       </div>
                       <div className="pt-4 mt-4 border-t">
-                        <p className="text-sm font-semibold text-primary">{story.date}</p>
+                        <p className="text-sm font-semibold text-primary">
+                          {story.date}
+                        </p>
                       </div>
                     </div>
                   </Card>
@@ -166,9 +208,12 @@ const SuccessStories = () => {
             viewport={{ once: true }}
             className="text-center space-y-6 max-w-3xl mx-auto"
           >
-            <h2 className="text-4xl md:text-5xl font-bold">Write Your Own Success Story</h2>
+            <h2 className="text-4xl md:text-5xl font-bold">
+              Write Your Own Success Story
+            </h2>
             <p className="text-xl opacity-90">
-              Join thousands of happy couples who found their perfect match on MatrimonyHub
+              Join thousands of happy couples who found their perfect match on
+              MatrimonyHub
             </p>
             <div className="pt-4">
               <a href="/register">
@@ -186,7 +231,10 @@ const SuccessStories = () => {
       </section>
 
       {/* Read More Modal */}
-      <Dialog open={!!selectedStory} onOpenChange={() => setSelectedStory(null)}>
+      <Dialog
+        open={!!selectedStory}
+        onOpenChange={() => setSelectedStory(null)}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-2xl flex items-center gap-2">

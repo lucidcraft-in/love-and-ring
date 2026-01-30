@@ -31,11 +31,11 @@ interface User {
 
 const navigationItems = [
   { id: "summary", label: "Summary", icon: LayoutDashboard },
-  { id: "edit-profile", label: "Edit Profile", icon: UserPen },
-  { id: "my-photos", label: "My Photos", icon: ImageIcon },
-  { id: "partner-preference", label: "Partner Preference", icon: Heart },
   { id: "matches", label: "Matches", icon: Users },
   { id: "browse", label: "Browse Profiles", icon: Search },
+  { id: "my-photos", label: "My Photos", icon: ImageIcon },
+  { id: "partner-preference", label: "Partner Preference", icon: Heart },
+  { id: "edit-profile", label: "Edit Profile", icon: UserPen },
 ];
 
 const ProfileSidebar = ({
@@ -118,7 +118,7 @@ const ProfileSidebar = ({
             {user.name}
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            ID: {user.profileId}
+            Email: {user.email}
           </p>
           <span className="mt-2 px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full">
             Free Account
@@ -202,7 +202,7 @@ const ProfileSidebar = ({
               {user.name}
             </h2>
             <p className="text-xs text-muted-foreground">
-              ID: {user.profileId}
+              ID: {user.email}
             </p>
           </div>
         </div>

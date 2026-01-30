@@ -6,7 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Axios from "@/axios/axios";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -17,9 +18,12 @@ const Contact = () => {
     message: "",
   });
 
+  const [contactPage, setContactPage] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!formData.name || !formData.email || !formData.message) {
       toast({
@@ -49,23 +53,57 @@ const Contact = () => {
     setFormData({ name: "", email: "", subject: "", message: "" });
   };
 
+  useEffect(() => {
+    const fetchContactPage = async () => {
+      try {
+        const token = localStorage.getItem("token"); // 👈 your auth token
+
+        const res = await Axios.get("/api/cms/static-pages", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const contact = res.data.find((page: any) => page.slug === "contact");
+
+        setContactPage(contact);
+      } catch (err) {
+        console.error("Failed to load contact page", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContactPage();
+  }, []);
+
+  const heroSection = contactPage?.sections?.find((s: any) => s.key === "hero");
+
+  const contactInfoSection = contactPage?.sections?.find(
+    (s: any) => s.key === "contact-info",
+  );
+
   const contactInfo = [
     {
       icon: Mail,
       title: "Email",
-      content: "support@matrimonyhub.com",
-      href: "mailto:support@matrimonyhub.com",
+      content: contactInfoSection?.fields?.email,
+      href: contactInfoSection?.fields?.email
+        ? `mailto:${contactInfoSection.fields.email}`
+        : null,
     },
     {
       icon: Phone,
       title: "Phone",
-      content: "+91 1800 123 4567",
-      href: "tel:+911800123456 7",
+      content: contactInfoSection?.fields?.phone,
+      href: contactInfoSection?.fields?.phone
+        ? `tel:${contactInfoSection.fields.phone}`
+        : null,
     },
     {
       icon: MapPin,
       title: "Address",
-      content: "123 Business Park, Mumbai, India 400001",
+      content: contactInfoSection?.fields?.address,
       href: null,
     },
   ];
@@ -81,10 +119,14 @@ const Contact = () => {
             className="max-w-3xl mx-auto text-center space-y-6"
           >
             <h1 className="text-5xl md:text-6xl font-bold">
-              Get In <span className="gradient-text">Touch</span>
+              {heroSection?.heading?.split(" ")[0]}{" "}
+              <span className="gradient-text">
+                {heroSection?.heading?.split(" ").slice(1).join(" ")}
+              </span>
             </h1>
+
             <p className="text-xl text-muted-foreground">
-              Have questions? We're here to help you on your journey
+              {heroSection?.description}
             </p>
           </motion.div>
         </div>
@@ -108,7 +150,9 @@ const Contact = () => {
                     <Input
                       id="name"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                       placeholder="Enter your full name"
                       required
                     />
@@ -120,7 +164,9 @@ const Contact = () => {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                       placeholder="your.email@example.com"
                       required
                     />
@@ -131,7 +177,9 @@ const Contact = () => {
                     <Input
                       id="subject"
                       value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subject: e.target.value })
+                      }
                       placeholder="What is this regarding?"
                     />
                   </div>
@@ -141,7 +189,9 @@ const Contact = () => {
                     <Textarea
                       id="message"
                       value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
                       placeholder="Tell us how we can help..."
                       rows={6}
                       required
@@ -168,40 +218,59 @@ const Contact = () => {
               <div>
                 <h2 className="text-3xl font-bold mb-4">Contact Information</h2>
                 <p className="text-muted-foreground text-lg">
-                  We're here to assist you with any questions or concerns. Reach out to us through any of the following channels.
+                  We're here to assist you with any questions or concerns. Reach
+                  out to us through any of the following channels.
                 </p>
               </div>
 
-              <div className="space-y-4">
-                {contactInfo.map((info, index) => (
-                  <Card key={index} className="p-6 glass-card hover:shadow-lg transition-all">
-                    <div className="flex items-start gap-4">
-                      <div className="p-3 rounded-lg bg-primary/10">
-                        <info.icon className="h-6 w-6 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold mb-1">{info.title}</h3>
-                        {info.href ? (
-                          <a
-                            href={info.href}
-                            className="text-muted-foreground hover:text-primary transition-colors"
-                          >
-                            {info.content}
-                          </a>
-                        ) : (
-                          <p className="text-muted-foreground">{info.content}</p>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              {/* Contact Information Cards */}
+              {contactInfoSection?.fields && (
+                <div className="space-y-4">
+                  {contactInfo.map((info, index) => {
+                    if (!info?.content) return null; // 👈 skip empty fields
+
+                    return (
+                      <Card
+                        key={index}
+                        className="p-6 glass-card hover:shadow-lg transition-all"
+                      >
+                        <div className="flex items-start gap-4">
+                          {/* Icon */}
+                          <div className="p-3 rounded-lg bg-primary/10">
+                            <info.icon className="h-6 w-6 text-primary" />
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-1">
+                            <h3 className="font-semibold mb-1">{info.title}</h3>
+
+                            {info.href ? (
+                              <a
+                                href={info.href}
+                                className="text-muted-foreground hover:text-primary transition-colors break-words"
+                              >
+                                {info.content}
+                              </a>
+                            ) : (
+                              <p className="text-muted-foreground break-words">
+                                {info.content}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Map Placeholder */}
               <Card className="p-6 glass-card">
                 <h3 className="font-semibold mb-4">Our Location</h3>
                 <div className="bg-muted rounded-lg h-64 flex items-center justify-center">
-                  <p className="text-muted-foreground">Map view would appear here</p>
+                  <p className="text-muted-foreground">
+                    Map view would appear here
+                  </p>
                 </div>
               </Card>
             </motion.div>

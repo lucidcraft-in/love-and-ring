@@ -45,17 +45,32 @@ const BrowseProfiles = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchProfiles = async () => {
-    setLoading(true);
-    try {
-      const response = await Axios.get("/api/users?take=100&skip=0");
-      setProfiles(response.data || []);
-    } catch (error) {
-      console.error("Error fetching profiles:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchProfiles = async () => {
+  setLoading(true);
+  try {
+    const token = localStorage.getItem("token"); // 👈 get token
+
+    const response = await Axios.get(
+      "/api/users?take=100&skip=0",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setProfiles(response.data || []);
+    console.log("Profiles:", response.data);
+  } catch (error: any) {
+    console.error(
+      "Error fetching profiles:",
+      error?.response || error
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchProfiles();

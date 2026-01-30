@@ -51,38 +51,91 @@ const Matches = () => {
   const [loading, setLoading] = useState(false);
   const [likingProfile, setLikingProfile] = useState<string | null>(null);
   const [likedUserIds, setLikedUserIds] = useState<Set<string>>(new Set());
+  const [likedByMe, setLikedByMe] = useState<MatchItem[]>([]);
+  const [likedMe, setLikedMe] = useState<MatchItem[]>([]);
 
   const navigate = useNavigate();
 
   // Mock user NRI plan status - set to false to simulate non-NRI user
   const hasNRIPlan = false;
-  const fetchLikedProfiles = async () => {
+  const fetchProfilesILiked = async (): Promise<string[]> => {
+    const token = localStorage.getItem("token");
+
+    const res = await Axios.get("/api/user/profile-likes/sent", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const formatted: MatchItem[] = res.data.map((item: any) => ({
+      user: {
+        _id: item.likedUser._id,
+        fullName: item.likedUser.fullName,
+        dateOfBirth: item.likedUser.dateOfBirth,
+        city: item.likedUser.city,
+        state: item.likedUser.state,
+        interests: item.likedUser.interests || [],
+        education: item.likedUser.highestEducation
+          ? { name: item.likedUser.highestEducation.name }
+          : undefined,
+        profession: item.likedUser.profession
+          ? { name: item.likedUser.profession.name }
+          : undefined,
+        photos: item.likedUser.photos || [],
+      },
+      matchScore: item.matchPercentage ?? 0,
+      liked: true,
+    }));
+
+    setLikedByMe(formatted);
+
+    const ids = formatted.map((m) => m.user._id);
+    setLikedUserIds(new Set(ids));
+
+    return ids; // ✅ important
+  };
+
+  const fetchProfilesWhoLikedMe = async () => {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await Axios.get("/api/user/profile-likes/sent", {
+      const res = await Axios.get("/api/user/profile-likes/received", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      const ids = res.data.map((item: any) => item.likedUser._id);
+      const formatted: MatchItem[] = res.data.map((item: any) => ({
+        user: {
+          _id: item.user._id,
+          fullName: item.user.fullName,
+          dateOfBirth: item.user.dateOfBirth,
+          city: item.user.city,
+          state: item.user.state,
+          interests: item.user.interests || [],
+          education: item.user.highestEducation
+            ? { name: item.user.highestEducation.name }
+            : undefined,
+          profession: item.user.profession
+            ? { name: item.user.profession.name }
+            : undefined,
+          photos: item.user.photos || [],
+        },
+        matchScore: item.matchPercentage ?? 0,
+        liked: false, // they liked you, not vice-versa
+      }));
 
-      setLikedUserIds(new Set(ids));
+      setLikedMe(formatted);
     } catch (err) {
-      console.error("Failed to fetch liked profiles", err);
+      console.error("Failed to fetch profiles who liked me", err);
     }
   };
 
-  const fetchMatches = async () => {
+  const fetchMatches = async (likedIds: Set<string>) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token"); // 👈 get token
+      const token = localStorage.getItem("token");
 
       const res = await Axios.get("/api/user/matches", {
-        headers: {
-          Authorization: `Bearer ${token}`, // 👈 attach token
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const raw = Array.isArray(res.data?.data) ? res.data.data : [];
@@ -97,32 +150,32 @@ const Matches = () => {
           education: item.user.highestEducation
             ? { name: item.user.highestEducation.name }
             : undefined,
-          profession: undefined,
+          profession: item.user.profession
+            ? { name: item.user.profession.name }
+            : undefined,
           city: item.user.city,
-          state: "",
+          state: item.user.state,
           photos: item.user.photos || [],
         },
         matchScore: item.matchPercentage ?? 0,
-        liked: likedUserIds.has(item.user._id),
+        liked: likedIds.has(item.user._id), // ✅ now correct
       }));
 
       setMatches(normalized);
-    } catch (err: any) {
-      console.error("Failed to load matches", err);
-      toast.error(err.response?.data?.message || "Failed to load matches");
-      setMatches([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLikedProfiles();
-  }, []);
+    const init = async () => {
+      const likedIdsArray = await fetchProfilesILiked();
+      await fetchProfilesWhoLikedMe();
+      await fetchMatches(new Set(likedIdsArray));
+    };
 
-  useEffect(() => {
-    fetchMatches();
-  }, [likedUserIds]);
+    init();
+  }, []);
 
   const calculateAge = (dob: string) => {
     const birth = new Date(dob);
@@ -218,13 +271,8 @@ const Matches = () => {
   };
 
   const handleLikeProfile = async (targetUserId: string) => {
-    console.log("LIKING USER ID:", targetUserId);
-    console.log(
-      "MATCH OBJECT:",
-      matches.find((m) => m.user._id === targetUserId),
-    );
     const match = matches.find((m) => m.user._id === targetUserId);
-    if (match?.liked) {
+    if (!match || match.liked) {
       toast.info("Profile already liked");
       return;
     }
@@ -234,21 +282,32 @@ const Matches = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await Axios.post(
+      await Axios.post(
         `/api/user/profile-likes/${targetUserId}`,
-        {}, // 👈 POST body empty
+        {},
         {
           headers: {
-            Authorization: `Bearer ${token}`, // ✅ token added
+            Authorization: `Bearer ${token}`,
           },
         },
       );
 
+      // ✅ 1. Update matches
       setMatches((prev) =>
         prev.map((m) =>
           m.user._id === targetUserId ? { ...m, liked: true } : m,
         ),
       );
+
+      // ✅ 2. ADD to "Profiles You Liked"
+      setLikedByMe((prev) => {
+        // prevent duplicates
+        if (prev.some((m) => m.user._id === targetUserId)) return prev;
+        return [{ ...match, liked: true }, ...prev];
+      });
+
+      // ✅ 3. Update likedUserIds
+      setLikedUserIds((prev) => new Set(prev).add(targetUserId));
 
       toast.success("Profile liked ❤️");
     } catch (err: any) {
@@ -267,15 +326,26 @@ const Matches = () => {
 
       await Axios.delete(`/api/user/profile-likes/${targetUserId}`, {
         headers: {
-          Authorization: `Bearer ${token}`, // ✅ token added
+          Authorization: `Bearer ${token}`,
         },
       });
 
+      // ✅ 1. Update matches
       setMatches((prev) =>
         prev.map((m) =>
           m.user._id === targetUserId ? { ...m, liked: false } : m,
         ),
       );
+
+      // ✅ 2. REMOVE from "Profiles You Liked"
+      setLikedByMe((prev) => prev.filter((m) => m.user._id !== targetUserId));
+
+      // ✅ 3. Update likedUserIds set
+      setLikedUserIds((prev) => {
+        const updated = new Set(prev);
+        updated.delete(targetUserId);
+        return updated;
+      });
 
       toast.success("Profile unliked");
     } catch (err: any) {
@@ -543,24 +613,48 @@ const Matches = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="liked" className="mt-6">
-          {likedProfiles.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {likedProfiles.map((match) => (
-                <MatchCard key={match.user._id} match={match} />
-              ))}
-            </div>
-          ) : (
-            <Card className="glass-card p-12 text-center">
-              <Heart className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold mb-2">
-                No Liked Profiles Yet
-              </h3>
-              <p className="text-muted-foreground">
-                Start liking profiles to see them here
-              </p>
-            </Card>
-          )}
+        <TabsContent value="liked" className="mt-6 space-y-10">
+          {/* Section 1: Profiles You Liked */}
+          <div>
+            <h3 className="text-xl font-semibold mb-4">
+              Profiles You’re Interested In ❤️
+            </h3>
+
+            {likedByMe.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {likedByMe.map((match) => (
+                  <MatchCard key={match.user._id} match={match} />
+                ))}
+              </div>
+            ) : (
+              <Card className="glass-card p-8 text-center">
+                <p className="text-muted-foreground">
+                  You haven’t liked any profiles yet
+                </p>
+              </Card>
+            )}
+          </div>
+
+          {/* Section 2: Profiles Interested in You */}
+          <div>
+            <h3 className="text-xl font-semibold mb-4">
+              People Who Showed Interest in You ✨
+            </h3>
+
+            {likedMe.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {likedMe.map((match) => (
+                  <MatchCard key={match.user._id} match={match} />
+                ))}
+              </div>
+            ) : (
+              <Card className="glass-card p-8 text-center">
+                <p className="text-muted-foreground">
+                  No one has liked your profile yet
+                </p>
+              </Card>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="nri" className="mt-6">

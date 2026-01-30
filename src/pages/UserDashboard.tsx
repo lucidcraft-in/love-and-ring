@@ -10,7 +10,9 @@ import BrowseProfiles from "@/components/dashboard/BrowseProfiles";
 import Footer from "@/components/Footer";
 
 const UserDashboard = () => {
-  const [activeTab, setActiveTab] = useState("summary");
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem("activeUserDashboardTab") || "summary";
+  });
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Lock body scroll on desktop/tablet only
@@ -34,6 +36,7 @@ const UserDashboard = () => {
 
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
+    localStorage.setItem("activeUserDashboardTab", tab);
     setSidebarOpen(false);
   };
 
@@ -60,8 +63,8 @@ const UserDashboard = () => {
     <div className="min-h-screen bg-muted/30 dark:bg-background lg:h-screen lg:overflow-hidden">
       <div className="flex flex-col lg:flex-row lg:h-full">
         {/* Left: Sidebar */}
-        <ProfileSidebar 
-          isOpen={sidebarOpen} 
+        <ProfileSidebar
+          isOpen={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
           activeTab={activeTab}
           onNavigate={handleNavigate}
@@ -77,11 +80,15 @@ const UserDashboard = () => {
                   onClick={() => setSidebarOpen(!sidebarOpen)}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-card border border-border shadow-sm hover:bg-muted transition-colors"
                 >
-                  {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                  {sidebarOpen ? (
+                    <X className="h-5 w-5" />
+                  ) : (
+                    <Menu className="h-5 w-5" />
+                  )}
                   <span className="text-sm font-medium">Menu</span>
                 </button>
               </div>
-              
+
               {renderContent()}
             </div>
 
