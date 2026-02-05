@@ -9,21 +9,22 @@ import {
 } from "@/components/ui/select";
 import { User, Phone, Users, Mail } from "lucide-react";
 import type { RegistrationData } from "@/pages/Register";
-
-
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 interface StepOneProps {
   errors?: { [key: string]: string };
   formData?: RegistrationData;
   updateFormData?: (field: keyof RegistrationData, value: string) => void;
-   otpSent?: boolean;
+  otpSent?: boolean;
 }
 
-const StepOne = ({ errors = {}, formData, updateFormData, otpSent }: StepOneProps) => {
- 
-
-  
-
+const StepOne = ({
+  errors = {},
+  formData,
+  updateFormData,
+  otpSent,
+}: StepOneProps) => {
   const handleChange = (field: keyof RegistrationData, value: string) => {
     if (updateFormData) {
       updateFormData(field, value);
@@ -131,33 +132,26 @@ const StepOne = ({ errors = {}, formData, updateFormData, otpSent }: StepOneProp
             <Phone className="w-3.5 h-3.5 text-primary" />
             Mobile Number *
           </Label>
-          <div className="flex gap-2">
-            <Select
-              value={formData?.countryCode || "+91"}
-              onValueChange={(value) => handleChange("countryCode", value)}
-            >
-              <SelectTrigger
-                className={`w-[72px] h-10 rounded-lg text-sm ${errors.countryCode ? "border-destructive" : "border-border/50"}`}
-              >
-                <SelectValue placeholder="+91" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border-border">
-                <SelectItem value="+91">+91</SelectItem>
-                <SelectItem value="+1">+1</SelectItem>
-                <SelectItem value="+44">+44</SelectItem>
-                <SelectItem value="+61">+61</SelectItem>
-                <SelectItem value="+971">+971</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input
-              id="mobile"
-              type="tel"
-              placeholder="Mobile number"
-              value={formData?.mobile || ""}
-              onChange={(e) => handleChange("mobile", e.target.value)}
-              className={`flex-1 h-10 rounded-lg text-sm ${errors.mobile ? "border-destructive" : "border-border/50"}`}
-            />
-          </div>
+
+          <PhoneInput
+            country={"in"}
+            value={`${formData?.countryCode || ""}${formData?.mobile || ""}`}
+            onChange={(value, country) => {
+              if (!updateFormData) return;
+
+              const dialCode = (country as any).dialCode ?? "";
+              const phoneNumber = dialCode ? value.replace(dialCode, "") : value;
+
+              updateFormData("countryCode", dialCode ? `+${dialCode}` : "");
+              updateFormData("mobile", phoneNumber);
+            }}
+            inputClass="!w-full !h-10 !rounded-lg !text-sm !border-border/50"
+            containerClass="!w-full"
+            buttonClass="!rounded-l-lg !border-border/50"
+            dropdownClass="!bg-background"
+            placeholder="Mobile number"
+          />
+
           {(errors.countryCode || errors.mobile) && (
             <p className="text-xs text-destructive">
               {errors.countryCode || errors.mobile}

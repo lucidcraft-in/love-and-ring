@@ -27,7 +27,11 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
   useEffect(() => {
     const fetchEducation = async () => {
       try {
-        const { data } = await Axios.get("/api/master/educations");
+        const { data } = await Axios.get("/api/master/educations", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         setEducation(data.data);
       } catch (error) {
         console.error("Error fetching education:", error);
@@ -41,7 +45,12 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
     const fetchProfessions = async () => {
       try {
         setLoading(true);
-        const { data } = await Axios.get("/api/master/occupations");
+        const { data } = await Axios.get("/api/master/occupations", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        
         setProfessions(data.data);
       } catch (error) {
         console.error("Error fetching professions:", error);

@@ -37,14 +37,23 @@ const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
     const fetchReligions = async () => {
       try {
         setLoading(true);
-        const response = await Axios.get("/api/master/religions");
+
+        const token = localStorage.getItem("token");
+
+        const response = await Axios.get("/api/master/religions", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         setReligions(response.data.data);
       } catch (err) {
-        console.error("Failed to fetch religions");
+        console.error("Failed to fetch religions", err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchReligions();
   }, []);
 
@@ -58,12 +67,20 @@ const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
 
     const fetchCastes = async () => {
       try {
+        const token = localStorage.getItem("token");
+
         const res = await Axios.get(
           `/api/master/castes?religion=${formData.religion}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
         );
+
         setCastes(res.data.data);
       } catch (err) {
-        console.error("Failed to fetch castes");
+        console.error("Failed to fetch castes", err);
         setCastes([]);
       }
     };
@@ -74,15 +91,19 @@ const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
   useEffect(() => {
     const fetchMotherTongues = async () => {
       try {
-        const response = await Axios.get("/api/master/languages");
+        const token = localStorage.getItem("token");
+
+        const response = await Axios.get("/api/master/languages", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         const list = response.data?.data;
 
         if (Array.isArray(list)) {
           setMotherTongues(list);
-          console.log("Mother tongues:", list);
         } else {
-          console.error("Unexpected response shape:", response.data);
           setMotherTongues([]);
         }
       } catch (err) {

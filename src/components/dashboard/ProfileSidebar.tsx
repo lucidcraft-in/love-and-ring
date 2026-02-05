@@ -25,6 +25,7 @@ interface User {
   _id: string;
   fullName: string;
   email: string;
+  mobile?: string;
   profileId?: string;
   profileImage?: string;
 }
@@ -78,6 +79,7 @@ const ProfileSidebar = ({
     email: userData?.email || "",
     profileId: userData?.profileId || userData?._id || "—",
     avatar: userData?.profileImage || Profile,
+    mobile: userData?.mobile || "—",
     initials:
       userData?.fullName
         ?.split(" ")
@@ -117,9 +119,12 @@ const ProfileSidebar = ({
           <h2 className="mt-4 text-xl font-semibold text-foreground">
             {user.name}
           </h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            Email: {user.email}
+          <p className="text-xs text-muted-foreground mt-1 max-w-[220px] whitespace-normal break-words relative">
+            <span className="block overflow-hidden [mask-image:linear-gradient(to_right,black_80%,transparent)]">
+              {user.email}
+            </span>
           </p>
+
           <span className="mt-2 px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full">
             Free Account
           </span>
@@ -164,11 +169,15 @@ const ProfileSidebar = ({
                 </AvatarFallback>
               </Avatar>
 
-              <div className="leading-tight">
+              <div className="leading-tight flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground">
                   {user.name}
                 </p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  <span className="block overflow-hidden break-words">
+                    {user.mobile}
+                  </span>
+                </p>
               </div>
             </div>
           </div>
@@ -201,9 +210,11 @@ const ProfileSidebar = ({
             <h2 className="text-lg font-semibold text-foreground">
               {user.name}
             </h2>
-            <p className="text-xs text-muted-foreground">
-              ID: {user.email}
-            </p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-[220px] whitespace-normal break-words relative">
+            <span className="block overflow-hidden [mask-image:linear-gradient(to_right,black_80%,transparent)]">
+              {user.email}
+            </span>
+          </p>
           </div>
         </div>
 
@@ -254,7 +265,7 @@ const ProfileSidebar = ({
               <p className="text-sm font-semibold text-foreground">
                 {user.name}
               </p>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
+              <p className="text-xs text-muted-foreground">{user.mobile}</p>
             </div>
           </div>
         </div>

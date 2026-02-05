@@ -28,6 +28,7 @@ import {
   completeUserProfile,
   sendRegistrationOtp,
   verifyRegistrationOtp,
+  registerUser,
 } from "@/services/UserServices";
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
@@ -232,21 +233,28 @@ const Register = () => {
 
   const handleOTPVerified = async (otp: string, password: string) => {
     try {
+      // 1️⃣ Verify OTP & create user
       const res = await verifyRegistrationOtp({
         email: formData.email,
         otp,
         password,
+      });
+
+      const userId = res.data.user._id;
+      setUserId(userId);
+
+      // 2️⃣ SAVE STEP-1 DATA IMMEDIATELY
+      await completeUserProfile(userId, {
+        fullName: formData.fullName,
+        gender:
+          formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1),
         accountFor:
           formData.accountFor.charAt(0).toUpperCase() +
           formData.accountFor.slice(1),
-        gender:
-          formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1),
-        fullName: formData.fullName,
         mobile: formData.mobile,
         countryCode: formData.countryCode,
       });
 
-      setUserId(res.data.user._id);
       setIsOTPVerified(true);
       setShowOTPVerification(false);
       setCurrentStep(2);
