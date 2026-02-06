@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const Axios = axios.create({
-    baseURL: 'http://localhost:3000/',
+    baseURL: 'https://love-ring-api.vercel.app/',
     headers: {
         'Content-Type': 'application/json'
     }
