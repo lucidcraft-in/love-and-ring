@@ -9,6 +9,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import SuccessStoryCarousel from "@/components/SuccessStoryCarousel";
+import FloatingBrandLogo from "@/components/FloatingBrandLogo";
+import aboutHeroBg from "@/assets/about-hero-bg.jpg";
 import abinaBasil1 from "@/assets/abina-basil-1.png";
 import abinaBasil2 from "@/assets/abina-basil-2.png";
 import molexRoshin1 from "@/assets/molex-roshin-1.png";
@@ -64,63 +66,53 @@ const SuccessStories = () => {
   useEffect(() => {
     fetchStories();
   }, []);
-  // const stories: Story[] = [
-  //   {
-  //     names: "Abina & Basil",
-  //     images: [abinaBasil1, abinaBasil2],
-  //     story: "We found each other on Love & Ring and it's been a beautiful journey ever since.",
-  //     date: "Married: 9th November 2025",
-  //   },
-  //   {
-  //     names: "Molex & Roshin",
-  //     images: [molexRoshin1, molexRoshin2, molexRoshin3],
-  //     story: "Thanks to Love & Ring, we found our perfect match. Couldn't be happier!",
-  //     date: "Married: 10th November 2025",
-  //   },
-  //   {
-  //     names: "Sheen & Bibin",
-  //     images: [sheenBibin1, sheenBibin2],
-  //     story: "We are incredibly grateful to Love & Ring for bringing us together. From the very beginning, the platform felt trustworthy and easy to use. It helped us connect naturally and confidently, making our journey truly special.",
-  //     date: "Married: 6th December 2025",
-  //   },
-  //   {
-  //     names: "Athira & Visish",
-  //     images: [athiraVisish1, athiraVisish2, athiraVisish3],
-  //     story: "Love & Ring made the entire process feel calm and reassuring. The genuine profiles and thoughtful matching gave us clarity and comfort throughout our search. We're thankful for such a smooth and meaningful experience.",
-  //     date: "Married: 29th October 2025",
-  //   },
-  //   {
-  //     names: "Jesna & Alias",
-  //     images: [jesnaAlias1],
-  //     story: "From start to finish, Love & Ring offered a respectful and well-guided experience. The platform was simple to navigate and made it easy for our families to be involved, which meant a lot to us.",
-  //     date: "Married: 6th January 2025",
-  //   },
-  //   {
-  //     names: "Nimisha & Jestin",
-  //     images: [nimishaJestin1, nimishaJestin2, nimishaJestin3, nimishaJestin4],
-  //     story: "Finding the right partner felt effortless with Love & Ring. The personalized approach and transparent process gave us confidence at every step. We're grateful for a platform that truly understands relationships.",
-  //     date: "Married: 2nd January 2025",
-  //   },
-  // ];
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-primary/10 to-secondary/10">
-        <div className="container mx-auto px-4">
+      {/* Hero Section - matches Home page hero design */}
+      <section
+        id="hero-section"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      >
+        {/* Background Image */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${aboutHeroBg})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        />
+
+        {/* Dark Gradient Overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.65) 100%)",
+          }}
+        />
+
+        {/* Floating Brand Logo */}
+        <FloatingBrandLogo variant="hero" />
+
+        {/* Hero Content */}
+        <div className="container mx-auto relative z-10 px-4 pt-16">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-3xl mx-auto text-center space-y-6"
+            transition={{ duration: 0.8 }}
+            className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8"
           >
-            <div className="flex justify-center mb-4">
-              <Heart className="h-16 w-16 text-primary fill-primary" />
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold">
-              Success <span className="gradient-text">Stories</span>
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white hero-text-shadow">
+              Success{" "}
+              <span className="gradient-text-light drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+                Stories
+              </span>
             </h1>
-            <p className="text-xl text-muted-foreground">
-              Real couples, real happiness - read their inspiring journeys to
+            <p className="text-base sm:text-xl md:text-2xl hero-subtext">
+              Real couples, real happiness — read their inspiring journeys to
               finding true love
             </p>
           </motion.div>
