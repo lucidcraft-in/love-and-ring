@@ -8,6 +8,8 @@ import { Mail, Phone, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import Axios from "@/axios/axios";
+import FloatingBrandLogo from "@/components/FloatingBrandLogo";
+import contactHeroBg from "@/assets/contact-hero-bg.jpg";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -111,22 +113,34 @@ const Contact = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-primary/10 to-secondary/10">
-        <div className="container mx-auto px-4">
+      <section id="hero-section" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${contactHeroBg})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.65) 100%)",
+          }}
+        />
+        <FloatingBrandLogo variant="hero" />
+        <div className="relative z-10 container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center space-y-6"
           >
-            <h1 className="text-5xl md:text-6xl font-bold">
-              {heroSection?.heading?.split(" ")[0]}{" "}
-              <span className="gradient-text">
-                {heroSection?.heading?.split(" ").slice(1).join(" ")}
-              </span>
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white hero-text-shadow">
+              Get In <span className="gradient-text-light">Touch</span>
             </h1>
-
-            <p className="text-xl text-muted-foreground">
-              {heroSection?.description}
+            <p className="text-xl md:text-2xl hero-subtext max-w-2xl mx-auto">
+              {heroSection?.description || "We're here to help you on your journey to finding your perfect life partner"}
             </p>
           </motion.div>
         </div>
