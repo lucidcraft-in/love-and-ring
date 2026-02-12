@@ -102,9 +102,9 @@ const MyPhotos = () => {
 
       await Axios.delete(`/api/users/${photoId}/photos`, {
         headers: {
-          Authorization: `Bearer ${token}`, // ✅ manually add token
+          Authorization: `Bearer ${token}`, 
         },
-        data: { photoId }, // send photoId in body
+        data: { photoId }, 
       });
 
       toast.success("Photo deleted");
