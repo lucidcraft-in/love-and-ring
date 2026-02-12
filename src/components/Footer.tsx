@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
-import coupleLogo from "@/assets/couple-logo.png";
+import ringLogo from "@/assets/ring-logo.png";
 
 const Footer = () => {
   const footerLinks = {
@@ -35,7 +35,7 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
-              <img src={coupleLogo} alt="Love & Ring" className="h-10 w-10 object-contain" />
+              <img src={ringLogo} alt="Love & Ring" className="h-10 w-10 object-contain" />
               <span className="text-xl font-bold gradient-text">Love & Ring</span>
             </Link>
             <p className="text-muted-foreground text-sm">
