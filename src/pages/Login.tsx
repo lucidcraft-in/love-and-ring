@@ -403,24 +403,37 @@ const Login = () => {
               </div>
 
               {/* Toggle Button */}
-              <Button
-                variant="outline"
-                className="w-full h-10 rounded-lg text-primary border-primary/30 hover:bg-primary/5"
+              <button
                 type="button"
                 onClick={toggleMode}
+                className="w-full h-10 rounded-lg text-sm font-medium inline-flex items-center justify-center gap-2 transition-all duration-200 bg-transparent"
+                style={{
+                  border: '1px solid #A78BFA',
+                  color: '#6D5BD0',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(167, 139, 250, 0.08)';
+                  e.currentTarget.style.borderColor = '#8B5CF6';
+                  e.currentTarget.style.color = '#5B4BC4';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.borderColor = '#A78BFA';
+                  e.currentTarget.style.color = '#6D5BD0';
+                }}
               >
                 {isPhoneLogin ? (
                   <>
-                    <Mail className="h-4 w-4 mr-2" />
+                    <Mail className="h-4 w-4" />
                     Continue with Email & Password
                   </>
                 ) : (
                   <>
-                    <Phone className="h-4 w-4 mr-2" />
+                    <Phone className="h-4 w-4" />
                     Continue with Phone
                   </>
                 )}
-              </Button>
+              </button>
 
               {/* Register Link - Mobile */}
               <p className="text-center mt-5 text-sm text-muted-foreground lg:hidden">
