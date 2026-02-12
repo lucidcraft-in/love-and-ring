@@ -31,7 +31,7 @@ const AppLayout = () => {
   const location = useLocation();
   
   // Hero routes have transparent navbar overlay - no padding needed
-  const heroRoutes = ["/", "/login", "/register", "/client-terms", "/client-registration"];
+  const heroRoutes = ["/", "/login", "/register", "/client-terms", "/client-registration", "/about", "/success-stories", "/pricing", "/contact"];
   const isHeroRoute = heroRoutes.includes(location.pathname);
 
   // Public pages where WhatsApp button should show
