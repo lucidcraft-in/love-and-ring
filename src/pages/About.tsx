@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Shield, Heart, Users, Award } from "lucide-react";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
+import aboutHeroBg from "@/assets/about-hero-bg.jpg";
 
 const About = () => {
   const values = [
@@ -29,27 +30,49 @@ const About = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative py-24 bg-gradient-to-br from-primary/5 via-secondary/10 to-primary/5 overflow-hidden">
-        {/* Decorative background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-secondary/5 rounded-full blur-3xl" />
-        </div>
-        
+      {/* Hero Section - matches Home page hero design */}
+      <section
+        id="hero-section"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      >
+        {/* Background Image */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${aboutHeroBg})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        />
+
+        {/* Dark Gradient Overlay - same as Home */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.5) 100%)",
+          }}
+        />
+
         {/* Floating Brand Logo */}
         <FloatingBrandLogo variant="hero" />
-        
-        <div className="container mx-auto px-4 relative z-10">
+
+        {/* Hero Content */}
+        <div className="container mx-auto relative z-10 px-4 pt-16">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-3xl mx-auto text-center space-y-6"
+            transition={{ duration: 0.8 }}
+            className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8"
           >
-            <h1 className="text-5xl md:text-6xl font-bold">
-              About <span className="gradient-text">Love & Ring</span>
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white hero-text-shadow">
+              About{" "}
+              <span className="gradient-text-light drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+                Love & Ring
+              </span>
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-base sm:text-xl md:text-2xl hero-subtext">
               Your trusted partner in finding the perfect life match
             </p>
           </motion.div>
