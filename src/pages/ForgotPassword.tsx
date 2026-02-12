@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, Mail, ShieldCheck, LockKeyhole } from "lucide-react";
+import { X, Shield, Users, Lock, CheckCircle, ArrowLeft } from "lucide-react";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
@@ -24,10 +24,11 @@ import {
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
-const stepConfig = [
-  { icon: Mail, title: "Forgot Password", subtitle: "Enter your registered email to receive a verification code." },
-  { icon: ShieldCheck, title: "Verify Your Email", subtitle: "We've sent a 6-digit code to your email." },
-  { icon: LockKeyhole, title: "Set New Password", subtitle: "Create a strong new password for your account." },
+const features = [
+  { icon: Shield, title: "Verified Profiles", desc: "100% authenticated members" },
+  { icon: Users, title: "Smart Matching", desc: "AI-powered compatibility" },
+  { icon: Lock, title: "Complete Privacy", desc: "Your data stays secure" },
+  { icon: CheckCircle, title: "Premium Support", desc: "24/7 dedicated assistance" },
 ];
 
 const ForgotPassword = () => {
@@ -130,11 +131,17 @@ const ForgotPassword = () => {
     }
   };
 
-  const current = stepConfig[step - 1];
+  const stepTitles = [
+    { title: "Forgot Password", subtitle: "Enter your registered email to receive a verification code." },
+    { title: "Verify Your Email", subtitle: "We've sent a 6-digit code to your email." },
+    { title: "Set New Password", subtitle: "Create a strong new password for your account." },
+  ];
+
+  const current = stepTitles[step - 1];
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Hero Carousel Background */}
+      {/* Hero Carousel Background - Same as Login */}
       <div id="hero-section" className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
           <motion.div
@@ -153,196 +160,283 @@ const ForgotPassword = () => {
 
       <FloatingBrandLogo variant="auth" className="z-[5]" />
 
-      {/* Content */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4 sm:p-6">
+      {/* Desktop Close Button - Same as Login */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="hidden lg:flex absolute top-6 right-6 z-20 text-white/80 hover:text-white hover:bg-white/10 rounded-full h-10 w-10 backdrop-blur-sm border border-white/20"
+        onClick={() => navigate("/")}
+      >
+        <X className="h-5 w-5" />
+      </Button>
+
+      {/* Content Layer - Same split layout as Login */}
+      <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
+        {/* Left Section - Marketing (identical to Login) */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="hidden lg:flex lg:w-[45%] text-white p-12 xl:p-16 flex-col justify-center relative"
         >
-          {/* Mobile Header */}
-          <div className="lg:hidden text-center mb-6">
-            <Link to="/" className="inline-block mb-4">
-              <span className="text-2xl font-bold text-white">
-                Love<span className="text-primary">&</span>Ring
+          <div className="relative z-10 max-w-lg mt-10">
+            <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-6">
+              Reset Your
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+                Password Securely
               </span>
-            </Link>
-          </div>
-
-          <Card className="relative p-6 sm:p-8 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
-            {/* Back to login */}
-            <button
-              onClick={() => navigate("/login")}
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Sign In
-            </button>
-
-            {/* Step indicator */}
-            <div className="flex items-center gap-2 mb-6">
-              {[1, 2, 3].map((s) => (
-                <div
-                  key={s}
-                  className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                    s <= step ? "bg-gradient-to-r from-primary to-secondary" : "bg-border"
-                  }`}
-                />
+            </h1>
+            <p className="text-lg text-white/80 leading-relaxed mb-10">
+              Don't worry, it happens to the best of us. Follow the simple steps
+              to regain access to your account safely and securely.
+            </p>
+            <div className="grid grid-cols-2 gap-4 mb-10">
+              {features.map((feature, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  className="flex items-start gap-3 bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center flex-shrink-0">
+                    <feature.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white text-sm">{feature.title}</h3>
+                    <p className="text-white/60 text-xs">{feature.desc}</p>
+                  </div>
+                </motion.div>
               ))}
             </div>
+            <div className="pt-6 border-t border-white/10">
+              <p className="text-white/70">
+                Don't have an account?{" "}
+                <Link to="/register" className="text-primary hover:text-primary/80 font-semibold transition-colors">
+                  Register Now
+                </Link>
+              </p>
+            </div>
+          </div>
+        </motion.div>
 
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center flex-shrink-0">
-                <current.icon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">{current.title}</h2>
-                <p className="text-sm text-muted-foreground">{current.subtitle}</p>
-              </div>
+        {/* Right Section - Form Card (identical layout to Login) */}
+        <div className="flex-1 lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-8 min-h-screen lg:min-h-0">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="w-full max-w-xl"
+          >
+            {/* Mobile Header */}
+            <div className="lg:hidden text-center mb-6">
+              <Link to="/" className="inline-block mb-4">
+                <span className="text-2xl font-bold text-white">
+                  Love<span className="text-primary">&</span>Ring
+                </span>
+              </Link>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
+                Reset <span className="text-primary">Password</span>
+              </h1>
+              <p className="text-white/70 text-sm">
+                Remember your password?{" "}
+                <Link to="/login" className="text-primary hover:underline font-medium">
+                  Sign In
+                </Link>
+              </p>
             </div>
 
-            {/* Steps */}
-            <AnimatePresence mode="wait">
-              {step === 1 && (
-                <motion.div
-                  key="step1"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-4"
-                >
-                  <div className="space-y-1.5">
-                    <Label htmlFor="fp-email" className="text-sm">Email Address</Label>
-                    <Input
-                      id="fp-email"
-                      type="email"
-                      placeholder="your.email@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="h-10"
-                      required
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25 rounded-lg"
-                    disabled={isLoading}
-                    onClick={handleSendOtp}
-                  >
-                    {isLoading ? "Sending..." : "Send Verification Code"}
-                  </Button>
-                </motion.div>
-              )}
+            {/* Mobile Close Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-sm"
+              onClick={() => navigate("/")}
+            >
+              <X className="h-5 w-5" />
+            </Button>
 
-              {step === 2 && (
-                <motion.div
-                  key="step2"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-4"
-                >
-                  <p className="text-sm text-muted-foreground">
-                    Code sent to <span className="font-medium text-foreground">{email}</span>
-                  </p>
-                  <div className="space-y-1.5">
-                    <Label className="text-sm">Enter 6-Digit Code</Label>
-                    <div className="flex justify-center">
-                      <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                        <InputOTPGroup>
-                          <InputOTPSlot index={0} />
-                          <InputOTPSlot index={1} />
-                          <InputOTPSlot index={2} />
-                          <InputOTPSlot index={3} />
-                          <InputOTPSlot index={4} />
-                          <InputOTPSlot index={5} />
-                        </InputOTPGroup>
-                      </InputOTP>
+            {/* Form Card - Same styling as Login */}
+            <Card className="relative p-5 sm:p-6 lg:p-7 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
+              {/* Back to login link */}
+              <button
+                onClick={() => navigate("/login")}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Sign In
+              </button>
+
+              {/* Step indicator */}
+              <div className="flex items-center gap-2 mb-5">
+                {[1, 2, 3].map((s) => (
+                  <div
+                    key={s}
+                    className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                      s <= step ? "bg-gradient-to-r from-primary to-secondary" : "bg-border"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Form Header */}
+              <div className="mb-5">
+                <h2 className="text-xl font-semibold text-foreground mb-1">{current.title}</h2>
+                <p className="text-sm text-muted-foreground">{current.subtitle}</p>
+              </div>
+
+              {/* Steps */}
+              <AnimatePresence mode="wait">
+                {step === 1 && (
+                  <motion.div
+                    key="step1"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-1.5">
+                      <Label htmlFor="fp-email" className="text-sm">Email Address</Label>
+                      <Input
+                        id="fp-email"
+                        type="email"
+                        placeholder="your.email@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="h-10"
+                        required
+                      />
                     </div>
-                  </div>
-                  <div className="text-center">
-                    <button
+                    <Button
                       type="button"
-                      onClick={handleResendOtp}
-                      disabled={countdown > 0}
-                      className={`text-xs transition-colors ${
-                        countdown > 0
-                          ? "text-muted-foreground cursor-not-allowed"
-                          : "text-primary hover:underline"
-                      }`}
+                      className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25 rounded-lg"
+                      disabled={isLoading}
+                      onClick={handleSendOtp}
                     >
-                      {countdown > 0 ? `Resend code in ${countdown}s` : "Resend Code"}
-                    </button>
-                  </div>
-                  <Button
-                    type="button"
-                    className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25 rounded-lg"
-                    disabled={isLoading}
-                    onClick={handleVerifyOtp}
-                  >
-                    {isLoading ? "Verifying..." : "Verify Code"}
-                  </Button>
-                </motion.div>
-              )}
+                      {isLoading ? "Sending..." : "Send Verification Code"}
+                    </Button>
+                  </motion.div>
+                )}
 
-              {step === 3 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-4"
-                >
-                  <div className="space-y-1.5">
-                    <Label htmlFor="new-pw" className="text-sm">New Password</Label>
-                    <Input
-                      id="new-pw"
-                      type="password"
-                      placeholder="Minimum 8 characters"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="h-10"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="confirm-pw" className="text-sm">Confirm Password</Label>
-                    <Input
-                      id="confirm-pw"
-                      type="password"
-                      placeholder="Re-enter your password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="h-10"
-                      required
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25 rounded-lg"
-                    disabled={isLoading}
-                    onClick={handleResetPassword}
+                {step === 2 && (
+                  <motion.div
+                    key="step2"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-4"
                   >
-                    {isLoading ? "Resetting..." : "Reset Password"}
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    <p className="text-sm text-muted-foreground">
+                      Code sent to <span className="font-medium text-foreground">{email}</span>
+                    </p>
+                    <div className="space-y-1.5">
+                      <Label className="text-sm">Enter 6-Digit Code</Label>
+                      <div className="flex justify-center">
+                        <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                            <InputOTPSlot index={5} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={handleResendOtp}
+                        disabled={countdown > 0}
+                        className={`text-xs transition-colors ${
+                          countdown > 0
+                            ? "text-muted-foreground cursor-not-allowed"
+                            : "text-primary hover:underline"
+                        }`}
+                      >
+                        {countdown > 0 ? `Resend code in ${countdown}s` : "Resend Code"}
+                      </button>
+                    </div>
+                    <Button
+                      type="button"
+                      className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25 rounded-lg"
+                      disabled={isLoading}
+                      onClick={handleVerifyOtp}
+                    >
+                      {isLoading ? "Verifying..." : "Verify Code"}
+                    </Button>
+                  </motion.div>
+                )}
 
-            {/* Footer link */}
-            <p className="text-center mt-6 text-sm text-muted-foreground">
-              Remember your password?{" "}
-              <Link to="/login" className="text-primary hover:underline font-medium">
-                Sign In
-              </Link>
-            </p>
-          </Card>
-        </motion.div>
+                {step === 3 && (
+                  <motion.div
+                    key="step3"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-1.5">
+                      <Label htmlFor="new-pw" className="text-sm">New Password</Label>
+                      <Input
+                        id="new-pw"
+                        type="password"
+                        placeholder="Minimum 8 characters"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="h-10"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="confirm-pw" className="text-sm">Confirm Password</Label>
+                      <Input
+                        id="confirm-pw"
+                        type="password"
+                        placeholder="Re-enter your password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="h-10"
+                        required
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25 rounded-lg"
+                      disabled={isLoading}
+                      onClick={handleResetPassword}
+                    >
+                      {isLoading ? "Resetting..." : "Reset Password"}
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Footer link */}
+              <p className="text-center mt-5 text-sm text-muted-foreground">
+                Remember your password?{" "}
+                <Link to="/login" className="text-primary hover:underline font-medium">
+                  Sign In
+                </Link>
+              </p>
+            </Card>
+
+            {/* Help Text */}
+            <div className="text-center mt-4 text-xs text-white/60">
+              <p>
+                Need help?{" "}
+                <Link to="/support?from=forgot-password" className="text-primary hover:underline">
+                  Get help
+                </Link>
+              </p>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
