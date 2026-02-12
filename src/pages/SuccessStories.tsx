@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import SuccessStoryCarousel from "@/components/SuccessStoryCarousel";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
-import aboutHeroBg from "@/assets/about-hero-bg.jpg";
+import successStoriesHeroBg from "@/assets/success-stories-hero-bg.jpg";
 import abinaBasil1 from "@/assets/abina-basil-1.png";
 import abinaBasil2 from "@/assets/abina-basil-2.png";
 import molexRoshin1 from "@/assets/molex-roshin-1.png";
@@ -78,7 +78,7 @@ const SuccessStories = () => {
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `url(${aboutHeroBg})`,
+            backgroundImage: `url(${successStoriesHeroBg})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
