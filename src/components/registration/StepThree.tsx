@@ -32,7 +32,10 @@ import type { RegistrationData } from "@/pages/Register";
 interface StepThreeProps {
   errors?: { [key: string]: string };
   formData?: RegistrationData;
-  updateFormData?: (field: keyof RegistrationData, value: string) => void;
+  updateFormData?: (
+    field: keyof RegistrationData,
+    value: string | File
+  ) => void;
 }
 
 const StepThree = ({
@@ -92,13 +95,14 @@ const StepThree = ({
   const getCroppedImg = async () => {
     if (!imgRef.current || !crop) return;
 
+    const image = imgRef.current;
     const canvas = document.createElement("canvas");
-    const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
-    const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
 
-    const pixelRatio = window.devicePixelRatio;
-    const cropWidth = (crop.width / 100) * imgRef.current.width;
-    const cropHeight = (crop.height / 100) * imgRef.current.height;
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+
+    const cropWidth = (crop.width / 100) * image.width;
+    const cropHeight = (crop.height / 100) * image.height;
 
     canvas.width = cropWidth * scaleX;
     canvas.height = cropHeight * scaleY;
@@ -106,35 +110,56 @@ const StepThree = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     ctx.imageSmoothingQuality = "high";
 
-    const cropX = (crop.x / 100) * imgRef.current.width * scaleX;
-    const cropY = (crop.y / 100) * imgRef.current.height * scaleY;
+    const cropX = (crop.x / 100) * image.width * scaleX;
+    const cropY = (crop.y / 100) * image.height * scaleY;
 
-    // Apply rotation
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    ctx.translate(centerX, centerY);
+    // Clear previous transform
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Move to center for rotation
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.rotate((rotation * Math.PI) / 180);
     ctx.scale(zoom[0], zoom[0]);
-    ctx.translate(-centerX, -centerY);
 
     ctx.drawImage(
-      imgRef.current,
+      image,
       cropX,
       cropY,
       cropWidth * scaleX,
       cropHeight * scaleY,
-      0,
-      0,
+      -canvas.width / 2,
+      -canvas.height / 2,
       canvas.width,
       canvas.height,
     );
 
-    const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.9);
-    setCroppedImage(croppedDataUrl);
-    setShowCropDialog(false);
+    ctx.restore();
+
+    // Convert canvas to Blob (NOT base64)
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return;
+
+        // Create File from Blob
+        const file = new File([blob], "profile.jpg", {
+          type: "image/jpeg",
+        });
+
+        // For preview only
+        const previewUrl = URL.createObjectURL(blob);
+        setCroppedImage(previewUrl);
+
+        // 🔥 Store FILE in formData (important)
+        updateFormData?.("profileImage", file);
+
+        setShowCropDialog(false);
+      },
+      "image/jpeg",
+      0.9,
+    );
   };
 
   const handleRotate = () => {

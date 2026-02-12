@@ -54,8 +54,16 @@ const EditProfile = () => {
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      const res = await Axios.get(`/api/users/${userId}`);
+      const token = localStorage.getItem("token");
+
+      const res = await Axios.get(`/api/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       const user = res.data;
+console.log("User", user);
       setProfile({
         fullName: user.fullName || "",
         email: user.email || "",
@@ -126,21 +134,29 @@ const EditProfile = () => {
 
   const handleSave = async () => {
     try {
-      await Axios.put(`/api/users/${userId}`, {
-        fullName: profile.fullName,
-        mobile: profile.mobile,
+      const token = localStorage.getItem("token");
 
-        dateOfBirth: profile.dob,
-        heightCm: Number(profile.height),
-        weightKg: Number(profile.weight),
-
-        religion: profile.religion,
-        caste: profile.caste,
-        highestEducation: profile.education,
-        profession: profile.profession,
-        address: profile.address,
-        bio: profile.bio,
-      });
+      await Axios.put(
+        `/api/users/${userId}`,
+        {
+          fullName: profile.fullName,
+          mobile: profile.mobile,
+          dateOfBirth: profile.dob,
+          heightCm: Number(profile.height),
+          weightKg: Number(profile.weight),
+          religion: profile.religion,
+          caste: profile.caste,
+          highestEducation: profile.education,
+          profession: profile.profession,
+          address: profile.address,
+          bio: profile.bio,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
       alert("Profile updated successfully");
     } catch (err) {

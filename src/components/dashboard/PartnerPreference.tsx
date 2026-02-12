@@ -46,6 +46,54 @@ const PartnerPreference = () => {
     "Technology",
   ];
 
+  /* ================= LOAD EXISTING PREFERENCES ================= */
+  useEffect(() => {
+    const fetchPreferences = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) return;
+
+        const response = await Axios.get("/api/user/partner-preferences/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = response.data;
+        console.log(data, "dataaa")
+
+        if (!data) return;
+
+        // 🔹 Set sliders
+        if (data.ageRange) {
+          setAgeRange([data.ageRange.min, data.ageRange.max]);
+        }
+
+        if (data.heightRangeCm) {
+          setHeightRange([data.heightRangeCm.min, data.heightRangeCm.max]);
+        }
+
+        // 🔹 Set selected IDs
+        if (data.religions) {
+          setSelectedReligions(data.religions);
+        }
+
+        if (data.educationLevels) {
+          setSelectedEducation(data.educationLevels);
+        }
+
+        if (data.interests) {
+          setSelectedInterests(data.interests);
+        }
+      } catch (error: any) {
+        console.error("Failed to load preferences", error);
+      }
+    };
+
+    fetchPreferences();
+  }, []);
+
   /* ================= FETCH RELIGIONS ================= */
   useEffect(() => {
     const fetchReligions = async () => {

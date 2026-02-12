@@ -10,6 +10,7 @@ import {
   MapPin,
   GraduationCap,
   Eye,
+  Briefcase,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -33,10 +34,11 @@ interface Profile {
   _id: string;
   fullName: string;
   dateOfBirth?: string;
-  city?: { name: string };
   highestEducation?: { name: string };
   photos?: { url: string; isPrimary: boolean }[];
   profileStatus?: string;
+  city?: string;
+  profession?: { name: string };
 }
 
 const BrowseProfiles = () => {
@@ -45,32 +47,25 @@ const BrowseProfiles = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(false);
 
- const fetchProfiles = async () => {
-  setLoading(true);
-  try {
-    const token = localStorage.getItem("token"); // 👈 get token
+  const fetchProfiles = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
 
-    const response = await Axios.get(
-      "/api/users?take=100&skip=0",
-      {
+      const response = await Axios.get("/api/users?take=100&skip=0", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
-    );
+      });
 
-    setProfiles(response.data || []);
-    console.log("Profiles:", response.data);
-  } catch (error: any) {
-    console.error(
-      "Error fetching profiles:",
-      error?.response || error
-    );
-  } finally {
-    setLoading(false);
-  }
-};
-
+      setProfiles(response.data || []);
+      console.log("Profiles:", response.data);
+    } catch (error: any) {
+      console.error("Error fetching profiles:", error?.response || error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchProfiles();
@@ -249,17 +244,18 @@ const BrowseProfiles = () => {
         </h3>
 
         <div className="space-y-1 text-sm text-muted-foreground mb-3">
-          <div className="flex items-center gap-1">
-            <MapPin className="w-3 h-3" />
-            {typeof profile.city === "string"
-              ? "Location not specified"
-              : profile.city?.name}
+          {/* City */}
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-primary" />
+            <span>{profile.city || "Location not specified"}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <GraduationCap className="w-3 h-3" />
-            {profile.highestEducation
-              ? profile.highestEducation.name
-              : "Education not specified"}
+
+          {/* Profession */}
+          <div className="flex items-center gap-2">
+            <Briefcase className="w-4 h-4 text-primary" />
+            <span>
+              {profile.profession?.name || "Profession not specified"}
+            </span>
           </div>
         </div>
 

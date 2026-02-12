@@ -21,13 +21,19 @@ interface ProfileSidebarProps {
   onNavigate: (tab: string) => void;
 }
 
+interface Photo {
+  url: string;
+  isPrimary: boolean;
+  approvalStatus: string;
+}
+
 interface User {
   _id: string;
   fullName: string;
   email: string;
   mobile?: string;
   profileId?: string;
-  profileImage?: string;
+  photos?: Photo[];
 }
 
 const navigationItems = [
@@ -51,19 +57,22 @@ const ProfileSidebar = ({
   const fetchUser = async () => {
     try {
       const storedUser = localStorage.getItem("user");
-      if (!storedUser) {
-        console.warn("No user in localStorage");
+      const token = localStorage.getItem("token");
+
+      if (!storedUser || !token) {
+        console.warn("User or token missing");
         return;
       }
 
       const parsedUser = JSON.parse(storedUser);
       const userId = parsedUser._id;
 
-      console.log("Fetching user with id:", userId);
+      const response = await Axios.get(`/api/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      const response = await Axios.get(`/api/users/${userId}`);
-
-      console.log("Fetched user:", response.data);
       setUserData(response.data);
     } catch (error) {
       console.error("Failed to fetch user", error);
@@ -74,11 +83,21 @@ const ProfileSidebar = ({
     fetchUser();
   }, []);
 
+  const getProfilePhoto = () => {
+    if (!userData?.photos || userData.photos.length === 0) {
+      return Profile;
+    }
+
+    const primary = userData.photos.find((p) => p.isPrimary);
+
+    return primary?.url || userData.photos[0].url;
+  };
+
   const user = {
     name: userData?.fullName || "User",
     email: userData?.email || "",
     profileId: userData?.profileId || userData?._id || "—",
-    avatar: userData?.profileImage || Profile,
+    avatar: getProfilePhoto(),
     mobile: userData?.mobile || "—",
     initials:
       userData?.fullName
@@ -211,10 +230,10 @@ const ProfileSidebar = ({
               {user.name}
             </h2>
             <p className="text-xs text-muted-foreground mt-1 max-w-[220px] whitespace-normal break-words relative">
-            <span className="block overflow-hidden [mask-image:linear-gradient(to_right,black_80%,transparent)]">
-              {user.email}
-            </span>
-          </p>
+              <span className="block overflow-hidden [mask-image:linear-gradient(to_right,black_80%,transparent)]">
+                {user.email}
+              </span>
+            </p>
           </div>
         </div>
 

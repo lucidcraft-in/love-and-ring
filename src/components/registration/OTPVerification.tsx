@@ -62,10 +62,10 @@ const OTPVerification = ({
 
   // Password validation
   const validatePassword = (pass: string): boolean => {
-    const hasMinLength = pass.length >= 8;
-    const hasLetter = /[a-zA-Z]/.test(pass);
-    const hasNumber = /[0-9]/.test(pass);
-    return hasMinLength && hasLetter && hasNumber;
+    const isFourCharacters = pass.length === 4;
+    const hasCapitalLetter = /[A-Z]/.test(pass);
+
+    return isFourCharacters && hasCapitalLetter;
   };
 
   const isPasswordValid = validatePassword(password);
@@ -94,7 +94,7 @@ const OTPVerification = ({
     if (!canCreatePassword) {
       if (!isPasswordValid) {
         setPasswordError(
-          "Password must be at least 8 characters with letters and numbers",
+          "Password must be exactly 4 characters and include at least one capital letter",
         );
       } else if (!passwordsMatch) {
         setPasswordError("Passwords do not match");
@@ -165,31 +165,30 @@ const OTPVerification = ({
                   setError("");
                 }}
               >
-                <InputOTPGroup>
-                  <InputOTPSlot
-                    index={0}
-                    className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50"
-                  />
-                  <InputOTPSlot
-                    index={1}
-                    className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50"
-                  />
-                  <InputOTPSlot
-                    index={2}
-                    className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50"
-                  />
-                  <InputOTPSlot
-                    index={3}
-                    className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50"
-                  />
-                  <InputOTPSlot
-                    index={4}
-                    className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50"
-                  />
-                  <InputOTPSlot
-                    index={5}
-                    className="w-10 h-11 sm:w-11 sm:h-12 text-lg font-semibold border-border/50"
-                  />
+                <InputOTPGroup className="flex gap-3 justify-center">
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className="
+        w-12 h-14 
+        text-xl font-semibold text-center
+        rounded-xl
+        border border-gray-300
+        bg-white/70 backdrop-blur-sm
+        shadow-sm
+        transition-all duration-200 ease-in-out
+        
+        focus:border-indigo-500
+        focus:ring-4
+        focus:ring-indigo-100
+        focus:shadow-md
+        focus:scale-105
+        
+        hover:border-indigo-300
+      "
+                    />
+                  ))}
                 </InputOTPGroup>
               </InputOTP>
 
@@ -315,25 +314,20 @@ const OTPVerification = ({
                   </Button>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Password must be at least 8 characters and include a mix of
-                  letters and numbers.
+                  Password must be exactly 4 characters and include at least one
+                  capital letter.
                 </p>
                 {/* Password Strength Indicators */}
                 {password.length > 0 && (
                   <div className="flex gap-2 mt-2">
                     <div
                       className={`flex-1 h-1 rounded-full transition-colors ${
-                        password.length >= 8 ? "bg-green-500" : "bg-muted"
+                        password.length === 4 ? "bg-green-500" : "bg-muted"
                       }`}
                     />
                     <div
                       className={`flex-1 h-1 rounded-full transition-colors ${
-                        /[a-zA-Z]/.test(password) ? "bg-green-500" : "bg-muted"
-                      }`}
-                    />
-                    <div
-                      className={`flex-1 h-1 rounded-full transition-colors ${
-                        /[0-9]/.test(password) ? "bg-green-500" : "bg-muted"
+                        /[A-Z]/.test(password) ? "bg-green-500" : "bg-muted"
                       }`}
                     />
                   </div>

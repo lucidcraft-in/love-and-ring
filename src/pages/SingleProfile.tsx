@@ -75,16 +75,30 @@ const SingleProfile = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      setLoading(true);
       try {
-        const res = await Axios.get(`/api/users/${id}`);
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.error("No token found");
+          return;
+        }
+
+        const res = await Axios.get(`/api/users/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         setProfile(res.data);
-        console.log(res.data,"res")
-      } catch (err) {
-        console.error("Failed to fetch profile", err);
+        console.log(res.data, "res");
+      } catch (err: any) {
+        console.error("Failed to fetch profile", err?.response || err);
       } finally {
         setLoading(false);
       }
     };
+
     if (id) fetchProfile();
   }, [id]);
 
@@ -131,7 +145,8 @@ const SingleProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 py-20">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 pt-4 pb-20">
+
       <div className="container mx-auto px-4">
         <Button
           variant="outline"
@@ -148,14 +163,13 @@ const SingleProfile = () => {
             <Card className="glass-card overflow-hidden">
               <div className="relative">
                 <img
-                  src={
-                    profile.isPrivate && !isLiked
-                      ? profile.image
-                      : profile.image
-                  }
-                  alt={profile.name}
-                  className={`w-full h-96 object-cover ${profile.isPrivate && !isLiked ? "blur-md" : ""}`}
+                  src={getProfileImage(profile.photos)}
+                  alt={profile.fullName}
+                  className={`w-full h-96 object-cover ${
+                    profile.isPrivate && !isLiked ? "blur-md" : ""
+                  }`}
                 />
+
                 {profile.isPrivate && !isLiked && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                     <div className="text-center text-white p-6">
@@ -265,7 +279,7 @@ const SingleProfile = () => {
                 <InfoItem
                   icon={MapPin}
                   label="Location"
-                  value={profile.city?.name || "Not specified"}
+                  value={profile.city || "Not specified"}
                 />
                 <InfoItem
                   icon={Users}
@@ -304,7 +318,11 @@ const SingleProfile = () => {
                   label="Marital Status"
                   value={profile.maritalStatus}
                 />
-                <InfoItem icon={Utensils} label="Diet" value={profile.dietPreference} />
+                <InfoItem
+                  icon={Utensils}
+                  label="Diet"
+                  value={profile.dietPreference}
+                />
                 <InfoItem
                   icon={Home}
                   label="Lives With Family"

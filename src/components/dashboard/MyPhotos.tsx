@@ -49,6 +49,7 @@ const MyPhotos = () => {
     try {
       const response = await Axios.get(`/api/users/${userId}/photos`);
       setPhotos(response.data || []);
+      // console.log("Photos:", response.data);
     } catch (error) {
       console.error("Error fetching photos:", error);
     } finally {
@@ -89,11 +90,24 @@ const MyPhotos = () => {
 
   const deletePhoto = async (photoId: string) => {
     try {
-      await Axios.delete(`/api/users/${userId}/photos/${photoId}`);
+      const token = localStorage.getItem("token");
+
+      const photoToDelete = photos.find((p) => p._id === photoId);
+
+      await Axios.delete(`/api/users/${userId}/photos`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        data: {
+            photoId: photoId
+        },
+      });
+
       toast.success("Photo deleted");
       fetchPhotos();
-    } catch {
+    } catch (error) {
       toast.error("Failed to delete photo");
+      console.error(error);
     }
   };
 
@@ -170,7 +184,10 @@ const MyPhotos = () => {
         ))}
 
         {/* Upload New Photo Card */}
-        <Card className="glass-card border-2 border-dashed border-primary/50 hover:border-primary transition-colors cursor-pointer"  onClick={() => fileInputRef.current?.click()}>
+        <Card
+          className="glass-card border-2 border-dashed border-primary/50 hover:border-primary transition-colors cursor-pointer"
+          onClick={() => fileInputRef.current?.click()}
+        >
           <div className="aspect-square flex flex-col items-center justify-center gap-3 text-muted-foreground hover:text-foreground transition-colors">
             <Upload className="w-12 h-12" />
             <p className="font-medium">Upload New Photo</p>

@@ -6,7 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { X, Shield, Users, Lock, CheckCircle, ArrowLeft } from "lucide-react";
+import {
+  X,
+  Shield,
+  Users,
+  Lock,
+  CheckCircle,
+  ArrowLeft,
+  EyeOff,
+  Eye,
+} from "lucide-react";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
@@ -25,10 +34,18 @@ import {
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
 const features = [
-  { icon: Shield, title: "Verified Profiles", desc: "100% authenticated members" },
+  {
+    icon: Shield,
+    title: "Verified Profiles",
+    desc: "100% authenticated members",
+  },
   { icon: Users, title: "Smart Matching", desc: "AI-powered compatibility" },
   { icon: Lock, title: "Complete Privacy", desc: "Your data stays secure" },
-  { icon: CheckCircle, title: "Premium Support", desc: "24/7 dedicated assistance" },
+  {
+    icon: CheckCircle,
+    title: "Premium Support",
+    desc: "24/7 dedicated assistance",
+  },
 ];
 
 const ForgotPassword = () => {
@@ -41,6 +58,8 @@ const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     heroSlides.forEach((src) => {
@@ -76,7 +95,9 @@ const ForgotPassword = () => {
       startCountdown();
       setStep(2);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to send verification code");
+      toast.error(
+        error?.response?.data?.message || "Failed to send verification code",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -93,21 +114,29 @@ const ForgotPassword = () => {
       toast.success("Email verified successfully");
       setStep(3);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Invalid verification code");
+      toast.error(
+        error?.response?.data?.message || "Invalid verification code",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleResetPassword = async () => {
-    if (newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters");
+    const passwordRegex = /^(?=.*[A-Z]).{4,}$/;
+
+    if (!passwordRegex.test(newPassword)) {
+      toast.error(
+        "Password must be at least 4 characters and contain at least one uppercase letter",
+      );
       return;
     }
+
     if (newPassword !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
+
     try {
       setIsLoading(true);
       await resetPassword(email, otp, newPassword);
@@ -132,12 +161,41 @@ const ForgotPassword = () => {
   };
 
   const stepTitles = [
-    { title: "Forgot Password", subtitle: "Enter your registered email to receive a verification code." },
-    { title: "Verify Your Email", subtitle: "We've sent a 6-digit code to your email." },
-    { title: "Set New Password", subtitle: "Create a strong new password for your account." },
+    {
+      title: "Forgot Password",
+      subtitle: "Enter your registered email to receive a verification code.",
+    },
+    {
+      title: "Verify Your Email",
+      subtitle: "We've sent a 6-digit code to your email.",
+    },
+    {
+      title: "Set New Password",
+      subtitle: "Create a strong new password for your account.",
+    },
   ];
 
   const current = stepTitles[step - 1];
+
+  const getPasswordStrength = (password: string) => {
+    if (!password) return { label: "", color: "", width: "0%" };
+
+    let score = 0;
+
+    if (password.length >= 4) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    if (score <= 1) return { color: "bg-red-500", width: "33%" };
+
+    if (score === 2)
+      return {  color: "bg-yellow-500", width: "66%" };
+
+    return {  color: "bg-green-500", width: "100%" };
+  };
+
+  const strength = getPasswordStrength(newPassword);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -152,7 +210,11 @@ const ForgotPassword = () => {
             transition={{ duration: 1.5, ease: "easeInOut" }}
             className="absolute inset-0"
           >
-            <img src={heroSlides[currentSlide]} alt="Background" className="w-full h-full object-cover" />
+            <img
+              src={heroSlides[currentSlide]}
+              alt="Background"
+              className="w-full h-full object-cover"
+            />
           </motion.div>
         </AnimatePresence>
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
@@ -204,7 +266,9 @@ const ForgotPassword = () => {
                     <feature.icon className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white text-sm">{feature.title}</h3>
+                    <h3 className="font-semibold text-white text-sm">
+                      {feature.title}
+                    </h3>
                     <p className="text-white/60 text-xs">{feature.desc}</p>
                   </div>
                 </motion.div>
@@ -213,7 +277,10 @@ const ForgotPassword = () => {
             <div className="pt-6 border-t border-white/10">
               <p className="text-white/70">
                 Don't have an account?{" "}
-                <Link to="/register" className="text-primary hover:text-primary/80 font-semibold transition-colors">
+                <Link
+                  to="/register"
+                  className="text-primary hover:text-primary/80 font-semibold transition-colors"
+                >
                   Register Now
                 </Link>
               </p>
@@ -241,7 +308,10 @@ const ForgotPassword = () => {
               </h1>
               <p className="text-white/70 text-sm">
                 Remember your password?{" "}
-                <Link to="/login" className="text-primary hover:underline font-medium">
+                <Link
+                  to="/login"
+                  className="text-primary hover:underline font-medium"
+                >
                   Sign In
                 </Link>
               </p>
@@ -274,7 +344,9 @@ const ForgotPassword = () => {
                   <div
                     key={s}
                     className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                      s <= step ? "bg-gradient-to-r from-primary to-secondary" : "bg-border"
+                      s <= step
+                        ? "bg-gradient-to-r from-primary to-secondary"
+                        : "bg-border"
                     }`}
                   />
                 ))}
@@ -282,8 +354,12 @@ const ForgotPassword = () => {
 
               {/* Form Header */}
               <div className="mb-5">
-                <h2 className="text-xl font-semibold text-foreground mb-1">{current.title}</h2>
-                <p className="text-sm text-muted-foreground">{current.subtitle}</p>
+                <h2 className="text-xl font-semibold text-foreground mb-1">
+                  {current.title}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {current.subtitle}
+                </p>
               </div>
 
               {/* Steps */}
@@ -298,7 +374,9 @@ const ForgotPassword = () => {
                     className="space-y-4"
                   >
                     <div className="space-y-1.5">
-                      <Label htmlFor="fp-email" className="text-sm">Email Address</Label>
+                      <Label htmlFor="fp-email" className="text-sm">
+                        Email Address
+                      </Label>
                       <Input
                         id="fp-email"
                         type="email"
@@ -330,19 +408,39 @@ const ForgotPassword = () => {
                     className="space-y-4"
                   >
                     <p className="text-sm text-muted-foreground">
-                      Code sent to <span className="font-medium text-foreground">{email}</span>
+                      Code sent to{" "}
+                      <span className="font-medium text-foreground">
+                        {email}
+                      </span>
                     </p>
                     <div className="space-y-1.5">
                       <Label className="text-sm">Enter 6-Digit Code</Label>
                       <div className="flex justify-center">
                         <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                          <InputOTPGroup>
-                            <InputOTPSlot index={0} />
-                            <InputOTPSlot index={1} />
-                            <InputOTPSlot index={2} />
-                            <InputOTPSlot index={3} />
-                            <InputOTPSlot index={4} />
-                            <InputOTPSlot index={5} />
+                          <InputOTPGroup className="flex gap-3 justify-center">
+                            {[0, 1, 2, 3, 4, 5].map((index) => (
+                              <InputOTPSlot
+                                key={index}
+                                index={index}
+                                className="
+        w-12 h-14 
+        text-xl font-semibold text-center
+        rounded-xl
+        border border-gray-300
+        bg-white/70 backdrop-blur-sm
+        shadow-sm
+        transition-all duration-200 ease-in-out
+        
+        focus:border-indigo-500
+        focus:ring-4
+        focus:ring-indigo-100
+        focus:shadow-md
+        focus:scale-105
+        
+        hover:border-indigo-300
+      "
+                              />
+                            ))}
                           </InputOTPGroup>
                         </InputOTP>
                       </div>
@@ -358,7 +456,9 @@ const ForgotPassword = () => {
                             : "text-primary hover:underline"
                         }`}
                       >
-                        {countdown > 0 ? `Resend code in ${countdown}s` : "Resend Code"}
+                        {countdown > 0
+                          ? `Resend code in ${countdown}s`
+                          : "Resend Code"}
                       </button>
                     </div>
                     <Button
@@ -381,30 +481,82 @@ const ForgotPassword = () => {
                     transition={{ duration: 0.2 }}
                     className="space-y-4"
                   >
+                    {/* New Password */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="new-pw" className="text-sm">New Password</Label>
-                      <Input
-                        id="new-pw"
-                        type="password"
-                        placeholder="Minimum 8 characters"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="h-10"
-                        required
-                      />
+                      <Label htmlFor="new-pw" className="text-sm">
+                        New Password
+                      </Label>
+
+                      <div className="relative">
+                        <Input
+                          id="new-pw"
+                          type={showNewPassword ? "text" : "password"}
+                          placeholder="Minimum 4 characters, 1 uppercase letter"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          className="h-10 pr-10"
+                          required
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showNewPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Password Strength Indicator */}
+                      {newPassword && (
+                        <>
+                          <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden mt-2">
+                            <div
+                              className={`h-full transition-all duration-300 ${strength.color}`}
+                              style={{ width: strength.width }}
+                            />
+                          </div>
+                        </>
+                      )}
                     </div>
+
+                    {/* Confirm Password */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="confirm-pw" className="text-sm">Confirm Password</Label>
-                      <Input
-                        id="confirm-pw"
-                        type="password"
-                        placeholder="Re-enter your password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="h-10"
-                        required
-                      />
+                      <Label htmlFor="confirm-pw" className="text-sm">
+                        Confirm Password
+                      </Label>
+
+                      <div className="relative">
+                        <Input
+                          id="confirm-pw"
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Re-enter your password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="h-10 pr-10"
+                          required
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     </div>
+
                     <Button
                       type="button"
                       className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25 rounded-lg"
@@ -420,7 +572,10 @@ const ForgotPassword = () => {
               {/* Footer link */}
               <p className="text-center mt-5 text-sm text-muted-foreground">
                 Remember your password?{" "}
-                <Link to="/login" className="text-primary hover:underline font-medium">
+                <Link
+                  to="/login"
+                  className="text-primary hover:underline font-medium"
+                >
                   Sign In
                 </Link>
               </p>
@@ -430,7 +585,10 @@ const ForgotPassword = () => {
             <div className="text-center mt-4 text-xs text-white/60">
               <p>
                 Need help?{" "}
-                <Link to="/support?from=forgot-password" className="text-primary hover:underline">
+                <Link
+                  to="/support?from=forgot-password"
+                  className="text-primary hover:underline"
+                >
                   Get help
                 </Link>
               </p>

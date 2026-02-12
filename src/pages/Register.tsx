@@ -11,6 +11,7 @@ import {
   Users,
   Lock,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -30,6 +31,7 @@ import {
   verifyRegistrationOtp,
   registerUser,
 } from "@/services/UserServices";
+import Axios from "@/axios/axios";
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
@@ -50,7 +52,7 @@ export interface RegistrationData {
   maritalStatus: string;
   bodyType: string;
   city: string;
-  profileImage: string;
+  profileImage: File | null;
   education: string;
   course: string;
   profession: string;
@@ -59,6 +61,9 @@ export interface RegistrationData {
   interests: string[];
   traits: string[];
   diets: string[];
+  photos?: string[];
+  personalityTraits?: string[];
+  dietPreference?: string[];
   income: {
     amount: number;
     type: "Monthly" | "Yearly";
@@ -96,7 +101,7 @@ const Register = () => {
     maritalStatus: "",
     bodyType: "",
     city: "",
-    profileImage: "",
+    profileImage: null,
     education: "",
     course: "",
     profession: "",
@@ -138,12 +143,18 @@ const Register = () => {
     }
 
     try {
+      setSendingOtp(true);
+
       await sendRegistrationOtp(formData.email);
+
       setOtpSent(true);
       setShowOTPVerification(true);
+
       toast.success("OTP sent to email");
     } catch (err) {
       toast.error("Failed to send OTP");
+    } finally {
+      setSendingOtp(false);
     }
   };
 
@@ -201,7 +212,7 @@ const Register = () => {
 
   const updateFormData = (
     field: keyof RegistrationData,
-    value: string | string[],
+    value: string | string[] | File,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -265,41 +276,60 @@ const Register = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!userId) {
-      toast.error("User not created");
-      return;
+ const handleSubmit = async () => {
+  if (!userId) {
+    toast.error("User not created");
+    return;
+  }
+
+  try {
+    // 🔥 1️⃣ Upload profile image to S3 first (if exists)
+    if (formData.profileImage) {
+      const form = new FormData();
+      form.append("photo", formData.profileImage);
+
+      await Axios.post(
+        `/api/users/${userId}/photos`,
+        form,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
     }
 
-    try {
-      await completeUserProfile(userId, {
-        religion: formData.religion,
-        caste: formData.caste,
-        motherTongue: formData.motherTongue,
-        height: formData.height,
-        weight: formData.weight,
-        dob: formData.dob,
-        maritalStatus: formData.maritalStatus,
-        bodyType: formData.bodyType,
-        city: formData.city,
-        education: formData.education,
-        course: formData.course,
-        profession: formData.profession,
-        profileImage: formData.profileImage,
-        physicallyChallenged: formData.physicallyChallenged,
-        liveWithFamily: formData.liveWithFamily,
-        interests: formData.interests,
-        traits: formData.traits,
-        diets: formData.diets,
-        income: formData.income,
-      });
+    // 🔥 2️⃣ Now complete profile (NO photos field here)
+    await completeUserProfile(userId, {
+      religion: formData.religion,
+      caste: formData.caste,
+      motherTongue: formData.motherTongue,
+      height: formData.height,
+      weight: formData.weight,
+      dob: formData.dob,
+      maritalStatus: formData.maritalStatus,
+      bodyType: formData.bodyType,
+      city: formData.city,
+      education: formData.education,
+      course: formData.course,
+      profession: formData.profession,
 
-      toast.success("Profile completed successfully");
-      navigate("/login");
-    } catch (err) {
-      toast.error("Failed to complete profile");
-    }
-  };
+      interests: formData.interests,
+      personalityTraits: formData.traits,
+      dietPreference: formData.diets,
+
+      physicallyChallenged: formData.physicallyChallenged,
+      liveWithFamily: formData.liveWithFamily,
+      income: formData.income,
+    });
+
+    toast.success("Profile completed successfully");
+    navigate("/login");
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to complete profile");
+  }
+};
+
 
   const renderStep = () => {
     switch (currentStep) {
@@ -601,19 +631,29 @@ const Register = () => {
                             ? handleSendOtp
                             : nextStep
                       }
-                      disabled={!canProceed}
+                      disabled={
+                        !canProceed || (currentStep === 1 && sendingOtp)
+                      }
                       className={`gap-1.5 rounded-lg px-6 h-9 text-sm ${
                         canProceed
                           ? "bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25"
                           : "opacity-40 cursor-not-allowed"
                       }`}
                     >
-                      {isLastStep
-                        ? "Submit"
-                        : currentStep === 1
-                          ? "Get OTP"
-                          : "Continue"}
-                      <ChevronRight className="h-4 w-4" />
+                      {currentStep === 1 && sendingOtp ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : isLastStep ? (
+                        "Submit"
+                      ) : currentStep === 1 ? (
+                        "Get OTP"
+                      ) : (
+                        "Continue"
+                      )}
+
+                      {!sendingOtp && <ChevronRight className="h-4 w-4" />}
                     </Button>
                   </div>
                 </>

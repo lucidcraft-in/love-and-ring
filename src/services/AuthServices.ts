@@ -28,16 +28,29 @@ export const verifyLoginOtp = async (phone: string, otp: string) => {
 };
 
 export const sendForgotPasswordOtp = async (email: string) => {
-  const response = await Axios.post("/api/user/auth/forgot-password/send-otp", { email });
-  return response.data;
+  return Axios.post("/api/user/auth/forgot-password/send-otp", {
+    email,
+  });
 };
 
-export const verifyForgotPasswordOtp = async (email: string, otp: string) => {
-  const response = await Axios.post("/api/user/auth/forgot-password/verify-otp", { email, otp });
-  return response.data;
+export const verifyForgotPasswordOtp = async (
+  email: string,
+  otp: string
+) => {
+  return Axios.post("/api/user/auth/forgot-password/verify-otp", {
+    email,
+    otp,
+  });
 };
-
-export const resetPassword = async (email: string, otp: string, newPassword: string) => {
-  const response = await Axios.post("/api/user/auth/forgot-password/reset", { email, otp, newPassword });
-  return response.data;
+export const resetPassword = async (
+  email: string,
+  otp: string,
+  newPassword: string
+) => {
+  return Axios.post("/api/user/auth/forgot-password/reset", {
+    email,
+    otp,
+    password: newPassword,
+    confirmPassword: newPassword, 
+  });
 };
