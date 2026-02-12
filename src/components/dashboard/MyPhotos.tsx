@@ -49,7 +49,7 @@ const MyPhotos = () => {
     try {
       const response = await Axios.get(`/api/users/${userId}/photos`);
       setPhotos(response.data || []);
-      // console.log("Photos:", response.data);
+      console.log("Photos:", response.data);
     } catch (error) {
       console.error("Error fetching photos:", error);
     } finally {
@@ -87,20 +87,24 @@ const MyPhotos = () => {
       toast.error("Failed to set profile photo");
     }
   };
-
   const deletePhoto = async (photoId: string) => {
     try {
-      const token = localStorage.getItem("token");
-
       const photoToDelete = photos.find((p) => p._id === photoId);
 
-      await Axios.delete(`/api/users/${userId}/photos`, {
+      if (photoToDelete?.isPrimary) {
+        toast.error(
+          "Cannot delete primary photo. Set another photo as primary first.",
+        );
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+
+      await Axios.delete(`/api/users/${photoId}/photos`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // ✅ manually add token
         },
-        data: {
-            photoId: photoId
-        },
+        data: { photoId }, // send photoId in body
       });
 
       toast.success("Photo deleted");

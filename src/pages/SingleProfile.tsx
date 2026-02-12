@@ -33,6 +33,7 @@ const SingleProfile = () => {
   const navigate = useNavigate();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [liking, setLiking] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const isPremium = false; // Mock user membership
@@ -102,6 +103,28 @@ const SingleProfile = () => {
     if (id) fetchProfile();
   }, [id]);
 
+  useEffect(() => {
+    const checkIfLiked = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const res = await Axios.get("/api/user/profile-likes/sent", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const likedIds = res.data.map((item: any) => item.likedUser._id);
+
+        if (likedIds.includes(id)) {
+          setIsLiked(true);
+        }
+      } catch (err) {
+        console.error("Failed to check like status", err);
+      }
+    };
+
+    if (id) checkIfLiked();
+  }, [id]);
+
   const handlePremiumAction = (action: string) => {
     if (!isPremium) {
       setShowUpgradeModal(true);
@@ -111,8 +134,33 @@ const SingleProfile = () => {
     }
   };
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
+  const handleLike = async () => {
+    try {
+      setLiking(true);
+      const token = localStorage.getItem("token");
+
+      if (!isLiked) {
+        // LIKE
+        await Axios.post(
+          `/api/user/profile-likes/${id}`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        setIsLiked(true);
+      } else {
+        // UNLIKE
+        await Axios.delete(`/api/user/profile-likes/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setIsLiked(false);
+      }
+    } catch (err: any) {
+      console.error("Like/unlike failed", err);
+    } finally {
+      setLiking(false);
+    }
   };
 
   const calculateAge = (dob?: string) => {
@@ -146,7 +194,6 @@ const SingleProfile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 pt-4 pb-20">
-
       <div className="container mx-auto px-4">
         <Button
           variant="outline"
@@ -207,9 +254,12 @@ const SingleProfile = () => {
             {/* Action Buttons */}
             <Card className="glass-card p-4 space-y-2">
               <Button
-                className={`w-full gap-2 ${isLiked ? "bg-gradient-to-r from-primary to-secondary" : ""}`}
+                className={`w-full gap-2 ${
+                  isLiked ? "bg-gradient-to-r from-primary to-secondary" : ""
+                }`}
                 variant={isLiked ? "default" : "outline"}
                 onClick={handleLike}
+                disabled={liking}
               >
                 <Heart className={`w-4 h-4 ${isLiked ? "fill-white" : ""}`} />
                 {isLiked ? "Liked" : "Like Profile"}

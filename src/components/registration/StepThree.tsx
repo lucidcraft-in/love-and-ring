@@ -343,7 +343,7 @@ const StepThree = ({
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label>Profile Image *</Label>
+          <Label>Profile Image </Label>
           <input
             ref={fileInputRef}
             type="file"

@@ -69,16 +69,19 @@ const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
       try {
         const token = localStorage.getItem("token");
 
-        const res = await Axios.get(
-          `/api/master/castes?religion=${formData.religion}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const res = await Axios.get("/api/master/castes", {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
+        });
+
+        const allCastes = res.data.data || [];
+
+        const filtered = allCastes.filter(
+          (caste: any) => caste.religion?._id === formData.religion,
         );
 
-        setCastes(res.data.data);
+        setCastes(filtered);
       } catch (err) {
         console.error("Failed to fetch castes", err);
         setCastes([]);
