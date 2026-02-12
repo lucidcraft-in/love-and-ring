@@ -117,6 +117,7 @@ const Register = () => {
 
   const [otpSent, setOtpSent] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Preload hero images for smooth transitions
   useEffect(() => {
@@ -276,60 +277,56 @@ const Register = () => {
     }
   };
 
- const handleSubmit = async () => {
-  if (!userId) {
-    toast.error("User not created");
-    return;
-  }
-
-  try {
-    // 🔥 1️⃣ Upload profile image to S3 first (if exists)
-    if (formData.profileImage) {
-      const form = new FormData();
-      form.append("photo", formData.profileImage);
-
-      await Axios.post(
-        `/api/users/${userId}/photos`,
-        form,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+  const handleSubmit = async () => {
+    if (!userId) {
+      toast.error("User not created");
+      return;
     }
 
-    // 🔥 2️⃣ Now complete profile (NO photos field here)
-    await completeUserProfile(userId, {
-      religion: formData.religion,
-      caste: formData.caste,
-      motherTongue: formData.motherTongue,
-      height: formData.height,
-      weight: formData.weight,
-      dob: formData.dob,
-      maritalStatus: formData.maritalStatus,
-      bodyType: formData.bodyType,
-      city: formData.city,
-      education: formData.education,
-      course: formData.course,
-      profession: formData.profession,
+    try {
+      setSubmitting(true);
 
-      interests: formData.interests,
-      personalityTraits: formData.traits,
-      dietPreference: formData.diets,
+      // 🔥 1️⃣ Upload profile image to S3 first (if exists)
+      if (formData.profileImage) {
+        const form = new FormData();
+        form.append("photo", formData.profileImage);
 
-      physicallyChallenged: formData.physicallyChallenged,
-      liveWithFamily: formData.liveWithFamily,
-      income: formData.income,
-    });
+        await Axios.post(`/api/users/${userId}/photos`, form, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
 
-    toast.success("Profile completed successfully");
-    navigate("/login");
+      // 🔥 2️⃣ Complete profile
+      await completeUserProfile(userId, {
+        religion: formData.religion,
+        caste: formData.caste,
+        motherTongue: formData.motherTongue,
+        height: formData.height,
+        weight: formData.weight,
+        dob: formData.dob,
+        maritalStatus: formData.maritalStatus,
+        bodyType: formData.bodyType,
+        city: formData.city,
+        education: formData.education,
+        course: formData.course,
+        profession: formData.profession,
+        interests: formData.interests,
+        personalityTraits: formData.traits,
+        dietPreference: formData.diets,
+        physicallyChallenged: formData.physicallyChallenged,
+        liveWithFamily: formData.liveWithFamily,
+        income: formData.income,
+      });
 
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to complete profile");
-  }
-};
-
+      toast.success("Profile completed successfully");
+      navigate("/login");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to complete profile");
+    } finally {
+      setSubmitting(false); // 🔥 stop loader
+    }
+  };
 
   const renderStep = () => {
     switch (currentStep) {
@@ -632,7 +629,9 @@ const Register = () => {
                             : nextStep
                       }
                       disabled={
-                        !canProceed || (currentStep === 1 && sendingOtp)
+                        !canProceed ||
+                        (currentStep === 1 && sendingOtp) ||
+                        (isLastStep && submitting)
                       }
                       className={`gap-1.5 rounded-lg px-6 h-9 text-sm ${
                         canProceed
@@ -645,6 +644,11 @@ const Register = () => {
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Sending...
                         </>
+                      ) : isLastStep && submitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Submitting...
+                        </>
                       ) : isLastStep ? (
                         "Submit"
                       ) : currentStep === 1 ? (
@@ -653,7 +657,9 @@ const Register = () => {
                         "Continue"
                       )}
 
-                      {!sendingOtp && <ChevronRight className="h-4 w-4" />}
+                      {!sendingOtp && !submitting && (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </>
