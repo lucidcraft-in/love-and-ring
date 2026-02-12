@@ -233,6 +233,8 @@ const Register = () => {
 
   const handleBackFromOTP = () => {
     setShowOTPVerification(false);
+    setOtpSent(false); 
+    setIsOTPVerified(false); 
   };
 
   const prevStep = () => {
