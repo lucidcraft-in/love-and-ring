@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Check, Crown, Minus } from "lucide-react";
 import { useEffect, useState } from "react";
 import Axios from "@/axios/axios";
+import FloatingBrandLogo from "@/components/FloatingBrandLogo";
+import pricingHeroBg from "@/assets/pricing-hero-bg.jpg";
 
 interface Plan {
   _id: string;
@@ -51,17 +53,37 @@ const Pricing = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-primary/10 to-secondary/10">
-        <div className="container mx-auto px-4">
+      <section id="hero-section" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${pricingHeroBg})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        />
+        {/* Dark Overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.65) 100%)",
+          }}
+        />
+        {/* Floating Brand Logos */}
+        <FloatingBrandLogo variant="hero" />
+        {/* Hero Content */}
+        <div className="relative z-10 container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center space-y-6"
           >
-            <h1 className="text-5xl md:text-6xl font-bold">
-              Choose Your <span className="gradient-text">Perfect Plan</span>
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white hero-text-shadow">
+              Choose Your <span className="gradient-text-light">Perfect Plan</span>
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl md:text-2xl hero-subtext max-w-2xl mx-auto">
               Find the plan that works best for your journey to finding your life partner
             </p>
           </motion.div>
