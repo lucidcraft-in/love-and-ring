@@ -15,6 +15,7 @@ import SuccessStories from "./pages/SuccessStories";
 import Contact from "./pages/Contact";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import UserDashboard from "./pages/UserDashboard";
 import SingleProfile from "./pages/SingleProfile";
 import ContactsViewed from "./pages/ContactsViewed";
@@ -31,7 +32,7 @@ const AppLayout = () => {
   const location = useLocation();
   
   // Hero routes have transparent navbar overlay - no padding needed
-  const heroRoutes = ["/", "/login", "/register", "/client-terms", "/client-registration", "/about", "/success-stories", "/pricing", "/contact"];
+  const heroRoutes = ["/", "/login", "/register", "/client-terms", "/client-registration", "/about", "/success-stories", "/pricing", "/contact", "/forgot-password"];
   const isHeroRoute = heroRoutes.includes(location.pathname);
 
   // Public pages where WhatsApp button should show
@@ -59,6 +60,7 @@ const AppLayout = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/dashboard/contacts-viewed" element={<ContactsViewed />} />
           <Route path="/dashboard/chats" element={<ChatsPage />} />
