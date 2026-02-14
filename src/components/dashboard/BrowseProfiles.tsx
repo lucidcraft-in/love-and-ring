@@ -53,6 +53,9 @@ const BrowseProfiles = () => {
   const [likingProfile, setLikingProfile] = useState<string | null>(null);
   const [showLikedOnly, setShowLikedOnly] = useState(false);
 
+  const loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const loggedUserId = loggedUser?._id;
+
   const fetchProfiles = async () => {
     setLoading(true);
     try {
@@ -64,7 +67,14 @@ const BrowseProfiles = () => {
         },
       });
 
-      setProfiles(response.data || []);
+      const allProfiles = response.data || [];
+
+  
+      const filtered = allProfiles.filter(
+        (profile: Profile) => profile._id !== loggedUserId,
+      );
+
+      setProfiles(filtered);
       console.log("Profiles:", response.data);
     } catch (error: any) {
       console.error("Error fetching profiles:", error?.response || error);
