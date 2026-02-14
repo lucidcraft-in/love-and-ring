@@ -138,14 +138,21 @@ const Register = () => {
   const progress = (currentStep / totalSteps) * 100;
 
   const handleSendOtp = async () => {
-    if (!formData.email) {
-      toast.error("Email required");
+    if (!formData.email || !formData.mobile) {
+      toast.error("Email and Mobile number are required");
       return;
     }
 
     try {
       setSendingOtp(true);
 
+      // ✅ Check availability first
+      await Axios.post("/api/users/check-availability", {
+        email: formData.email,
+        mobile: formData.mobile,
+      });
+
+      // ✅ If available → send OTP
       await sendRegistrationOtp(formData.email);
 
       setOtpSent(true);
@@ -276,8 +283,18 @@ const Register = () => {
       setCurrentStep(2);
 
       toast.success("Account created successfully");
-    } catch (err) {
-      toast.error("OTP verification failed");
+    } catch (err: any) {
+      const message = err.response?.data?.message || "OTP verification failed";
+
+      toast.error(message);
+
+      if (
+        message.toLowerCase().includes("phone") ||
+        message.toLowerCase().includes("email")
+      ) {
+        setShowOTPVerification(false);
+        setCurrentStep(1);
+      }
     }
   };
 
@@ -330,7 +347,7 @@ const Register = () => {
 
       toast.error(message);
     } finally {
-      setSubmitting(false);
+      setSubmitting(false); // 🔥 stop loader
     }
   };
 

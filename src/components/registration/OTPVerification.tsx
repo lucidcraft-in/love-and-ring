@@ -31,7 +31,7 @@ const OTPVerification = ({
 }: OTPVerificationProps) => {
   const [otp, setOtp] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
-  const [resendTimer, setResendTimer] = useState(120);
+  const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [error, setError] = useState("");
 
@@ -114,7 +114,7 @@ const OTPVerification = ({
 
   const handleResendOTP = async () => {
     setCanResend(false);
-    setResendTimer(120);
+    setResendTimer(60);
     setOtp("");
     setError("");
 

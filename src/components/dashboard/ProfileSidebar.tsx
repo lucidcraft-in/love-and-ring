@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import Profile from "@/assets/Profile2.jpg";
 import { useEffect, useState } from "react";
 import Axios from "@/axios/axios";
 
@@ -85,7 +84,7 @@ const ProfileSidebar = ({
 
   const getProfilePhoto = () => {
     if (!userData?.photos || userData.photos.length === 0) {
-      return Profile;
+      return undefined; 
     }
 
     const primary = userData.photos.find((p) => p.isPrimary);
