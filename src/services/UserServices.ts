@@ -29,7 +29,7 @@ export const registerUser = (data: {
 
 export const completeUserProfile = (
   userId: string,
-  data: Partial<RegistrationData>
+  data: Record<string, any>
 ) => {
   return Axios.put(`/api/users/${userId}/complete-profile`, data);
 };

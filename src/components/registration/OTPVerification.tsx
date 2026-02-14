@@ -31,7 +31,7 @@ const OTPVerification = ({
 }: OTPVerificationProps) => {
   const [otp, setOtp] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
-  const [resendTimer, setResendTimer] = useState(30);
+  const [resendTimer, setResendTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
   const [error, setError] = useState("");
 
@@ -62,10 +62,10 @@ const OTPVerification = ({
 
   // Password validation
   const validatePassword = (pass: string): boolean => {
-    const isFourCharacters = pass.length === 4;
+    const hasMinLength = pass.length >= 4;
     const hasCapitalLetter = /[A-Z]/.test(pass);
 
-    return isFourCharacters && hasCapitalLetter;
+    return hasMinLength && hasCapitalLetter;
   };
 
   const isPasswordValid = validatePassword(password);
@@ -114,7 +114,7 @@ const OTPVerification = ({
 
   const handleResendOTP = async () => {
     setCanResend(false);
-    setResendTimer(30);
+    setResendTimer(120);
     setOtp("");
     setError("");
 
@@ -314,15 +314,15 @@ const OTPVerification = ({
                   </Button>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Password must be exactly 4 characters and include at least one
-                  capital letter.
+                  Password must be at least 4 characters and include at least
+                  one capital letter.
                 </p>
                 {/* Password Strength Indicators */}
                 {password.length > 0 && (
                   <div className="flex gap-2 mt-2">
                     <div
                       className={`flex-1 h-1 rounded-full transition-colors ${
-                        password.length === 4 ? "bg-green-500" : "bg-muted"
+                        password.length >= 4 ? "bg-green-500" : "bg-muted"
                       }`}
                     />
                     <div

@@ -53,7 +53,7 @@ export interface RegistrationData {
   bodyType: string;
   city: string;
   profileImage: File | null;
-  education: string;
+  highestEducation: string;
   course: string;
   profession: string;
   physicallyChallenged: boolean;
@@ -102,7 +102,7 @@ const Register = () => {
     bodyType: "",
     city: "",
     profileImage: null,
-    education: "",
+    highestEducation: "",
     course: "",
     profession: "",
     physicallyChallenged: false,
@@ -152,8 +152,10 @@ const Register = () => {
       setShowOTPVerification(true);
 
       toast.success("OTP sent to email");
-    } catch (err) {
-      toast.error("Failed to send OTP");
+    } catch (err: any) {
+      const message = err.response?.data?.message || "Something went wrong";
+
+      toast.error(message);
     } finally {
       setSendingOtp(false);
     }
@@ -177,7 +179,7 @@ const Register = () => {
       case 3:
         return ["height", "weight", "maritalStatus", "bodyType", "city"];
       case 4:
-        return ["education", "profession"];
+        return ["highestEducation", "profession"];
       case 5:
         return [];
       default:
@@ -233,8 +235,8 @@ const Register = () => {
 
   const handleBackFromOTP = () => {
     setShowOTPVerification(false);
-    setOtpSent(false); 
-    setIsOTPVerified(false); 
+    setOtpSent(false);
+    setIsOTPVerified(false);
   };
 
   const prevStep = () => {
@@ -303,13 +305,13 @@ const Register = () => {
         religion: formData.religion,
         caste: formData.caste,
         motherTongue: formData.motherTongue,
-        height: formData.height,
-        weight: formData.weight,
+        heightCm: Number(formData.height),
+        weightKg: Number(formData.weight),
         dob: formData.dob,
         maritalStatus: formData.maritalStatus,
         bodyType: formData.bodyType,
         city: formData.city,
-        education: formData.education,
+        highestEducation: formData.highestEducation,
         course: formData.course,
         profession: formData.profession,
         interests: formData.interests,
@@ -322,11 +324,13 @@ const Register = () => {
 
       toast.success("Profile completed successfully");
       navigate("/login");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to complete profile");
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message || "Failed to complete profile";
+
+      toast.error(message);
     } finally {
-      setSubmitting(false); // 🔥 stop loader
+      setSubmitting(false);
     }
   };
 

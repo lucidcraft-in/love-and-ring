@@ -50,7 +50,7 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        
+
         setProfessions(data.data);
       } catch (error) {
         console.error("Error fetching professions:", error);
@@ -77,8 +77,8 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
         <div className="space-y-2">
           <Label>Highest Education *</Label>
           <Select
-            value={formData?.education}
-            onValueChange={(v) => handleChange("education", v)}
+            value={formData?.highestEducation}
+            onValueChange={(v) => handleChange("highestEducation", v)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select education level" />
