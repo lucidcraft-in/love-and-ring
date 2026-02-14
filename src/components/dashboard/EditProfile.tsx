@@ -15,6 +15,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface UserProfile {
   fullName: string;
@@ -63,7 +64,7 @@ const EditProfile = () => {
       });
 
       const user = res.data;
-console.log("User", user);
+      console.log("User", user);
       setProfile({
         fullName: user.fullName || "",
         email: user.email || "",
@@ -158,7 +159,10 @@ console.log("User", user);
         },
       );
 
-      alert("Profile updated successfully");
+      toast.success("Profile updated successfully 🎉", {
+        description: "Your changes have been saved.",
+        duration: 3000,
+      });
     } catch (err) {
       console.error("Update failed", err);
     }

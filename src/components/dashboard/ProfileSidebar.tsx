@@ -31,6 +31,7 @@ interface User {
   fullName: string;
   email: string;
   mobile?: string;
+  countryCode?: string;
   profileId?: string;
   photos?: Photo[];
 }
@@ -73,6 +74,7 @@ const ProfileSidebar = ({
       });
 
       setUserData(response.data);
+      console.log("useeeer", response.data);
     } catch (error) {
       console.error("Failed to fetch user", error);
     }
@@ -84,7 +86,7 @@ const ProfileSidebar = ({
 
   const getProfilePhoto = () => {
     if (!userData?.photos || userData.photos.length === 0) {
-      return undefined; 
+      return undefined;
     }
 
     const primary = userData.photos.find((p) => p.isPrimary);
@@ -98,6 +100,7 @@ const ProfileSidebar = ({
     profileId: userData?.profileId || userData?._id || "—",
     avatar: getProfilePhoto(),
     mobile: userData?.mobile || "—",
+    countryCode: userData?.countryCode || "",
     initials:
       userData?.fullName
         ?.split(" ")
@@ -193,6 +196,7 @@ const ProfileSidebar = ({
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   <span className="block overflow-hidden break-words">
+                    {user.countryCode ? `${user.countryCode} ` : ""}
                     {user.mobile}
                   </span>
                 </p>
@@ -283,7 +287,10 @@ const ProfileSidebar = ({
               <p className="text-sm font-semibold text-foreground">
                 {user.name}
               </p>
-              <p className="text-xs text-muted-foreground">{user.mobile}</p>
+              <p className="text-xs text-muted-foreground">
+                {user.countryCode}
+                {user.mobile}
+              </p>
             </div>
           </div>
         </div>

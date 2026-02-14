@@ -236,16 +236,23 @@ const SingleProfile = () => {
             {(!profile.isPrivate || isLiked) && (
               <div className="grid grid-cols-3 gap-2">
                 {profile.photos?.length > 1 && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {profile.photos.slice(1).map((photo: any, idx: number) => (
-                      <Card key={idx} className="glass-card overflow-hidden">
-                        <img
-                          src={photo.url}
-                          alt={`Photo ${idx + 2}`}
-                          className="w-full h-24 object-cover"
-                        />
-                      </Card>
-                    ))}
+                  <div className="overflow-x-auto">
+                    <div className="flex gap-3 min-w-max">
+                      {profile.photos
+                        .filter((photo: any) => !photo.isPrimary)
+                        .map((photo: any, idx: number) => (
+                          <Card
+                            key={idx}
+                            className="glass-card overflow-hidden flex-shrink-0 w-32 h-32"
+                          >
+                            <img
+                              src={photo.url}
+                              alt={`Photo ${idx + 2}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </Card>
+                        ))}
+                    </div>
                   </div>
                 )}
               </div>

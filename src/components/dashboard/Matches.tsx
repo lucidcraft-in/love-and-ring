@@ -102,26 +102,29 @@ const Matches = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log("RECEIVED:", res.data);
 
-      const formatted: MatchItem[] = res.data.map((item: any) => ({
-        user: {
-          _id: item.user._id,
-          fullName: item.user.fullName,
-          dateOfBirth: item.user.dateOfBirth,
-          city: item.user.city,
-          state: item.user.state,
-          interests: item.user.interests || [],
-          education: item.user.highestEducation
-            ? { name: item.user.highestEducation.name }
-            : undefined,
-          profession: item.user.profession
-            ? { name: item.user.profession.name }
-            : undefined,
-          photos: item.user.photos || [],
-        },
-        matchScore: item.matchPercentage ?? 0,
-        liked: false, // they liked you, not vice-versa
-      }));
+      const formatted: MatchItem[] = res.data.map((item: any) => {
+        const u = item.likedBy;
+
+        return {
+          user: {
+            _id: u._id,
+            fullName: u.fullName,
+            dateOfBirth: u.dateOfBirth,
+            city: u.city,
+            state: u.state,
+            interests: u.interests || [],
+            education: u.highestEducation
+              ? { name: u.highestEducation.name }
+              : undefined,
+            profession: u.profession ? { name: u.profession.name } : undefined,
+            photos: u.photos || [],
+          },
+          matchScore: item.matchPercentage ?? 0,
+          liked: false,
+        };
+      });
 
       setLikedMe(formatted);
     } catch (err) {
@@ -567,14 +570,14 @@ const Matches = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Matches</h2>
-        <Button
+        {/* <Button
           variant="outline"
           className="gap-2"
           onClick={() => setIsFiltersOpen(true)}
         >
           <Filter className="w-4 h-4" />
           Filters
-        </Button>
+        </Button> */}
       </div>
 
       <FiltersModal
@@ -598,19 +601,45 @@ const Matches = () => {
         </div>
 
         <TabsContent value="new" className="mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {matches.slice(0, 2).map((match) => (
-              <MatchCard key={match.user._id} match={match} />
-            ))}
-          </div>
+          {matches.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {matches.slice(0, 2).map((match) => (
+                <MatchCard key={match.user._id} match={match} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center min-h-[50vh]">
+              <Card className="glass-card p-12 text-center max-w-lg w-full">
+                <p className="text-muted-foreground text-lg font-medium">
+                  No matches available.
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Set your partner preference to find matches.
+                </p>
+              </Card>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="all" className="mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {matches.map((match) => (
-              <MatchCard key={match.user._id} match={match} />
-            ))}
-          </div>
+          {matches.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {matches.map((match) => (
+                <MatchCard key={match.user._id} match={match} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center min-h-[50vh]">
+              <Card className="glass-card p-12 text-center max-w-lg w-full">
+                <p className="text-muted-foreground text-lg font-medium">
+                  No matches available.
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Set your partner preference to find matches.
+                </p>
+              </Card>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="liked" className="mt-6 space-y-10">

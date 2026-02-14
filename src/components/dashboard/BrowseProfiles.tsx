@@ -29,6 +29,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Axios from "@/axios/axios";
+import FemaleDummy from "@/assets/UserWomen.png";
+import MaleDummy from "@/assets/UserMen.png";
+import DummyProfile from "@/assets/DummyProfile.png";
 
 interface Profile {
   _id: string;
@@ -100,10 +103,13 @@ const BrowseProfiles = () => {
     return age;
   };
 
-  const getProfileImage = (photos?: any[]) => {
-    if (!photos || photos.length === 0)
-      return "https://via.placeholder.com/400x400?text=No+Photo";
-    return photos.find((p) => p.isPrimary)?.url || photos[0].url;
+  const getProfileImage = (photos?: any[], gender?: string) => {
+    if (!photos || photos.length === 0) {
+      return gender === "female" ? FemaleDummy : MaleDummy;
+    }
+
+    const primary = photos.find((p) => p.isPrimary);
+    return primary?.url || photos[0]?.url || DummyProfile;
   };
 
   const filteredProfiles = profiles.filter((p) => {
@@ -268,10 +274,10 @@ const BrowseProfiles = () => {
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" className="gap-2">
+              {/* <Button variant="outline" className="gap-2">
                 <Filter className="w-4 h-4" />
                 Advanced Filters
-              </Button>
+              </Button> */}
             </DialogTrigger>
             <DialogContent className="glass-card max-w-2xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
