@@ -16,7 +16,8 @@ interface StepFourProps {
 }
 
 const StepFour = ({ formData, updateFormData }: StepFourProps) => {
-  const [Education, setEducation] = useState<any>([]);
+  const [primaryEducations, setPrimaryEducations] = useState<any[]>([]);
+  const [higherEducations, setHigherEducations] = useState<any[]>([]);
   const [professions, setProfessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -25,21 +26,48 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
   };
 
   useEffect(() => {
-    const fetchEducation = async () => {
+    const fetchPrimaryEducation = async () => {
       try {
-        const { data } = await Axios.get("/api/master/educations", {
+        const { data } = await Axios.get("/api/master/primaryEducations", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        setEducation(data.data);
+
+        setPrimaryEducations(data.data);
       } catch (error) {
-        console.error("Error fetching education:", error);
+        console.error("Error fetching primary education:", error);
       }
     };
 
-    fetchEducation();
+    fetchPrimaryEducation();
   }, []);
+
+  useEffect(() => {
+    const fetchHigherEducation = async () => {
+      if (!formData?.primaryEducation) {
+        setHigherEducations([]);
+        return;
+      }
+
+      try {
+        const { data } = await Axios.get(
+          `/api/master/higherEducations?primaryEducation=${formData.primaryEducation}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          },
+        );
+
+        setHigherEducations(data.data);
+      } catch (error) {
+        console.error("Error fetching higher education:", error);
+      }
+    };
+
+    fetchHigherEducation();
+  }, [formData?.primaryEducation]);
 
   useEffect(() => {
     const fetchProfessions = async () => {
@@ -72,20 +100,22 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Education */}
-
+        {/* Primary Education */}
         <div className="space-y-2">
-          <Label>Highest Education *</Label>
+          <Label>Primary Education *</Label>
           <Select
-            value={formData?.highestEducation}
-            onValueChange={(v) => handleChange("highestEducation", v)}
+            value={formData?.primaryEducation}
+            onValueChange={(v) => {
+              handleChange("primaryEducation", v);
+              handleChange("highestEducation", "");
+            }}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select education level" />
+              <SelectValue placeholder="Select primary education" />
             </SelectTrigger>
 
             <SelectContent>
-              {Education.map((item: any) => (
+              {primaryEducations.map((item) => (
                 <SelectItem key={item._id} value={item._id}>
                   {item.name}
                 </SelectItem>
@@ -94,26 +124,30 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
           </Select>
         </div>
 
-        {/* Course */}
+        {/* Education */}
         <div className="space-y-2">
-          <Label>Course / Specialization</Label>
+          <Label>Highest Education *</Label>
           <Select
-            value={formData?.course}
-            onValueChange={(v) => handleChange("course", v)}
+            value={formData?.highestEducation}
+            onValueChange={(v) => handleChange("highestEducation", v)}
+            disabled={!formData?.primaryEducation}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select course" />
+              <SelectValue
+                placeholder={
+                  formData?.primaryEducation
+                    ? "Select highest education"
+                    : "Select primary education first"
+                }
+              />
             </SelectTrigger>
+
             <SelectContent>
-              <SelectItem value="engineering">Engineering</SelectItem>
-              <SelectItem value="medicine">Medicine</SelectItem>
-              <SelectItem value="computer-science">Computer Science</SelectItem>
-              <SelectItem value="business">Business Administration</SelectItem>
-              <SelectItem value="arts">Arts</SelectItem>
-              <SelectItem value="science">Science</SelectItem>
-              <SelectItem value="commerce">Commerce</SelectItem>
-              <SelectItem value="law">Law</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              {higherEducations.map((item) => (
+                <SelectItem key={item._id} value={item._id}>
+                  {item.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

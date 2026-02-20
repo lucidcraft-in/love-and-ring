@@ -53,8 +53,8 @@ export interface RegistrationData {
   bodyType: string;
   city: string;
   profileImage: File | null;
+  primaryEducation: string;
   highestEducation: string;
-  course: string;
   profession: string;
   physicallyChallenged: boolean;
   liveWithFamily: boolean;
@@ -102,8 +102,8 @@ const Register = () => {
     bodyType: "",
     city: "",
     profileImage: null,
+    primaryEducation: "",
     highestEducation: "",
-    course: "",
     profession: "",
     physicallyChallenged: false,
     liveWithFamily: true,
@@ -186,7 +186,7 @@ const Register = () => {
       case 3:
         return ["height", "weight", "maritalStatus", "bodyType", "city"];
       case 4:
-        return ["highestEducation", "profession"];
+        return ["highestEducation", "primaryEducation", "profession"];
       case 5:
         return [];
       default:
@@ -329,7 +329,7 @@ const Register = () => {
         bodyType: formData.bodyType,
         city: formData.city,
         highestEducation: formData.highestEducation,
-        course: formData.course,
+        primaryEducation: formData.primaryEducation,
         profession: formData.profession,
         interests: formData.interests,
         personalityTraits: formData.traits,
