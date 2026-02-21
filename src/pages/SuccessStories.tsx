@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Heart } from "lucide-react";
 import {
@@ -41,6 +41,7 @@ const SuccessStories = () => {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showMalayalam, setShowMalayalam] = useState(false);
 
   const fetchStories = async () => {
     try {
@@ -66,7 +67,13 @@ const SuccessStories = () => {
   useEffect(() => {
     fetchStories();
   }, []);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowMalayalam((prev) => !prev);
+    }, 5000);
 
+    return () => clearInterval(interval);
+  }, []);
   return (
     <div className="min-h-screen">
       {/* Hero Section - matches Home page hero design */}
@@ -111,9 +118,34 @@ const SuccessStories = () => {
                 Stories
               </span>
             </h1>
-            <p className="text-base sm:text-xl md:text-2xl hero-subtext">
+            <p className="text-base sm:text-xl md:text-2xl hero-subtext min-h-[60px]">
               Real couples, real happiness — read their inspiring journeys to
-              finding true love
+              finding true love.{" "}
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={showMalayalam ? "ml" : "en"}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.6 }}
+                  className={
+                    showMalayalam ? "gradient-text-light inline" : "inline"
+                  }
+                  style={
+                    showMalayalam
+                      ? {
+                          fontFamily: "'Noto Sans Malayalam', sans-serif",
+                          fontSize: "0.9em",
+                          fontWeight: 500,
+                        }
+                      : {}
+                  }
+                >
+                  {!showMalayalam
+                    ? "Digitally bridging Malayali individuals across the world seeking serious Partnerships."
+                    : "ജീവിതപങ്കാളിയെ കുറിച്ച് ഉള്ള നിങ്ങളുടെ സ്വപ്നം സഫലമാക്കാൻ….ലവ് & റിങ്"}
+                </motion.span>
+              </AnimatePresence>
             </p>
           </motion.div>
         </div>

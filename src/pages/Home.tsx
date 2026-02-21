@@ -57,6 +57,7 @@ const Home = () => {
   const [signInData, setSignInData] = useState({ email: "", password: "" });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
+  const [showMalayalam, setShowMalayalam] = useState(false);
   const totalSteps = 5;
 
   useEffect(() => {
@@ -252,6 +253,14 @@ const Home = () => {
     },
   ];
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowMalayalam((prev) => !prev);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section - starts from absolute top of viewport, behind navbar */}
@@ -306,9 +315,33 @@ const Home = () => {
                     Perfect Match
                   </span>
                 </h1>
-                <p className="text-base sm:text-xl md:text-2xl hero-subtext">
-                  Join thousands of happy couples who found their life partner
-                  through our trusted matrimony platform
+                <p className="text-base sm:text-xl md:text-2xl hero-subtext min-h-[60px]">
+                  Join thousands of happy couples.{" "}
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={showMalayalam ? "ml" : "en"}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      transition={{ duration: 0.6 }}
+                      className={
+                        showMalayalam ? "gradient-text-light inline" : "inline"
+                      }
+                      style={
+                        showMalayalam
+                          ? {
+                              fontFamily: "'Noto Sans Malayalam', sans-serif",
+                              fontSize: "0.9em",
+                              fontWeight: 500,
+                            }
+                          : {}
+                      }
+                    >
+                      {!showMalayalam
+                        ? "Who found their life partner through our trusted matrimony platform."
+                        : "നിങ്ങൾ ലോകത്തിൽ എവിടെയായാലും അനുയോജ്യരായ ജീവിത പങ്കാളിയെ കണ്ടെത്താൻ… ലവ് & റിങ്"}
+                    </motion.span>
+                  </AnimatePresence>
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                   <Button

@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ const Contact = () => {
 
   const [contactPage, setContactPage] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showMalayalam, setShowMalayalam] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,10 +111,21 @@ const Contact = () => {
     },
   ];
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowMalayalam((prev) => !prev);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section id="hero-section" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section
+        id="hero-section"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      >
         <div
           className="absolute inset-0"
           style={{
@@ -126,7 +138,8 @@ const Contact = () => {
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.65) 100%)",
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.65) 100%)",
           }}
         />
         <FloatingBrandLogo variant="hero" />
@@ -139,8 +152,37 @@ const Contact = () => {
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white hero-text-shadow">
               Get In <span className="gradient-text-light">Touch</span>
             </h1>
-            <p className="text-xl md:text-2xl hero-subtext max-w-2xl mx-auto">
-              {heroSection?.description || "We're here to help you on your journey to finding your perfect life partner"}
+            {/* <p className="text-xl md:text-2xl hero-subtext max-w-2xl mx-auto">
+              {heroSection?.description ||
+                "We're here to help you on your journey to finding your perfect life partner"}
+            </p> */}
+            <p className="text-base sm:text-xl md:text-2xl hero-subtext min-h-[60px]">
+              We’d love to hear from you.{" "}
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={showMalayalam ? "ml" : "en"}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.6 }}
+                  className={
+                    showMalayalam ? "gradient-text-light inline" : "inline"
+                  }
+                  style={
+                    showMalayalam
+                      ? {
+                          fontFamily: "'Noto Sans Malayalam', sans-serif",
+                          fontSize: "0.9em",
+                          fontWeight: 500,
+                        }
+                      : {}
+                  }
+                >
+                  {!showMalayalam
+                    ? "We're here to help you on your journey to finding your perfect life partner."
+                    : "ജീവിതപങ്കാളിയെ കുറിച്ച് ഉള്ള നിങ്ങളുടെ സ്വപ്നം സഫലമാക്കാൻ….ലവ് & റിങ്"}
+                </motion.span>
+              </AnimatePresence>
             </p>
           </motion.div>
         </div>

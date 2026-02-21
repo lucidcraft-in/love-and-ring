@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ interface Plan {
 const Pricing = () => {
   const navigate = useNavigate();
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [showMalayalam, setShowMalayalam] = useState(false);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -49,11 +50,23 @@ const Pricing = () => {
 
     fetchPlans();
   }, []);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowMalayalam((prev) => !prev);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section id="hero-section" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section
+        id="hero-section"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      >
         {/* Background Image */}
         <div
           className="absolute inset-0"
@@ -68,7 +81,8 @@ const Pricing = () => {
         <div
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.65) 100%)",
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.65) 100%)",
           }}
         />
         {/* Floating Brand Logos */}
@@ -81,10 +95,37 @@ const Pricing = () => {
             className="max-w-3xl mx-auto text-center space-y-6"
           >
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white hero-text-shadow">
-              Choose Your <span className="gradient-text-light">Perfect Plan</span>
+              Choose Your{" "}
+              <span className="gradient-text-light">Perfect Plan</span>
             </h1>
-            <p className="text-xl md:text-2xl hero-subtext max-w-2xl mx-auto">
-              Find the plan that works best for your journey to finding your life partner
+            <p className="text-base sm:text-xl md:text-2xl hero-subtext min-h-[60px]">
+              Find the plan that works best for your journey to finding your
+              life partner.{" "}
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={showMalayalam ? "ml" : "en"}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.6 }}
+                  className={
+                    showMalayalam ? "gradient-text-light inline" : "inline"
+                  }
+                  style={
+                    showMalayalam
+                      ? {
+                          fontFamily: "'Noto Sans Malayalam', sans-serif",
+                          fontSize: "0.9em",
+                          fontWeight: 500,
+                        }
+                      : {}
+                  }
+                >
+                  {!showMalayalam
+                    ? "Creating beautiful journeys where love finds its forever."
+                    : "ജീവിതപങ്കാളിയെ കുറിച്ച് ഉള്ള നിങ്ങളുടെ സ്വപ്നം സഫലമാക്കാൻ….ലവ് & റിങ്"}
+                </motion.span>
+              </AnimatePresence>
             </p>
           </motion.div>
         </div>
@@ -114,9 +155,7 @@ const Pricing = () => {
                       <Crown className="h-6 w-6 text-primary" />
                     </div>
 
-                    <h3 className="text-xl font-semibold mb-1">
-                      {plan.title}
-                    </h3>
+                    <h3 className="text-xl font-semibold mb-1">{plan.title}</h3>
 
                     <p className="text-sm text-muted-foreground">
                       {plan.heading}
@@ -144,8 +183,7 @@ const Pricing = () => {
                           }`}
                         />
                         <span className="text-sm">
-                          {feature.label}:{" "}
-                          <strong>{feature.value}</strong>
+                          {feature.label}: <strong>{feature.value}</strong>
                         </span>
                       </li>
                     ))}

@@ -1,25 +1,37 @@
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Shield, Heart, Users, Award } from "lucide-react";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import aboutHeroBg from "@/assets/about-hero-bg.jpg";
+import { useEffect, useState } from "react";
 
 const About = () => {
+  const [showMalayalam, setShowMalayalam] = useState(false);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowMalayalam((prev) => !prev);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
   const values = [
     {
       icon: Shield,
       title: "Trust & Security",
-      description: "We prioritize your safety with verified profiles and secure data handling",
+      description:
+        "We prioritize your safety with verified profiles and secure data handling",
     },
     {
       icon: Heart,
       title: "Genuine Profiles",
-      description: "Helping people find meaningful relationships based on shared values",
+      description:
+        "Helping people find meaningful relationships based on shared values",
     },
     {
       icon: Users,
       title: "Community First",
-      description: "Building a community that is welcoming, supportive and spreading human spirit",
+      description:
+        "Building a community that is welcoming, supportive and spreading human spirit",
     },
     {
       icon: Award,
@@ -72,8 +84,33 @@ const About = () => {
                 Love & Ring
               </span>
             </h1>
-            <p className="text-base sm:text-xl md:text-2xl hero-subtext">
-              Your trusted partner in finding the perfect life match
+            <p className="text-base sm:text-xl md:text-2xl hero-subtext min-h-[60px]">
+              Your trusted partner in finding the perfect life match.{" "}
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={showMalayalam ? "ml" : "en"}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.6 }}
+                  className={
+                    showMalayalam ? "gradient-text-light inline" : "inline"
+                  }
+                  style={
+                    showMalayalam
+                      ? {
+                          fontFamily: "'Noto Sans Malayalam', sans-serif",
+                          fontSize: "0.9em",
+                          fontWeight: 500,
+                        }
+                      : {}
+                  }
+                >
+                  {!showMalayalam
+                    ? "A Place for Global Malayalees to Find their Perfect Match"
+                    : "ജീവിതപങ്കാളിയെ കുറിച്ച് ഉള്ള നിങ്ങളുടെ സ്വപ്നം സഫലമാക്കാൻ….ലവ് & റിങ്"}
+                </motion.span>
+              </AnimatePresence>
             </p>
           </motion.div>
         </div>
@@ -89,14 +126,18 @@ const About = () => {
               viewport={{ once: true }}
               className="space-y-6"
             >
-              <h2 className="text-4xl font-bold text-foreground">Our Mission</h2>
+              <h2 className="text-4xl font-bold text-foreground">
+                Our Mission
+              </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                At Love & Ring, our mission is to help individuals find their perfect life partner through a secure, 
-                trustworthy, and culturally sensitive platform. We believe that every person deserves to find true love 
-                and companionship.
+                At Love & Ring, our mission is to help individuals find their
+                perfect life partner through a secure, trustworthy, and
+                culturally sensitive platform. We believe that every person
+                deserves to find true love and companionship.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                We combine cutting-edge technology with traditional values to create meaningful connections that last a lifetime.
+                We combine cutting-edge technology with traditional values to
+                create meaningful connections that last a lifetime.
               </p>
             </motion.div>
             <motion.div
@@ -142,12 +183,15 @@ const About = () => {
             >
               <h2 className="text-4xl font-bold text-foreground">Our Vision</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                We envision a world where finding your life partner is a joyful, secure, and empowering experience. 
-                Through innovation and empathy, we strive to be the most trusted matrimony platform globally.
+                We envision a world where finding your life partner is a joyful,
+                secure, and empowering experience. Through innovation and
+                empathy, we strive to be the most trusted matrimony platform
+                globally.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Our vision is to create millions of happy marriages by connecting compatible individuals from diverse 
-                backgrounds while respecting cultural traditions and modern values.
+                Our vision is to create millions of happy marriages by
+                connecting compatible individuals from diverse backgrounds while
+                respecting cultural traditions and modern values.
               </p>
             </motion.div>
           </div>
@@ -163,7 +207,9 @@ const About = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">Our Values</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+              Our Values
+            </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               The principles that guide everything we do
             </p>
@@ -182,8 +228,12 @@ const About = () => {
                   <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
                     <value.icon className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-3 text-foreground">{value.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{value.description}</p>
+                  <h3 className="text-xl font-semibold mb-3 text-foreground">
+                    {value.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {value.description}
+                  </p>
                 </Card>
               </motion.div>
             ))}
@@ -198,7 +248,7 @@ const About = () => {
           <div className="absolute top-1/2 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -translate-y-1/2" />
           <div className="absolute top-1/2 right-0 w-72 h-72 bg-secondary/5 rounded-full blur-3xl -translate-y-1/2" />
         </div>
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -206,23 +256,37 @@ const About = () => {
             viewport={{ once: true }}
             className="max-w-4xl mx-auto text-center space-y-8"
           >
-            <h2 className="text-4xl font-bold text-foreground">Why Trust Love & Ring?</h2>
+            <h2 className="text-4xl font-bold text-foreground">
+              Why Trust Love & Ring?
+            </h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              With over 10,000 successful marriages and counting, Love & Ring has established itself as a leader 
-              in the matrimony industry. Our commitment to verification, privacy, and genuine connections sets us apart.
+              With over 10,000 successful marriages and counting, Love & Ring
+              has established itself as a leader in the matrimony industry. Our
+              commitment to verification, privacy, and genuine connections sets
+              us apart.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10 pt-8">
               <Card className="p-6 glass-card text-center shadow-md">
-                <div className="text-4xl font-bold gradient-text mb-2">10,000+</div>
-                <div className="text-muted-foreground font-medium">Happy Marriages</div>
+                <div className="text-4xl font-bold gradient-text mb-2">
+                  10,000+
+                </div>
+                <div className="text-muted-foreground font-medium">
+                  Happy Marriages
+                </div>
               </Card>
               <Card className="p-6 glass-card text-center shadow-md">
-                <div className="text-4xl font-bold gradient-text mb-2">50,000+</div>
-                <div className="text-muted-foreground font-medium">Verified Profiles</div>
+                <div className="text-4xl font-bold gradient-text mb-2">
+                  50,000+
+                </div>
+                <div className="text-muted-foreground font-medium">
+                  Verified Profiles
+                </div>
               </Card>
               <Card className="p-6 glass-card text-center shadow-md">
                 <div className="text-4xl font-bold gradient-text mb-2">99%</div>
-                <div className="text-muted-foreground font-medium">Satisfaction Rate</div>
+                <div className="text-muted-foreground font-medium">
+                  Satisfaction Rate
+                </div>
               </Card>
             </div>
           </motion.div>
