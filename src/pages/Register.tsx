@@ -32,6 +32,7 @@ import {
   registerUser,
 } from "@/services/UserServices";
 import Axios from "@/axios/axios";
+import PrivacyConsentModal from "@/components/registration/PrivacyConsentModal";
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
@@ -80,6 +81,9 @@ const Register = () => {
   const [isOTPVerified, setIsOTPVerified] = useState(false);
   const [stepErrors, setStepErrors] = useState<{ [key: string]: string }>({});
   const [isStepValid, setIsStepValid] = useState(false);
+  const [consentAccepted, setConsentAccepted] = useState(false);
+  const [consentTimestamp, setConsentTimestamp] = useState<Date | null>(null);
+  const [showConsentModal, setShowConsentModal] = useState(true);
   const [userId, setUserId] = useState<string | null>(() => {
     return location.state?.userId ?? null;
   });
@@ -304,6 +308,11 @@ const Register = () => {
       return;
     }
 
+    if (!consentAccepted) {
+      toast.error("Privacy consent is required");
+      return;
+    }
+
     try {
       setSubmitting(true);
 
@@ -411,8 +420,25 @@ const Register = () => {
     },
   ];
 
+  const handleConsentAgree = (timestamp: Date) => {
+    setConsentAccepted(true);
+    setConsentTimestamp(timestamp);
+    setShowConsentModal(false);
+  };
+
+  const handleConsentDecline = () => {
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden">
+      {/* Privacy Consent Modal */}
+      <PrivacyConsentModal
+        open={showConsentModal}
+        onAgree={handleConsentAgree}
+        onDecline={handleConsentDecline}
+      />
+
       {/* Hero Carousel Background - Same as Home Page */}
       <div id="hero-section" className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
@@ -450,7 +476,7 @@ const Register = () => {
       </Button>
 
       {/* Content Layer */}
-      <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
+      <div className={`relative z-10 min-h-screen flex flex-col lg:flex-row transition-all duration-300 ${showConsentModal ? "blur-sm pointer-events-none select-none" : ""}`}>
         {/* Left Section - Marketing Content */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
