@@ -102,7 +102,7 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Primary Education */}
         <div className="space-y-2">
-          <Label>Primary Education *</Label>
+          <Label>Qualification Level *</Label>
           <Select
             value={formData?.primaryEducation}
             onValueChange={(v) => {

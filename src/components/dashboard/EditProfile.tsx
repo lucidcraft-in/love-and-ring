@@ -29,6 +29,7 @@ interface UserProfile {
   address?: string;
   bio?: string;
   education?: string;
+  primaryEducation?: string;
   profession?: string;
   profileImage?: string;
   membership?: string;
@@ -45,7 +46,8 @@ const EditProfile = () => {
   const [loading, setLoading] = useState(false);
   const [religions, setReligions] = useState<Option[]>([]);
   const [castes, setCastes] = useState<Option[]>([]);
-  const [educations, setEducations] = useState<Option[]>([]);
+  const [primaryEducations, setPrimaryEducations] = useState<Option[]>([]);
+  const [higherEducations, setHigherEducations] = useState<Option[]>([]);
   const [professions, setProfessions] = useState<Option[]>([]);
 
   const currentMembership = profile?.membership || "Free";
@@ -75,6 +77,7 @@ const EditProfile = () => {
         religion: user.religion?._id || user.religion || "",
         caste: user.caste?._id || user.caste || "",
         education: user.highestEducation?._id || "",
+        primaryEducation: user.primaryEducation?._id || "",
         profession: user.profession?._id || "",
         address: user.address || "",
         bio: user.bio || "",
@@ -99,14 +102,17 @@ const EditProfile = () => {
         Authorization: `Bearer ${token}`,
       };
 
-      const [religionRes, educationRes, professionRes] = await Promise.all([
-        Axios.get("/api/master/religions", { headers }),
-        Axios.get("/api/master/educations", { headers }),
-        Axios.get("/api/master/occupations", { headers }),
-      ]);
+      const [religionRes, primaryEduRes, higherEduRes, professionRes] =
+        await Promise.all([
+          Axios.get("/api/master/religions", { headers }),
+          Axios.get("/api/master/primaryEducations", { headers }),
+          Axios.get("/api/master/higherEducations", { headers }),
+          Axios.get("/api/master/occupations", { headers }),
+        ]);
 
       setReligions(religionRes.data.data);
-      setEducations(educationRes.data.data);
+      setPrimaryEducations(primaryEduRes.data.data);
+      setHigherEducations(higherEduRes.data.data);
       setProfessions(professionRes.data.data);
     } catch (err: any) {
       console.error("Failed to load master data", err?.response || err);
@@ -148,6 +154,7 @@ const EditProfile = () => {
           religion: profile.religion,
           caste: profile.caste,
           highestEducation: profile.education,
+          primaryEducation: profile.primaryEducation,
           profession: profile.profession,
           address: profile.address,
           bio: profile.bio,
@@ -168,7 +175,14 @@ const EditProfile = () => {
     }
   };
 
-  if (loading || !profile) {
+  if (
+    loading ||
+    !profile ||
+    primaryEducations.length === 0 ||
+    higherEducations.length === 0 ||
+    professions.length === 0 ||
+    religions.length === 0
+  ) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <p className="text-muted-foreground">Loading profile…</p>
@@ -376,6 +390,27 @@ const EditProfile = () => {
       <Card className="glass-card p-6">
         <h3 className="text-lg font-semibold mb-4">Educational Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Primary Education */}
+          <div>
+            <Label>Qualification Level</Label>
+            <Select
+              value={profile.primaryEducation || ""}
+              onValueChange={(value) =>
+                setProfile((p) => (p ? { ...p, primaryEducation: value } : p))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Primary Education" />
+              </SelectTrigger>
+              <SelectContent>
+                {primaryEducations.map((e) => (
+                  <SelectItem key={e._id} value={e._id}>
+                    {e.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div>
             <Label htmlFor="education">Highest Education</Label>
             <Select
@@ -388,7 +423,7 @@ const EditProfile = () => {
                 <SelectValue placeholder="Select Education" />
               </SelectTrigger>
               <SelectContent>
-                {educations.map((e) => (
+                {higherEducations.map((e) => (
                   <SelectItem key={e._id} value={e._id}>
                     {e.name}
                   </SelectItem>
