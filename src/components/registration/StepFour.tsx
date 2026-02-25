@@ -177,6 +177,13 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
             </SelectContent>
           </Select>
         </div>
+        <div className="space-y-2 md:col-span-2">
+          <Label>Upload Your CV *</Label>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              />
+        </div>
       </div>
     </div>
   );
