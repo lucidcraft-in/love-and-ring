@@ -58,6 +58,7 @@ const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
   const [showMalayalam, setShowMalayalam] = useState(false);
+  const [currentTagline, setCurrentTagline] = useState(0);
   const totalSteps = 5;
 
   useEffect(() => {
@@ -253,9 +254,17 @@ const Home = () => {
     },
   ];
 
+  const heroTaglines = [
+    "A Place for Global Malayalees to Find their Perfect Match",
+    "Digitally bridging Malayali individuals across the world seeking serious Partnership",
+    "Connecting Malayalees across the world: find your perfect Match!",
+    "A safe, personal, and organised way to meet potential partners",
+    "നിങ്ങൾ ലോകത്തിൽ എവിടെയായാലും അനുയോജ്യരായ ജീവിത പങ്കാളിയെ കണ്ടെത്താൻ… ലവ് & റിങ്",
+  ];
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setShowMalayalam((prev) => !prev);
+      setCurrentTagline((prev) => (prev + 1) % heroTaglines.length);
     }, 5000);
 
     return () => clearInterval(interval);
@@ -319,27 +328,27 @@ const Home = () => {
                   Join thousands of happy couples.{" "}
                   <AnimatePresence mode="wait">
                     <motion.span
-                      key={showMalayalam ? "ml" : "en"}
-                      initial={{ opacity: 0, y: 5 }}
+                      key={currentTagline}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -5 }}
+                      exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.6 }}
-                      className={
-                        showMalayalam ? "gradient-text-light inline" : "inline"
-                      }
+                      // className={`inline ${
+                      //   heroTaglines[currentTagline].includes("നിങ്ങൾ")
+                      //     ? "gradient-text-light"
+                      //     : "gradient-text-light"
+                      // }`}
                       style={
-                        showMalayalam
+                        heroTaglines[currentTagline].includes("നിങ്ങൾ")
                           ? {
                               fontFamily: "'Noto Sans Malayalam', sans-serif",
-                              fontSize: "0.9em",
+                              fontSize: "0.95em",
                               fontWeight: 500,
                             }
                           : {}
                       }
                     >
-                      {!showMalayalam
-                        ? "Who found their life partner through our trusted matrimony platform."
-                        : "നിങ്ങൾ ലോകത്തിൽ എവിടെയായാലും അനുയോജ്യരായ ജീവിത പങ്കാളിയെ കണ്ടെത്താൻ… ലവ് & റിങ്"}
+                      {heroTaglines[currentTagline]}
                     </motion.span>
                   </AnimatePresence>
                 </p>
