@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Crown, Edit, Upload } from "lucide-react";
+import CvSection from "@/components/dashboard/CvSection";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Axios from "@/axios/axios";
@@ -53,6 +54,7 @@ const EditProfile = () => {
   const currentMembership = profile?.membership || "Free";
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = user._id;
+  const [cvData, setCvData] = useState<{ cvUrl?: string; cvFileName?: string; cvUploadedAt?: string }>({});
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -82,6 +84,11 @@ const EditProfile = () => {
         address: user.address || "",
         bio: user.bio || "",
         membership: user.profileStatus === "BASIC" ? "Free" : "Premium",
+      });
+      setCvData({
+        cvUrl: user.cvUrl || "",
+        cvFileName: user.cvFileName || "",
+        cvUploadedAt: user.cvUploadedAt || "",
       });
     } catch (err) {
       console.error("Failed to fetch profile", err);
@@ -453,6 +460,15 @@ const EditProfile = () => {
           </div>
         </div>
       </Card>
+
+      {/* CV / Resume Section */}
+      <CvSection
+        userId={userId}
+        cvUrl={cvData.cvUrl}
+        cvFileName={cvData.cvFileName}
+        cvUploadedAt={cvData.cvUploadedAt}
+        onCvUpdated={fetchProfile}
+      />
 
       {/* Save Button */}
       <div className="flex justify-end gap-4">
