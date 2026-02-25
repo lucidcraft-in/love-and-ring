@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
 import heroSlide3 from "@/assets/hero-slide-3.jpg";
@@ -101,6 +102,9 @@ const PrivacyDetails = () => {
               "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.5) 100%)",
           }}
         />
+
+        {/* Floating Brand Logo - same as Home */}
+        <FloatingBrandLogo />
 
         {/* Hero Content */}
         <div className="container mx-auto relative z-10 px-4 pt-16">
