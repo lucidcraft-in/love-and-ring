@@ -1,5 +1,10 @@
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
+import heroSlide2 from "@/assets/hero-slide-2.jpg";
+import heroSlide3 from "@/assets/hero-slide-3.jpg";
+
+const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
 const sections = [
   {
@@ -47,34 +52,76 @@ const sections = [
 ];
 
 const PrivacyDetails = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    heroSlides.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 7000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <div
+      {/* Hero Section - identical to Home */}
+      <section
         id="hero-section"
-        className="relative flex items-center justify-center overflow-hidden"
-        style={{ minHeight: "60vh" }}
+        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        style={{ marginTop: 0, paddingTop: 0 }}
       >
-        <img
-          src={heroSlide1}
-          alt="Privacy Policy"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+        {/* Background Image Carousel */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${heroSlides[currentSlide]})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+        </AnimatePresence>
+
+        {/* Dark Gradient Overlay - same as Home */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.5) 100%)",
+          }}
         />
-        <div className="absolute inset-0 bg-black/[0.65]" />
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="relative z-10 text-center text-white px-4"
-        >
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">
-            Privacy Policy & Data Usage
-          </h1>
-          <p className="text-base md:text-lg text-white/80 max-w-2xl mx-auto">
-            Learn how we collect, use, and protect your information.
-          </p>
-        </motion.div>
-      </div>
+
+        {/* Hero Content */}
+        <div className="container mx-auto relative z-10 px-4 pt-16">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-3xl mx-auto text-center space-y-6"
+          >
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
+              Privacy Policy &{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+                Data Usage
+              </span>
+            </h1>
+            <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
+              Learn how we collect, use, and protect your information.
+            </p>
+          </motion.div>
+        </div>
+      </section>
 
       {/* Content */}
       <div className="mx-auto px-4 py-12 md:py-16" style={{ maxWidth: "900px" }}>
