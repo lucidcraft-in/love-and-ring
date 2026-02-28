@@ -69,6 +69,7 @@ export interface RegistrationData {
     amount: number;
     type: "Monthly" | "Yearly";
   } | null;
+  cv: File | null;
 }
 
 const Register = () => {
@@ -115,6 +116,7 @@ const Register = () => {
     traits: [],
     diets: [],
     income: null,
+    cv: null,
   });
   const totalSteps = 5;
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -226,7 +228,7 @@ const Register = () => {
 
   const updateFormData = (
     field: keyof RegistrationData,
-    value: string | string[] | File,
+    value: string | string[] | File | null,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -322,6 +324,14 @@ const Register = () => {
         form.append("photo", formData.profileImage);
 
         await Axios.post(`/api/users/${userId}/photos`, form, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+
+      if (formData.cv) {
+        const cvForm = new FormData();
+        cvForm.append("cv", formData.cv);
+        await Axios.post(`/api/users/${userId}/cv`, cvForm, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
@@ -476,7 +486,9 @@ const Register = () => {
       </Button>
 
       {/* Content Layer */}
-      <div className={`relative z-10 min-h-screen flex flex-col lg:flex-row transition-all duration-300 ${showConsentModal ? "blur-sm pointer-events-none select-none" : ""}`}>
+      <div
+        className={`relative z-10 min-h-screen flex flex-col lg:flex-row transition-all duration-300 ${showConsentModal ? "blur-sm pointer-events-none select-none" : ""}`}
+      >
         {/* Left Section - Marketing Content */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}

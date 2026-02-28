@@ -54,7 +54,11 @@ const EditProfile = () => {
   const currentMembership = profile?.membership || "Free";
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = user._id;
-  const [cvData, setCvData] = useState<{ cvUrl?: string; cvFileName?: string; cvUploadedAt?: string }>({});
+  const [cvData, setCvData] = useState<{
+    cvUrl?: string;
+    cvFileName?: string;
+    cvUploadedAt?: string;
+  }>({});
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -86,9 +90,9 @@ const EditProfile = () => {
         membership: user.profileStatus === "BASIC" ? "Free" : "Premium",
       });
       setCvData({
-        cvUrl: user.cvUrl || "",
-        cvFileName: user.cvFileName || "",
-        cvUploadedAt: user.cvUploadedAt || "",
+        cvUrl: user.cv?.url || "",
+        cvFileName: user.cv?.fileName || user.cv?.url?.split("/").pop() || "",
+        cvUploadedAt: user.cv?.uploadedAt || "",
       });
     } catch (err) {
       console.error("Failed to fetch profile", err);

@@ -42,6 +42,7 @@ import HowItWorks from "@/components/HowItWorks";
 import FeaturedSuccessStory from "@/components/FeaturedSuccessStory";
 import ClientRegistrationCTA from "@/components/ClientRegistrationCTA";
 import { loginUserApi } from "@/services/AuthServices";
+import Axios from "@/axios/axios";
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
@@ -59,6 +60,7 @@ const Home = () => {
   const [isHeroHovered, setIsHeroHovered] = useState(false);
   const [showMalayalam, setShowMalayalam] = useState(false);
   const [currentTagline, setCurrentTagline] = useState(0);
+  const [successStories, setSuccessStories] = useState<any[]>([]);
   const totalSteps = 5;
 
   useEffect(() => {
@@ -158,7 +160,40 @@ const Home = () => {
     setStepErrors({});
     setSignInData({ email: "", password: "" });
   };
+  useEffect(() => {
+    const fetchPrimaryStories = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
+        const res = await Axios.get("/api/cms/success-stories", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log("API RESPONSE:", res.data);
+        const filtered = (res.data || [])
+          .filter((item: any) => item.isPrimary === true)
+          .map((item: any) => ({
+            names: item.coupleName,
+            images: item.images
+              ? item.images
+              : item.imageUrl
+                ? [item.imageUrl]
+                : [],
+            story: item.story,
+            date: new Date(item.createdAt).toLocaleDateString(),
+            fullStory: item.story,
+          }));
+        console.log("FILTERED STORIES:", filtered);
+
+        setSuccessStories(filtered);
+      } catch (err) {
+        console.error("Error fetching primary stories:", err);
+      }
+    };
+
+    fetchPrimaryStories();
+  }, []);
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -221,36 +256,6 @@ const Home = () => {
       title: "Personalised Support",
       description:
         "Every profile receives consultant-led personalised support, ensuring meaningful matches without relying solely on algorithm-based outcomes.",
-    },
-  ];
-
-  const successStories = [
-    {
-      names: "Athira & Visish",
-      images: [homeAthiraVisish1, homeAthiraVisish2, homeAthiraVisish3],
-      story:
-        "Love & Ring made our journey calm, reassuring, and truly meaningful.",
-      date: "Married: 29th October 2025",
-      fullStory:
-        "Love & Ring made our journey calm, reassuring, and truly meaningful. From the very first interaction, we felt the platform understood what we were looking for in a life partner. The personalized approach and genuine care from the team made all the difference. We never felt rushed or pressured—just supported every step of the way. Today, we're building a beautiful life together, and we owe it all to this wonderful platform that brought us together.",
-    },
-    {
-      names: "Abina & Basil",
-      images: [homeAbinaBasil1, homeAbinaBasil2],
-      story:
-        "A trustworthy platform that helped us connect naturally and confidently.",
-      date: "Married: 9th November 2025",
-      fullStory:
-        "A trustworthy platform that helped us connect naturally and confidently. What stood out to us was how authentic every profile felt—no exaggerations, no false promises, just real people looking for genuine connections. The verification process gave us peace of mind, and the matching algorithm truly understood our preferences. Our families were impressed with the professionalism, and we found in each other exactly what we had been searching for. We're so grateful for Love & Ring.",
-    },
-    {
-      names: "Molex & Roshin",
-      images: [homeMolexRoshin1, homeMolexRoshin2, homeMolexRoshin3],
-      story:
-        "Thanks to Love & Ring, we found our perfect match with ease and clarity.",
-      date: "Married: 10th November 2025",
-      fullStory:
-        "Thanks to Love & Ring, we found our perfect match with ease and clarity. The platform's attention to detail and the way they consider cultural backgrounds, values, and aspirations made the entire experience seamless. We appreciated the privacy controls and the thoughtful communication features that allowed us to get to know each other at our own pace. Love & Ring isn't just a matrimony platform—it's a bridge to finding your soulmate. We couldn't be happier with our journey.",
     },
   ];
 

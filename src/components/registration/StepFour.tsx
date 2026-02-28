@@ -15,7 +15,7 @@ import { useEffect, useState, useRef } from "react";
 
 interface StepFourProps {
   formData?: RegistrationData;
-  updateFormData?: (field: keyof RegistrationData, value: string) => void;
+  updateFormData?: (field: keyof RegistrationData, value: any) => void;
 }
 
 const StepFour = ({ formData, updateFormData }: StepFourProps) => {
@@ -23,7 +23,6 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
   const [higherEducations, setHigherEducations] = useState<any[]>([]);
   const [professions, setProfessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [cvFile, setCvFile] = useState<File | null>(null);
   const cvInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_CV_SIZE = 5 * 1024 * 1024; // 5MB
@@ -36,11 +35,11 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
       e.target.value = "";
       return;
     }
-    setCvFile(file);
+    updateFormData?.("cv", file);
   };
 
   const removeCv = () => {
-    setCvFile(null);
+    updateFormData?.("cv", null);
     if (cvInputRef.current) cvInputRef.current.value = "";
   };
 
@@ -203,7 +202,7 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
 
         {/* CV Upload */}
         <div className="space-y-2 md:col-span-2">
-          <Label>Upload Your CV</Label>
+          <Label>Upload Your CV *</Label>
           <input
             ref={cvInputRef}
             type="file"
@@ -212,7 +211,7 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
             className="hidden"
           />
 
-          {cvFile ? (
+          {formData?.cv ? (
             <Card
               className="p-6 border-2 border-primary bg-primary/5 transition-colors cursor-pointer"
               onClick={() => cvInputRef.current?.click()}
@@ -220,9 +219,9 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
               <div className="flex flex-col items-center justify-center text-center space-y-3">
                 <FileText className="h-12 w-12 text-primary" />
                 <div>
-                  <p className="font-medium text-foreground">{cvFile.name}</p>
+                  <p className="font-medium text-foreground">{formData.cv.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {(cvFile.size / 1024 / 1024).toFixed(2)} MB
+                    {(formData.cv.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
                 <button
@@ -248,7 +247,8 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
                 <div>
                   <p className="font-medium">Upload your CV</p>
                   <p className="text-sm text-muted-foreground">
-                    Click to upload or drag and drop (PDF, DOC, DOCX – Max 5MB)
+                    Click to upload or drag and drop (PDF, DOC, DOCX,TXT – Max
+                    5MB)
                   </p>
                 </div>
               </div>

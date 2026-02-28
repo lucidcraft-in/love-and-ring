@@ -134,11 +134,7 @@ const CvSection = ({ userId, cvUrl, cvFileName, cvUploadedAt, onCvUpdated }: CvS
               >
                 <Eye className="w-4 h-4 mr-1" /> View
               </Button>
-              <a href={cvUrl} download={cvFileName} className="inline-flex">
-                <Button size="sm" variant="outline">
-                  <Download className="w-4 h-4 mr-1" /> Download
-                </Button>
-              </a>
+             
               <Button
                 size="sm"
                 className="bg-gradient-to-r from-primary to-secondary text-white"

@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import AthiraandVishih from "@/assets/Athiraandvishish.jpg";
 import AibnandBasil from "@/assets/aibnaandbasil.jpg";
 
-
 interface SuccessStory {
   names: string;
   images: string[];
@@ -20,6 +19,13 @@ interface FeaturedSuccessStoryProps {
 }
 
 const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
+  if (!stories || stories.length === 0) {
+    return (
+      <div className="h-[400px] flex items-center justify-center">
+        <p className="text-muted-foreground">Loading stories...</p>
+      </div>
+    );
+  }
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
@@ -40,7 +46,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
   // Auto-play functionality
   useEffect(() => {
     if (!isAutoPlaying) return;
-    
+
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % stories.length);
     }, 8000);
@@ -49,7 +55,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
   }, [isAutoPlaying, stories.length]);
 
   return (
-    <div 
+    <div
       className="w-full"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
@@ -62,7 +68,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
             <AnimatePresence mode="wait">
               <motion.img
                 key={activeIndex}
-                src={activeStory.images[0]}
+                src={activeStory?.images?.[0] || ""}
                 alt={activeStory.names}
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -71,7 +77,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
                 className="w-full h-full object-cover object-top"
               />
             </AnimatePresence>
-            
+
             {/* Subtle gradient overlay at bottom */}
             <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent" />
           </div>
@@ -101,8 +107,8 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
               </p>
 
               {/* Read More Link */}
-              <Link 
-                to="/success-stories" 
+              <Link
+                to="/success-stories"
                 className="inline-flex items-center text-primary font-medium hover:underline text-sm sm:text-base group"
               >
                 Read More
@@ -145,12 +151,12 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
                   "relative flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 lg:w-15 lg:h-15 rounded-xl lg:rounded-2xl overflow-hidden transition-all duration-300",
                   activeIndex === index
                     ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-110"
-                    : "opacity-60 hover:opacity-100 hover:scale-105"
+                    : "opacity-60 hover:opacity-100 hover:scale-105",
                 )}
                 aria-label={`View ${story.names}'s story`}
               >
                 <img
-                  src={story.images[0]}
+                  src={story?.images?.[0] || ""}
                   alt={story.names}
                   className="w-full h-full object-cover object-center"
                 />
