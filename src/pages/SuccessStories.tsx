@@ -53,9 +53,15 @@ const SuccessStories = () => {
         },
       });
 
+      console.log("response:", response);
+
       const normalized = (response.data || []).map((item: any) => ({
         ...item,
-        images: Array.isArray(item.images) ? item.images : [],
+        images: item.images
+          ? item.images
+          : item.imageUrl
+            ? [item.imageUrl]
+            : [],
       }));
 
       setStories(normalized);
