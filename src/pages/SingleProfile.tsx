@@ -192,6 +192,24 @@ const SingleProfile = () => {
     return <div className="py-20 text-center">Profile not found</div>;
   }
 
+
+  const handleCall = () => {
+    if (!isPremium) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    const currentUserId = JSON.parse(localStorage.getItem("user") || "{}")._id;
+
+    const roomId = `call_${currentUserId}_${profile._id}`;
+
+    navigate(`/call/${roomId}`, {
+      state: {
+        targetUser: profile,
+      },
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 pt-4 pb-20">
       <div className="container mx-auto px-4">
@@ -212,9 +230,8 @@ const SingleProfile = () => {
                 <img
                   src={getProfileImage(profile.photos)}
                   alt={profile.fullName}
-                  className={`w-full h-96 object-cover ${
-                    profile.isPrivate && !isLiked ? "blur-md" : ""
-                  }`}
+                  className={`w-full h-96 object-cover ${profile.isPrivate && !isLiked ? "blur-md" : ""
+                    }`}
                 />
 
                 {profile.isPrivate && !isLiked && (
@@ -261,9 +278,8 @@ const SingleProfile = () => {
             {/* Action Buttons */}
             <Card className="glass-card p-4 space-y-2">
               <Button
-                className={`w-full gap-2 ${
-                  isLiked ? "bg-gradient-to-r from-primary to-secondary" : ""
-                }`}
+                className={`w-full gap-2 ${isLiked ? "bg-gradient-to-r from-primary to-secondary" : ""
+                  }`}
                 variant={isLiked ? "default" : "outline"}
                 onClick={handleLike}
                 disabled={liking}
@@ -284,8 +300,7 @@ const SingleProfile = () => {
               <Button
                 className="w-full gap-2"
                 variant="outline"
-                onClick={() => handlePremiumAction("call")}
-              >
+                onClick={() => handleCall()}              >
                 <Phone className="w-4 h-4" />
                 Call
               </Button>

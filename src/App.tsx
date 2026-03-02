@@ -27,6 +27,7 @@ import Support from "./pages/Support";
 import PrivacyDetails from "./pages/PrivacyDetails";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
+import CallPage from "./pages/CallPage";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,7 @@ const AppLayout = () => {
           <Route path="/support" element={<Support />} />
           <Route path="/privacy-details" element={<PrivacyDetails />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/call/:roomId" element={<CallPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
