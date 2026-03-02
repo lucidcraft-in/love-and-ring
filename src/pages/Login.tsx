@@ -85,6 +85,7 @@ const Login = () => {
       const response = await loginUserApi(email, password);
       const { user, token } = response.data;
       localStorage.setItem("token", token);
+      localStorage.setItem("userId", user._id);
       login(user);
       toast.success("Logged in successfully");
       navigate("/");
@@ -124,6 +125,7 @@ const Login = () => {
       const response = await verifyLoginOtp(phone, otp);
       const { user, token } = response.data;
       localStorage.setItem("token", token);
+      localStorage.setItem("userId", user._id);
       login(user);
       toast.success("Logged in successfully");
       navigate("/");

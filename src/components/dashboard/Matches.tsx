@@ -53,6 +53,8 @@ const Matches = () => {
   const [likedUserIds, setLikedUserIds] = useState<Set<string>>(new Set());
   const [likedByMe, setLikedByMe] = useState<MatchItem[]>([]);
   const [likedMe, setLikedMe] = useState<MatchItem[]>([]);
+  const [receivedInterests, setReceivedInterests] = useState<string[]>([]);
+  const [acceptedInterests, setAcceptedInterests] = useState<string[]>([]);
 
   const navigate = useNavigate();
 
@@ -141,6 +143,8 @@ const Matches = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      console.log("MATCHES RESPONSE:", res.data);
+
       const raw = Array.isArray(res.data?.data) ? res.data.data : [];
 
       const normalized: MatchItem[] = raw.map((item: any) => ({
@@ -169,11 +173,64 @@ const Matches = () => {
       setLoading(false);
     }
   };
+  const fetchSentInterests = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
+      const res = await Axios.get("/api/user/interests/sent", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // console.log("SENT INTEREST RESPONSE:", res.data);
+
+      const ids = res.data.map((item: any) => item.toUser?._id);
+
+      console.log("Extracted IDs:", ids);
+
+      setSentInterests(ids);
+    } catch (err) {
+      console.error("Failed to fetch sent interests", err);
+    }
+  };
+  const fetchReceivedInterests = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await Axios.get("/api/user/interests/received", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const ids = res.data.map((item: any) => item.fromUser?._id);
+
+      setReceivedInterests(ids);
+    } catch (err) {
+      console.error("Failed to fetch received interests", err);
+    }
+  };
+  const fetchAcceptedInterests = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await Axios.get("/api/user/interests/accepted/interest", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const ids = res.data.map((item: any) => {
+        return item.fromUser?._id;
+      });
+
+      setAcceptedInterests(ids);
+    } catch (err) {
+      console.error("Failed to fetch accepted interests", err);
+    }
+  };
   useEffect(() => {
     const init = async () => {
       const likedIdsArray = await fetchProfilesILiked();
       await fetchProfilesWhoLikedMe();
+      await fetchSentInterests();
+      await fetchReceivedInterests();
+      await fetchAcceptedInterests();
       await fetchMatches(new Set(likedIdsArray));
     };
 
@@ -250,28 +307,6 @@ const Matches = () => {
   ];
 
   const likedProfiles = matches.filter((m) => m.liked);
-
-  const handleSendInterest = (matchId: string, matchName: string) => {
-    if (sentInterests.includes(matchId)) return;
-
-    setSendingInterest(matchId);
-
-    // Simulate sending interest
-    setTimeout(() => {
-      setSentInterests((prev) => [...prev, matchId]);
-      setSendingInterest(null);
-      toast.success(
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-primary" />
-          <span>Interest sent to {matchName}!</span>
-        </div>,
-        {
-          description: "They will be notified about your interest.",
-          duration: 3000,
-        },
-      );
-    }, 1000);
-  };
 
   const handleLikeProfile = async (targetUserId: string) => {
     const match = matches.find((m) => m.user._id === targetUserId);
@@ -359,6 +394,45 @@ const Matches = () => {
     }
   };
 
+  const handleSendInterest = async (
+    targetUserId: string,
+    targetUserName: string,
+  ) => {
+    if (sentInterests.includes(targetUserId)) return;
+
+    setSendingInterest(targetUserId);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      await Axios.post(
+        `/api/user/interests/${targetUserId}/send`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      setSentInterests((prev) => [...prev, targetUserId]);
+
+      toast.success(`Interest sent to ${targetUserName}`);
+    } catch (err: any) {
+      console.error("Send interest error:", err);
+
+      await fetchSentInterests();
+
+      if (sentInterests.includes(targetUserId)) {
+        toast.success(`Interest sent to ${targetUserName}`);
+      } else {
+        toast.error(err.response?.data?.message || "Failed to send interest");
+      }
+    } finally {
+      setSendingInterest(null);
+    }
+  };
+
   const MatchCard = ({
     match,
     isNRI = false,
@@ -370,15 +444,20 @@ const Matches = () => {
     const isSending = sendingInterest === match.user._id;
     const isLocked = isNRI && !hasNRIPlan;
     const isLiking = likingProfile === match.user._id;
+    const hasIncomingInterest = receivedInterests.includes(match.user._id);
+    const isAccepted = acceptedInterests.includes(match.user._id);
 
     return (
-      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all">
-        <div className="flex flex-col sm:flex-row">
-          <div className="sm:w-48 w-full h-48 sm:h-auto relative overflow-hidden bg-muted rounded-t-xl sm:rounded-l-xl sm:rounded-t-none">
+      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all h-full">
+        {" "}
+        <div className="flex flex-col sm:flex-row h-full">
+          {" "}
+          <div className="sm:w-48 w-full h-48 sm:h-auto sm:self-stretch relative overflow-hidden bg-muted rounded-t-xl sm:rounded-l-xl sm:rounded-t-none">
             <OptimizedProfileImage
               src={getProfilePhoto(match.user.photos)}
               alt={match.user.fullName}
               isLocked={isLocked}
+              className="w-full h-full object-cover"
             />
 
             {/* Match Badge */}
@@ -397,8 +476,8 @@ const Matches = () => {
               </div>
             )}
           </div>
-
-          <div className="flex-1 p-6">
+          <div className="flex-1 p-6 flex flex-col justify-between">
+            {" "}
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="text-xl font-bold mb-1">
@@ -456,7 +535,6 @@ const Matches = () => {
                 </Button>
               )}
             </div>
-
             <div className="mb-4">
               <p className="text-sm font-semibold mb-2">Interests:</p>
               <div className="flex flex-wrap gap-2">
@@ -467,7 +545,6 @@ const Matches = () => {
                 ))}
               </div>
             </div>
-
             {/* Action Buttons */}
             {isLocked ? (
               <Button
@@ -486,68 +563,39 @@ const Matches = () => {
                   View Profile
                 </Button>
                 <AnimatePresence mode="wait">
-                  {isInterestSent ? (
-                    <motion.div
-                      key="sent"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="flex-1"
+                  {isAccepted ? (
+                    <Button
+                      disabled
+                      className="w-full bg-green-500 text-white cursor-default hover:bg-green-500"
                     >
-                      <Button
-                        variant="outline"
-                        className="w-full border-green-500 text-green-500 hover:bg-green-500/10"
-                        disabled
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Interest Sent
-                      </Button>
-                    </motion.div>
+                      <Check className="w-4 h-4 mr-2" />
+                      Interest Accepted
+                    </Button>
+                  ) : hasIncomingInterest ? (
+                    <Button
+                      disabled
+                      className="w-full bg-blue-500 text-white cursor-default hover:bg-blue-500"
+                    >
+                      💌 Received Interest
+                    </Button>
+                  ) : isInterestSent ? (
+                    <Button
+                      disabled
+                      className="w-full bg-green-500 text-white cursor-default hover:bg-green-500"
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      Interest Sent
+                    </Button>
                   ) : (
-                    <motion.div key="send" className="flex-1">
-                      <Button
-                        variant="outline"
-                        className="w-full relative overflow-hidden"
-                        onClick={() =>
-                          handleSendInterest(
-                            match.user._id,
-                            match.user.fullName,
-                          )
-                        }
-                        disabled={isSending}
-                      >
-                        {isSending ? (
-                          <motion.div
-                            initial={{ width: "0%" }}
-                            animate={{ width: "100%" }}
-                            transition={{ duration: 1 }}
-                            className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20"
-                          />
-                        ) : null}
-                        <span className="relative z-10 flex items-center">
-                          {isSending ? (
-                            <>
-                              <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{
-                                  duration: 1,
-                                  repeat: Infinity,
-                                  ease: "linear",
-                                }}
-                                className="mr-2"
-                              >
-                                <Sparkles className="w-4 h-4" />
-                              </motion.div>
-                              Sending...
-                            </>
-                          ) : (
-                            <>
-                              <Heart className="w-4 h-4 mr-2" />
-                              Send Interest
-                            </>
-                          )}
-                        </span>
-                      </Button>
-                    </motion.div>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() =>
+                        handleSendInterest(match.user._id, match.user.fullName)
+                      }
+                    >
+                      Send Interest
+                    </Button>
                   )}
                 </AnimatePresence>
               </div>
@@ -602,7 +650,8 @@ const Matches = () => {
 
         <TabsContent value="new" className="mt-6">
           {matches.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+              {" "}
               {matches.slice(0, 2).map((match) => (
                 <MatchCard key={match.user._id} match={match} />
               ))}

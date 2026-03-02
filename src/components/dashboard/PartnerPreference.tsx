@@ -61,7 +61,7 @@ const PartnerPreference = () => {
         });
 
         const data = response.data;
-        console.log(data, "dataaa")
+        console.log(data, "dataaa");
 
         if (!data) return;
 
@@ -128,30 +128,23 @@ const PartnerPreference = () => {
   }, []);
 
   useEffect(() => {
-    const fetchEducations = async () => {
+    const fetchHigherEducations = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) return;
 
-        if (!token) {
-          toast.error("No auth token found. Please login again.");
-          return;
-        }
-
-        const response = await Axios.get("/api/master/educations", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await Axios.get("/api/master/higherEducations", {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        // paginated response
-        setEducations(response.data.data);
+        setEducations(response.data.data || []);
       } catch (error: any) {
-        console.error(error);
+        console.error("Higher education fetch error:", error);
         toast.error("Failed to load education levels");
       }
     };
 
-    fetchEducations();
+    fetchHigherEducations();
   }, []);
 
   /* ================= TOGGLE HANDLER ================= */
@@ -294,8 +287,40 @@ const PartnerPreference = () => {
           </div>
         </Card>
 
+        {/* Interests */}
+        <Card className="glass-card p-6 ">
+          <Label className="text-lg font-semibold mb-4 block">Interests</Label>
+          <div className="flex flex-wrap gap-2">
+            {interests.map((interest) => (
+              <Badge
+                key={interest}
+                variant={
+                  selectedInterests.includes(interest) ? "default" : "outline"
+                }
+                className={`cursor-pointer py-2 px-4 ${
+                  selectedInterests.includes(interest)
+                    ? "bg-gradient-to-r from-primary to-secondary"
+                    : ""
+                }`}
+                onClick={() =>
+                  toggleSelection(
+                    interest,
+                    selectedInterests,
+                    setSelectedInterests,
+                  )
+                }
+              >
+                {interest}
+                {selectedInterests.includes(interest) && (
+                  <X className="w-3 h-3 ml-1" />
+                )}
+              </Badge>
+            ))}
+          </div>
+        </Card>
+
         {/* Education */}
-        <Card className="glass-card p-6">
+        <Card className="glass-card p-6 lg:col-span-2">
           <Label className="text-lg font-semibold mb-4 block">
             Education Level
           </Label>
@@ -321,38 +346,6 @@ const PartnerPreference = () => {
               >
                 {edu.name}
                 {selectedEducation.includes(edu._id) && (
-                  <X className="w-3 h-3 ml-1" />
-                )}
-              </Badge>
-            ))}
-          </div>
-        </Card>
-
-        {/* Interests */}
-        <Card className="glass-card p-6 lg:col-span-2">
-          <Label className="text-lg font-semibold mb-4 block">Interests</Label>
-          <div className="flex flex-wrap gap-2">
-            {interests.map((interest) => (
-              <Badge
-                key={interest}
-                variant={
-                  selectedInterests.includes(interest) ? "default" : "outline"
-                }
-                className={`cursor-pointer py-2 px-4 ${
-                  selectedInterests.includes(interest)
-                    ? "bg-gradient-to-r from-primary to-secondary"
-                    : ""
-                }`}
-                onClick={() =>
-                  toggleSelection(
-                    interest,
-                    selectedInterests,
-                    setSelectedInterests,
-                  )
-                }
-              >
-                {interest}
-                {selectedInterests.includes(interest) && (
                   <X className="w-3 h-3 ml-1" />
                 )}
               </Badge>

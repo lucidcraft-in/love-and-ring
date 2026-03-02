@@ -47,7 +47,10 @@ const Interests = () => {
   const [sent, setSent] = useState<InterestItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [accepted, setAccepted] = useState<InterestItem[]>([]);
   const navigate = useNavigate();
+  const userId = localStorage.getItem("userId");
+  console.log("userId", userId);
 
   const fetchInterests = async () => {
     setLoading(true);
@@ -55,11 +58,12 @@ const Interests = () => {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [receivedRes, sentRes] = await Promise.all([
+      const [receivedRes, sentRes, acceptedRes] = await Promise.all([
         Axios.get("/api/user/interests/received", { headers }),
         Axios.get("/api/user/interests/sent", { headers }),
+        Axios.get("/api/user/interests/accepted/interest", { headers }), // ✅ ADD THIS
       ]);
-
+      console.log("res", receivedRes.data, sentRes.data, acceptedRes.data);
       const mapInterest = (item: any, userKey: string): InterestItem => ({
         _id: item._id,
         user: {
@@ -81,8 +85,42 @@ const Interests = () => {
         status: item.status || "pending",
       });
 
-      setReceived((receivedRes.data || []).map((i: any) => mapInterest(i, "fromUser")));
+      setReceived(
+        (receivedRes.data || [])
+          .map((i: any) => mapInterest(i, "fromUser"))
+          .filter((i) => i.status?.toLowerCase() === "pending"),
+      );
+
       setSent((sentRes.data || []).map((i: any) => mapInterest(i, "toUser")));
+      setAccepted(
+        (acceptedRes.data || []).map((item: any) => {
+          const otherUser =
+            String(item.fromUser._id) === String(userId)
+              ? item.toUser
+              : item.fromUser;
+
+          return {
+            _id: item._id,
+            user: {
+              _id: otherUser._id,
+              fullName: otherUser.fullName,
+              dateOfBirth: otherUser.dateOfBirth,
+              city: otherUser.city,
+              state: otherUser.state,
+              interests: otherUser.interests || [],
+              education: otherUser.highestEducation
+                ? { name: otherUser.highestEducation.name }
+                : undefined,
+              profession: otherUser.profession
+                ? { name: otherUser.profession.name }
+                : undefined,
+              photos: otherUser.photos || [],
+            },
+            matchScore: item.matchPercentage ?? 0,
+            status: item.status || "accepted",
+          };
+        }),
+      );
     } catch (err) {
       console.error("Failed to fetch interests", err);
     } finally {
@@ -112,14 +150,25 @@ const Interests = () => {
     setActionLoading(interestId);
     try {
       const token = localStorage.getItem("token");
-      await Axios.put(
+
+      await Axios.patch(
         `/api/user/interests/${interestId}/accept`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
       );
-      setReceived((prev) => prev.filter((i) => i._id !== interestId));
+
+      setReceived((prev) => {
+        const acceptedItem = prev.find((i) => i._id === interestId);
+        if (acceptedItem) {
+          setAccepted((a) => [...a, { ...acceptedItem, status: "accepted" }]);
+        }
+        return prev.filter((i) => i._id !== interestId);
+      });
       toast.success(`Accepted interest from ${name}! 🎉`);
     } catch (err: any) {
+      console.error(err.response?.data);
       toast.error(err.response?.data?.message || "Failed to accept interest");
     } finally {
       setActionLoading(null);
@@ -130,14 +179,20 @@ const Interests = () => {
     setActionLoading(interestId);
     try {
       const token = localStorage.getItem("token");
-      await Axios.put(
+
+      await Axios.patch(
         `/api/user/interests/${interestId}/reject`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
       );
+
       setReceived((prev) => prev.filter((i) => i._id !== interestId));
+
       toast.success(`Rejected interest from ${name}`);
     } catch (err: any) {
+      console.error(err.response?.data);
       toast.error(err.response?.data?.message || "Failed to reject interest");
     } finally {
       setActionLoading(null);
@@ -148,12 +203,20 @@ const Interests = () => {
     setActionLoading(interestId);
     try {
       const token = localStorage.getItem("token");
-      await Axios.delete(`/api/user/interests/${interestId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+
+      await Axios.post(
+        `/api/user/interests/${interestId}/cancel`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
       setSent((prev) => prev.filter((i) => i._id !== interestId));
+
       toast.success(`Cancelled interest to ${name}`);
     } catch (err: any) {
+      console.error(err.response?.data);
       toast.error(err.response?.data?.message || "Failed to cancel interest");
     } finally {
       setActionLoading(null);
@@ -165,7 +228,7 @@ const Interests = () => {
     type,
   }: {
     item: InterestItem;
-    type: "received" | "sent";
+    type: "received" | "sent" | "accepted";
   }) => {
     const isActioning = actionLoading === item._id;
 
@@ -247,7 +310,11 @@ const Interests = () => {
                     {isActioning ? (
                       <motion.div
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
                       >
                         <Sparkles className="w-4 h-4" />
                       </motion.div>
@@ -271,25 +338,50 @@ const Interests = () => {
               )}
 
               {type === "sent" && (
-                <Button
-                  variant="outline"
-                  className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
-                  onClick={() => handleCancel(item._id, item.user.fullName)}
-                  disabled={isActioning}
-                >
-                  {isActioning ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                <>
+                  {item.status?.toLowerCase() === "accepted" ? (
+                    <Button
+                      disabled
+                      className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500"
                     >
-                      <Sparkles className="w-4 h-4" />
-                    </motion.div>
+                      <Check className="w-4 h-4 mr-1" />
+                      Accepted
+                    </Button>
                   ) : (
-                    <>
-                      <X className="w-4 h-4 mr-1" />
-                      Cancel Interest
-                    </>
+                    <Button
+                      variant="outline"
+                      className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
+                      onClick={() => handleCancel(item._id, item.user.fullName)}
+                      disabled={isActioning}
+                    >
+                      {isActioning ? (
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{
+                            duration: 1,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
+                        >
+                          <Sparkles className="w-4 h-4" />
+                        </motion.div>
+                      ) : (
+                        <>
+                          <X className="w-4 h-4 mr-1" />
+                          Cancel Interest
+                        </>
+                      )}
+                    </Button>
                   )}
+                </>
+              )}
+              {type === "accepted" && (
+                <Button
+                  disabled
+                  className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500"
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  Accepted
                 </Button>
               )}
             </div>
@@ -333,7 +425,8 @@ const Interests = () => {
         <div className="overflow-x-auto scrollbar-hide lg:overflow-visible px-1 -mx-1">
           <TabsList className="w-max lg:w-auto flex-nowrap">
             <TabsTrigger value="received">Received Interests</TabsTrigger>
-            <TabsTrigger value="sent">Sent Interests</TabsTrigger>
+            <TabsTrigger value="accepted">Accepted Interests</TabsTrigger>
+            <TabsTrigger value="sent">Requested Interests</TabsTrigger>
           </TabsList>
         </div>
 
@@ -358,6 +451,17 @@ const Interests = () => {
             </div>
           ) : (
             <EmptyState message="No interests sent yet." />
+          )}
+        </TabsContent>
+        <TabsContent value="accepted" className="mt-6">
+          {accepted.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {accepted.map((item) => (
+                <InterestCard key={item._id} item={item} type="accepted" />
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="No accepted interests yet." />
           )}
         </TabsContent>
       </Tabs>

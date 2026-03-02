@@ -138,7 +138,7 @@ const ProfileSidebar = ({
               {user.initials}
             </AvatarFallback>
           </Avatar>
-          <h2 className="mt-4 text-xl font-semibold text-foreground">
+          <h2 className="mt-1 text-xl font-semibold text-foreground">
             {user.name}
           </h2>
           <p className="text-xs text-muted-foreground mt-1 max-w-[220px] whitespace-normal break-words relative">
@@ -177,7 +177,7 @@ const ProfileSidebar = ({
               );
             })}
           </ul>
-          <div className="pt-3">
+          <div className="pt-1">
             <div className="flex items-center gap-3 p-2 rounded-xl bg-muted/50 hover:bg-muted transition">
               <Avatar className="h-10 w-10">
                 <AvatarImage
