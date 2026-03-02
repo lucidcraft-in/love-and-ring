@@ -11,10 +11,9 @@ import {
   Check,
   X,
   Sparkles,
-  Send,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import OptimizedProfileImage from "./OptimizedProfileImage";
 import Axios from "@/axios/axios";
@@ -173,12 +172,15 @@ const Interests = () => {
     return (
       <Card className="glass-card overflow-hidden hover:shadow-lg transition-all">
         <div className="flex flex-col sm:flex-row">
+          {/* Left: Profile Image — exact same as MatchCard */}
           <div className="sm:w-48 w-full h-48 sm:h-auto relative overflow-hidden bg-muted rounded-t-xl sm:rounded-l-xl sm:rounded-t-none">
             <OptimizedProfileImage
               src={getProfilePhoto(item.user.photos)}
               alt={item.user.fullName}
               isLocked={false}
             />
+
+            {/* Match Badge */}
             {item.matchScore > 0 && (
               <div className="absolute top-2 right-2 z-10">
                 <Badge className="bg-gradient-to-r from-primary to-secondary">
@@ -188,6 +190,7 @@ const Interests = () => {
             )}
           </div>
 
+          {/* Right: Content — exact same as MatchCard */}
           <div className="flex-1 p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -211,6 +214,7 @@ const Interests = () => {
               </div>
             </div>
 
+            {/* Interests tags */}
             {item.user.interests.length > 0 && (
               <div className="mb-4">
                 <p className="text-sm font-semibold mb-2">Interests:</p>
@@ -224,7 +228,8 @@ const Interests = () => {
               </div>
             )}
 
-            <div className="flex gap-2 flex-wrap">
+            {/* Action Buttons — same flex layout as MatchCard */}
+            <div className="flex gap-2">
               <Button
                 className="flex-1 bg-gradient-to-r from-primary to-secondary"
                 onClick={() => navigate(`/profile/${item.user._id}`)}
