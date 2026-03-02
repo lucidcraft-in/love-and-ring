@@ -6,6 +6,7 @@ import EditProfile from "@/components/dashboard/EditProfile";
 import MyPhotos from "@/components/dashboard/MyPhotos";
 import PartnerPreference from "@/components/dashboard/PartnerPreference";
 import Matches from "@/components/dashboard/Matches";
+import Interests from "@/components/dashboard/Interests";
 import BrowseProfiles from "@/components/dashboard/BrowseProfiles";
 import Footer from "@/components/Footer";
 
@@ -52,6 +53,8 @@ const UserDashboard = () => {
         return <PartnerPreference />;
       case "matches":
         return <Matches />;
+      case "interests":
+        return <Interests />;
       case "browse":
         return <BrowseProfiles />;
       default:

@@ -39,9 +39,10 @@ interface User {
 const navigationItems = [
   { id: "summary", label: "Summary", icon: LayoutDashboard },
   { id: "matches", label: "Matches", icon: Users },
+  { id: "interests", label: "Interests", icon: Heart },
   { id: "browse", label: "Browse Profiles", icon: Search },
   { id: "my-photos", label: "My Photos", icon: ImageIcon },
-  { id: "partner-preference", label: "Partner Preference", icon: Heart },
+  { id: "partner-preference", label: "Partner Preference", icon: Search },
   { id: "edit-profile", label: "Edit Profile", icon: UserPen },
 ];
 
