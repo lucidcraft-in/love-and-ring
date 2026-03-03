@@ -38,7 +38,7 @@ const AppLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [incomingCall, setIncomingCall] = useState<any>(null);
-  
+
   // Hero routes have transparent navbar overlay - no padding needed
   const heroRoutes = ["/", "/login", "/register", "/client-terms", "/client-registration", "/about", "/success-stories", "/pricing", "/contact", "/forgot-password", "/privacy-details", "/terms"];
   const isHeroRoute = heroRoutes.includes(location.pathname);
@@ -49,35 +49,35 @@ const AppLayout = () => {
 
   // Dashboard routes have their own footer - hide global footer
   const dashboardRoutes = ["/dashboard", "/dashboard/contacts-viewed", "/dashboard/chats"];
-  const isDashboardRoute = dashboardRoutes.some(route => 
+  const isDashboardRoute = dashboardRoutes.some(route =>
     location.pathname === route || location.pathname.startsWith(route + "/")
   );
 
   // socket.io
 
   useEffect(() => {
-  socket.on("connect", () => {
-    console.log("Socket connected:", socket.id);
-  });
-}, []);
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+    });
+  }, []);
 
-useEffect(() => {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  if (user?._id) {
-    socket.emit("register", user._id);
-  }
+    if (user?._id) {
+      socket.emit("register", user._id);
+    }
 
-  socket.on("incoming-call", ({ from, roomId }) => {
-    console.log("Incoming call:", from, roomId);
+    socket.on("incoming-call", ({ from, roomId }) => {
+      console.log("Incoming call:", from, roomId);
 
-    setIncomingCall({ from, roomId });
-  });
+      setIncomingCall({ from, roomId });
+    });
 
-  return () => {
-    socket.off("incoming-call");
-  };
-}, []);
+    return () => {
+      socket.off("incoming-call");
+    };
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -115,37 +115,37 @@ useEffect(() => {
       {isPublicRoute && <WhatsAppButton />}
 
       {incomingCall && (
-  <div className="fixed bottom-5 right-5 bg-white shadow-lg rounded-xl p-4 w-72 z-50 border">
-    <p className="font-semibold mb-2">Incoming Call</p>
-    <p className="text-sm text-muted-foreground mb-3">
-      Someone is calling you...
-    </p>
+        <div className="fixed bottom-5 right-5 bg-white shadow-lg rounded-xl p-4 w-72 z-50 border">
+          <p className="font-semibold mb-2">Incoming Call</p>
+          <p className="text-sm text-muted-foreground mb-3">
+            Someone is calling you...
+          </p>
 
-    <div className="flex gap-2">
-      <button
-        className="flex-1 bg-green-500 text-white py-1 rounded"
-        onClick={() => {
-          navigate(`/call/${incomingCall.roomId}`);
-          setIncomingCall(null);
-        }}
-      >
-        Accept
-      </button>
+          <div className="flex gap-2">
+            <button
+              className="flex-1 bg-green-500 text-white py-1 rounded"
+              onClick={() => {
+                navigate(`/call/${incomingCall.roomId}`);
+                setIncomingCall(null);
+              }}
+            >
+              Accept
+            </button>
 
-      <button
-        className="flex-1 bg-red-500 text-white py-1 rounded"
-        onClick={() => {
-          setIncomingCall(null);
-        }}
-      >
-        Reject
-      </button>
+            <button
+              className="flex-1 bg-red-500 text-white py-1 rounded"
+              onClick={() => {
+                setIncomingCall(null);
+              }}
+            >
+              Reject
+            </button>
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-)}
-    </div>
 
-    
+
   );
 };
 
