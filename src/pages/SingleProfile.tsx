@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/dialog";
 import { FaWhatsapp } from "react-icons/fa";
 import Axios from "@/axios/axios";
+import socket from "@/socket";
+
 
 const SingleProfile = () => {
   const { id } = useParams();
@@ -35,6 +37,7 @@ const SingleProfile = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [liking, setLiking] = useState(false);
   const [profile, setProfile] = useState<any>(null);
+  console.log(profile, "profile details in the single user")
   const [loading, setLoading] = useState(false);
   const isPremium = false; // Mock user membership
 
@@ -194,20 +197,22 @@ const SingleProfile = () => {
 
 
   const handleCall = () => {
-    if (!isPremium) {
+    if (!profile.membership.allowAudioCall) {
       setShowUpgradeModal(true);
       return;
     }
 
-    const currentUserId = JSON.parse(localStorage.getItem("user") || "{}")._id;
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
-    const roomId = `call_${currentUserId}_${profile._id}`;
+    const ids = [currentUser._id, profile._id].sort();
+    const roomId = `call_${ids[0]}_${ids[1]}`;
 
-    navigate(`/call/${roomId}`, {
-      state: {
-        targetUser: profile,
-      },
+    socket.emit("call-user", {
+      to: profile._id,
+      from: currentUser._id,
+      roomId,
     });
+    navigate(`/call/${roomId}`);
   };
 
   return (
@@ -300,7 +305,7 @@ const SingleProfile = () => {
               <Button
                 className="w-full gap-2"
                 variant="outline"
-                onClick={() => handleCall()}              >
+                onClick={() => handleCall()}>
                 <Phone className="w-4 h-4" />
                 Call
               </Button>
