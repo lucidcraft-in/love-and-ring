@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/dialog";
 import { FaWhatsapp } from "react-icons/fa";
 import Axios from "@/axios/axios";
+import socket from "@/socket";
+
 
 const SingleProfile = () => {
   const { id } = useParams();
@@ -35,6 +37,7 @@ const SingleProfile = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [liking, setLiking] = useState(false);
   const [profile, setProfile] = useState<any>(null);
+  console.log(profile, "profile details in the single user")
   const [loading, setLoading] = useState(false);
   const isPremium = false; // Mock user membership
 
@@ -192,6 +195,26 @@ const SingleProfile = () => {
     return <div className="py-20 text-center">Profile not found</div>;
   }
 
+
+  const handleCall = () => {
+    if (!profile.membership.allowAudioCall) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+    const ids = [currentUser._id, profile._id].sort();
+    const roomId = `call_${ids[0]}_${ids[1]}`;
+
+    socket.emit("call-user", {
+      to: profile._id,
+      from: currentUser._id,
+      roomId,
+    });
+    navigate(`/call/${roomId}`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 pt-4 pb-20">
       <div className="container mx-auto px-4">
@@ -212,9 +235,8 @@ const SingleProfile = () => {
                 <img
                   src={getProfileImage(profile.photos)}
                   alt={profile.fullName}
-                  className={`w-full h-96 object-cover ${
-                    profile.isPrivate && !isLiked ? "blur-md" : ""
-                  }`}
+                  className={`w-full h-96 object-cover ${profile.isPrivate && !isLiked ? "blur-md" : ""
+                    }`}
                 />
 
                 {profile.isPrivate && !isLiked && (
@@ -261,9 +283,8 @@ const SingleProfile = () => {
             {/* Action Buttons */}
             <Card className="glass-card p-4 space-y-2">
               <Button
-                className={`w-full gap-2 ${
-                  isLiked ? "bg-gradient-to-r from-primary to-secondary" : ""
-                }`}
+                className={`w-full gap-2 ${isLiked ? "bg-gradient-to-r from-primary to-secondary" : ""
+                  }`}
                 variant={isLiked ? "default" : "outline"}
                 onClick={handleLike}
                 disabled={liking}
@@ -284,8 +305,7 @@ const SingleProfile = () => {
               <Button
                 className="w-full gap-2"
                 variant="outline"
-                onClick={() => handlePremiumAction("call")}
-              >
+                onClick={() => handleCall()}>
                 <Phone className="w-4 h-4" />
                 Call
               </Button>
