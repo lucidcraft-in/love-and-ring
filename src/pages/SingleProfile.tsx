@@ -37,45 +37,8 @@ const SingleProfile = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [liking, setLiking] = useState(false);
   const [profile, setProfile] = useState<any>(null);
-  console.log(profile, "profile details in the single user")
   const [loading, setLoading] = useState(false);
-  const isPremium = false; // Mock user membership
-
-  // Mock profile data
-  // const profile = {
-  //   id: 1,
-  //   name: "Michael Brown",
-  //   age: 30,
-  //   gender: "Male",
-  //   city: "San Francisco, CA",
-  //   religion: "Christian",
-  //   caste: "N/A",
-  //   education: "MBA",
-  //   profession: "Product Manager",
-  //   company: "Tech Corp",
-  //   height: "5'10\"",
-  //   weight: "75 kg",
-  //   bodyType: "Athletic",
-  //   maritalStatus: "Single",
-  //   physicallyDisabled: false,
-  //   livesWithFamily: true,
-  //   familyLocation: "San Francisco",
-  //   image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800",
-  //   images: [
-  //     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800",
-  //     "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800",
-  //     "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800",
-  //   ],
-  //   isPrivate: false,
-  //   bio: "Looking for a life partner who shares my values and dreams. I believe in maintaining a balance between career and personal life.",
-  //   interests: ["Travel", "Reading", "Photography", "Hiking", "Cooking"],
-  //   personalityTraits: ["Honest", "Caring", "Ambitious", "Family-oriented"],
-  //   diet: "Non-Vegetarian",
-  //   income: "₹10L - ₹20L per year",
-  //   nationality: "American",
-  //   language: ["English", "Spanish"],
-  //   dateOfBirth: "1994-05-15",
-  // };
+  const isPremium = false;
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -197,12 +160,12 @@ const SingleProfile = () => {
 
 
   const handleCall = () => {
-    if (!profile.membership.allowAudioCall) {
+
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!currentUser?.membership?.allowCall) {
       setShowUpgradeModal(true);
       return;
     }
-
-    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
     const ids = [currentUser._id, profile._id].sort();
     const roomId = `call_${ids[0]}_${ids[1]}`;
@@ -214,6 +177,21 @@ const SingleProfile = () => {
     });
     navigate(`/call/${roomId}`);
   };
+
+  const handleChat = () =>{
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+    if(!currentUser?.membership?.allowChat){
+      setShowUpgradeModal(true)
+      return;
+    }
+
+  const ids = [currentUser._id, profile._id].sort();
+  const roomId = `chat_${ids[0]}_${ids[1]}`;
+
+  navigate(`/dashboard/chats?room=${roomId}&user=${profile._id}`);
+
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 pt-4 pb-20">
@@ -322,7 +300,7 @@ const SingleProfile = () => {
               <Button
                 className="w-full gap-2"
                 variant="outline"
-                onClick={() => handlePremiumAction("chat")}
+                onClick={() => handleChat()}
               >
                 <MessageCircle className="w-4 h-4" />
                 Chat
