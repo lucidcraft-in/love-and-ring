@@ -25,6 +25,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import socket from "@/socket";
 import { toast } from "sonner";
 import Axios from "@/axios/axios";
+import { Toaster } from "@/components/ui/toaster";
 
 interface Message {
   id: string;
@@ -47,10 +48,10 @@ const ChatsPage = () => {
   const otherUserId = searchParams.get("user");
 
   const [chatUser, setChatUser] = useState<ChatUser | null>(null);
-  console.log("chat user data in the chatpage", chatUser)
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [showVideoCall, setShowVideoCall] = useState(false);
+  const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -182,42 +183,98 @@ const ChatsPage = () => {
 
   }, []);
 
+  const deleteSelectedMessages = async () => {
+
+    if (selectedMessages.length === 0) return;
+
+    try {
+
+      await Axios.delete("/api/chat/delete", {
+        data: {
+          messageIds: selectedMessages
+        }
+      });
+
+      setMessages(prev =>
+        prev.filter(msg => !selectedMessages.includes(msg.id))
+      );
+
+      setSelectedMessages([]);
+
+      toast.success("Messages deleted");
+
+    } catch {
+      toast.error("Failed to delete messages");
+    }
+
+  };
+
+  const toggleSelectMessage = (id: string) => {
+
+    setSelectedMessages(prev =>
+      prev.includes(id)
+        ? prev.filter(msgId => msgId !== id)
+        : [...prev, id]
+    );
+
+  };
+
   return (
     <div className="min-h-screen bg-background pt-16">
-
       <div className="h-[calc(100vh-4rem)] flex flex-col">
-
         {/* HEADER */}
-
         <div className="p-4 border-b flex items-center justify-between">
+          {selectedMessages.length > 0 ? (
+            <>
+              <span className="font-semibold">
+                {selectedMessages.length} selected
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="destructive"
+                  onClick={deleteSelectedMessages}
+                >
+                  Delete
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setSelectedMessages([])}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </>
 
-          <div className="flex items-center gap-3">
+          ) : (
+            <>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate(-1)}
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+                <Avatar>
+                  <AvatarImage src={chatUser?.avatar} />
+                  <AvatarFallback>
+                    {chatUser?.fullName?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
 
-            <Avatar>
-              <AvatarImage src={chatUser?.avatar} />
-              <AvatarFallback>
-                {chatUser?.fullName?.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
+                <div>
+                  <h3 className="font-semibold">
+                    {chatUser?.fullName}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Online
+                  </p>
+                </div>
 
-            <div>
-              <h3 className="font-semibold">
-                {chatUser?.fullName}
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Online
-              </p>
-            </div>
-
-          </div>
+              </div>
+            </>
+          )}
 
           {/* <div className="flex items-center gap-2">
 
@@ -244,93 +301,84 @@ const ChatsPage = () => {
         {/* MESSAGE AREA */}
 
         <ScrollArea className="flex-1 p-4">
-
           <div className="space-y-4">
-
-            {messages.map((msg) => (
-
-              <div
-                key={msg.id}
-                className={`flex ${msg.sender === "me"
-                    ? "justify-end"
-                    : "justify-start"
-                  }`}
-              >
+            {messages.map((msg) => {
+              const isSelected = selectedMessages.includes(msg.id);
+              return (
 
                 <div
-                  className={`max-w-[70%] rounded-lg p-3 ${msg.sender === "me"
-                      ? "bg-primary text-white"
-                      : "bg-muted"
+                  key={msg.id}
+                  onClick={() => toggleSelectMessage(msg.id)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    toggleSelectMessage(msg.id);
+                  }}
+                  className={`flex ${msg.sender === "me"
+                      ? "justify-end"
+                      : "justify-start"
                     }`}
                 >
-
-                  <p className="text-sm">{msg.text}</p>
-
-                  <div className="flex items-center justify-end gap-1 mt-1 text-xs opacity-70">
-
-                    <span>{msg.time}</span>
-
-                    {msg.sender === "me" && (
-                      <CheckCheck className="h-3 w-3 text-blue-400" />
+                  <div
+                    className={`relative max-w-[70%] rounded-lg p-3 ${isSelected
+                        ? "bg-red-400 text-white"
+                        : msg.sender === "me"
+                          ? "bg-primary text-white"
+                          : "bg-muted"
+                      }`}
+                  >
+                    {/* SELECT INDICATOR */}
+                    {isSelected && (
+                      <div className="absolute -left-6 top-2 text-red-500">
+                        ✓
+                      </div>
                     )}
-
+                    <p className="text-sm">{msg.text}</p>
+                    <div className="flex items-center justify-end gap-1 mt-1 text-xs opacity-70">
+                      <span>{msg.time}</span>
+                      {msg.sender === "me" && (
+                        <CheckCheck className="h-3 w-3 text-blue-400" />
+                      )}
+                    </div>
                   </div>
-
                 </div>
-
-              </div>
-
-            ))}
-
+              );
+            })}
             <div ref={messagesEndRef} />
-
           </div>
-
         </ScrollArea>
 
         {/* INPUT */}
-
         <div className="p-4 border-t flex items-center gap-2">
-
           <Button variant="ghost" size="icon">
             <Smile className="h-5 w-5" />
           </Button>
-
           <Button variant="ghost" size="icon">
             <Paperclip className="h-5 w-5" />
           </Button>
-
           <Input
             placeholder="Type message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={handleKeyPress}
           />
-
           <Button
             size="icon"
             onClick={handleSendMessage}
           >
             <Send className="h-5 w-5" />
           </Button>
-
         </div>
-
       </div>
 
       {/* VIDEO CALL */}
 
       <Dialog open={showVideoCall} onOpenChange={setShowVideoCall}>
         <DialogContent className="max-w-4xl h-[80vh] p-0">
-
           <div className="w-full h-full bg-black flex flex-col">
-
             <div className="flex-1 flex items-center justify-center text-white text-xl">
               Video Call with {chatUser?.fullName}
             </div>
-
             <div className="flex justify-center gap-6 p-6">
-
               <Button
                 variant="ghost"
                 size="icon"
@@ -354,14 +402,10 @@ const ChatsPage = () => {
               >
                 <PhoneOff />
               </Button>
-
             </div>
-
           </div>
-
         </DialogContent>
       </Dialog>
-
     </div>
   );
 };
