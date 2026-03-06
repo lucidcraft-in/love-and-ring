@@ -17,6 +17,7 @@ import {
   Utensils,
   Activity,
   Music,
+  Beaker,
 } from "lucide-react";
 import {
   Dialog,
@@ -38,6 +39,8 @@ const SingleProfile = () => {
   const [liking, setLiking] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [isMatch, setIsMatch] = useState<Boolean>(false);
+  console.log("mached user", isMatch)
   const isPremium = false;
 
   useEffect(() => {
@@ -58,7 +61,6 @@ const SingleProfile = () => {
         });
 
         setProfile(res.data);
-        console.log(res.data, "res");
       } catch (err: any) {
         console.error("Failed to fetch profile", err?.response || err);
       } finally {
@@ -68,6 +70,23 @@ const SingleProfile = () => {
 
     if (id) fetchProfile();
   }, [id]);
+
+  useEffect(()=>{
+    const checkMatch = async() =>{
+      try {
+        const token = localStorage.getItem("token")
+        const res = await Axios.get(`/api/user/matches/isMatch/${id}`,{
+          headers: {Authorization: `Bearer ${token}` },
+        })
+        console.log(res, "data of the res match")
+
+        setIsMatch(res.data.matched)
+      } catch (error) {
+        console.error("Match check failed", error);
+      }
+    }
+    if (id) checkMatch();
+  },[id])
 
   useEffect(() => {
     const checkIfLiked = async () => {
@@ -160,6 +179,9 @@ const SingleProfile = () => {
 
 
   const handleCall = () => {
+    if(!isMatch){
+      return setShowUpgradeModal(true)
+    }
 
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
     if (!currentUser?.membership?.allowCall) {
@@ -179,6 +201,9 @@ const SingleProfile = () => {
   };
 
   const handleChat = () =>{
+    if(!isMatch){
+      return setShowUpgradeModal(true)
+    }
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
     if(!currentUser?.membership?.allowChat){
