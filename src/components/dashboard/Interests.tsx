@@ -48,6 +48,7 @@ const Interests = () => {
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [accepted, setAccepted] = useState<InterestItem[]>([]);
+  const [viewLoading, setViewLoading] = useState<string | null>(null);
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
   console.log("userId", userId);
@@ -175,6 +176,24 @@ const Interests = () => {
     }
   };
 
+  const handleViewProfile = async (targetUserId: string) => {
+  try {
+    setViewLoading(targetUserId);
+
+    const token = localStorage.getItem("token");
+
+    await Axios.get(`/api/membership/view-profile/${targetUserId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    navigate(`/profile/${targetUserId}`);
+  } catch (err: any) {
+    toast.error(err.response?.data?.message || "Limit reached");
+  } finally {
+    setViewLoading(null);
+  }
+};
+
   const handleReject = async (interestId: string, name: string) => {
     setActionLoading(interestId);
     try {
@@ -295,7 +314,7 @@ const Interests = () => {
             <div className="flex gap-2">
               <Button
                 className="flex-1 bg-gradient-to-r from-primary to-secondary"
-                onClick={() => navigate(`/profile/${item.user._id}`)}
+                onClick={() => handleViewProfile(item.user._id)}
               >
                 View Profile
               </Button>
