@@ -177,22 +177,22 @@ const Interests = () => {
   };
 
   const handleViewProfile = async (targetUserId: string) => {
-  try {
-    setViewLoading(targetUserId);
+    try {
+      setViewLoading(targetUserId);
 
-    const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
-    await Axios.get(`/api/membership/view-profile/${targetUserId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      await Axios.get(`/api/membership/view-profile/${targetUserId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    navigate(`/profile/${targetUserId}`);
-  } catch (err: any) {
-    toast.error(err.response?.data?.message || "Limit reached");
-  } finally {
-    setViewLoading(null);
-  }
-};
+      navigate(`/profile/${targetUserId}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Limit reached");
+    } finally {
+      setViewLoading(null);
+    }
+  };
 
   const handleReject = async (interestId: string, name: string) => {
     setActionLoading(interestId);
