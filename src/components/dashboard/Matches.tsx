@@ -487,11 +487,10 @@ const Matches = () => {
     const photoSrc = getProfilePhoto(match.user.photos);
 
     return (
-      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all h-full">
-        {" "}
-        <div className="flex flex-col sm:flex-row h-full">
-          {" "}
-          <div className="sm:w-48 w-full h-48 sm:h-auto sm:self-stretch relative overflow-hidden bg-muted rounded-t-xl sm:rounded-l-xl sm:rounded-t-none">
+      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all h-[240px] rounded-2xl">
+        <div className="grid grid-cols-[160px_1fr] h-full">
+          {/* Image Section - fixed 160px */}
+          <div className="relative overflow-hidden bg-muted rounded-l-2xl">
             <OptimizedProfileImage
               src={photoSrc}
               alt={match.user.fullName}
@@ -500,91 +499,61 @@ const Matches = () => {
                 isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""
               }`}
             />
-
-            {/* Match Badge */}
-            <div className="absolute top-2 right-2 z-10">
-              <Badge className="bg-gradient-to-r from-primary to-secondary">
-                {match.matchScore}% Match
-              </Badge>
-            </div>
-
-            {/* Lock overlay */}
+            {match.matchScore > 0 && (
+              <div className="absolute top-2 right-2 z-10">
+                <Badge className="bg-gradient-to-r from-primary to-secondary text-[10px] px-1.5 py-0.5">
+                  {match.matchScore}%
+                </Badge>
+              </div>
+            )}
             {isLocked && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
-                <div className="bg-white/90 rounded-full p-4 shadow-lg">
-                  <Lock className="w-8 h-8 text-primary" />
+                <div className="bg-white/90 rounded-full p-3 shadow-lg">
+                  <Lock className="w-6 h-6 text-primary" />
                 </div>
               </div>
             )}
           </div>
-          <div className="flex-1 p-6 flex flex-col justify-between">
-            {" "}
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold mb-1">
+
+          {/* Content Section */}
+          <div className="p-4 flex flex-col justify-between overflow-hidden">
+            <div>
+              <div className="flex items-start justify-between">
+                <h3 className="text-sm font-bold truncate">
                   {match.user.fullName}, {calculateAge(match.user.dateOfBirth)}
                 </h3>
-                <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    {match.user.city}, {match.user.state}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <GraduationCap className="w-4 h-4" />
-                    {match.user.education?.name || "—"}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Briefcase className="w-4 h-4" />
-                    {match.user.profession?.name || "—"}
-                  </span>
+                {!isLocked && (
+                  <Button
+                    size="icon"
+                    variant={match.liked ? "default" : "outline"}
+                    className={`h-7 w-7 shrink-0 ${match.liked ? "bg-gradient-to-r from-primary to-secondary" : ""}`}
+                    disabled={isLiking}
+                    onClick={() => match.liked ? handleUnlikeProfile(match.user._id) : handleLikeProfile(match.user._id)}
+                  >
+                    {isLiking ? (
+                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+                        <Heart className="w-3 h-3" />
+                      </motion.div>
+                    ) : (
+                      <Heart className={`w-3 h-3 ${match.liked ? "fill-white" : ""}`} />
+                    )}
+                  </Button>
+                )}
+              </div>
+              <div className="flex flex-col gap-0.5 text-xs text-muted-foreground mt-1">
+                <span className="flex items-center gap-1 truncate"><MapPin className="w-3 h-3 shrink-0" />{match.user.city}, {match.user.state}</span>
+                <span className="flex items-center gap-1 truncate"><GraduationCap className="w-3 h-3 shrink-0" />{match.user.education?.name || "—"}</span>
+                <span className="flex items-center gap-1 truncate"><Briefcase className="w-3 h-3 shrink-0" />{match.user.profession?.name || "—"}</span>
+              </div>
+              {match.user.interests.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5 max-h-[36px] overflow-hidden">
+                  {match.user.interests.slice(0, 3).map((interest, idx) => (
+                    <Badge key={`${interest}-${idx}`} variant="secondary" className="text-[10px] px-1.5 py-0">
+                      {interest}
+                    </Badge>
+                  ))}
                 </div>
-              </div>
-              {!isLocked && (
-                <Button
-                  size="icon"
-                  variant={match.liked ? "default" : "outline"}
-                  className={
-                    match.liked
-                      ? "bg-gradient-to-r from-primary to-secondary"
-                      : ""
-                  }
-                  disabled={isLiking}
-                  onClick={() => {
-                    if (match.liked) {
-                      handleUnlikeProfile(match.user._id);
-                    } else {
-                      handleLikeProfile(match.user._id);
-                    }
-                  }}
-                >
-                  {isLiking ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 1,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                    >
-                      <Heart className="w-4 h-4" />
-                    </motion.div>
-                  ) : (
-                    <Heart
-                      className={`w-4 h-4 ${match.liked ? "fill-white" : ""}`}
-                    />
-                  )}
-                </Button>
               )}
-            </div>
-            <div className="mb-4">
-              <p className="text-sm font-semibold mb-2">Interests:</p>
-              <div className="flex flex-wrap gap-2">
-                {match.user.interests.map((interest, idx) => (
-                  <Badge key={`${interest}-${idx}`} variant="secondary">
-                    {interest}
-                  </Badge>
-                ))}
-              </div>
             </div>
             {/* Action Buttons */}
             {isLocked ? (
@@ -599,66 +568,31 @@ const Matches = () => {
               <div className="flex gap-2">
                 <Button
                   className="flex-1 bg-gradient-to-r from-primary to-secondary"
-                  onClick={() => {
-                    if (lockedByLimit) {
-                      toast.error(
-                        "Profile view limit reached. Upgrade your plan 🔒",
-                      );
-
-                      navigate("/pricing");
-                      return;
-                    }
-
-                    navigate(`/profile/${match.user._id}`);
-                  }}
+                  onClick={() => navigate(`/profile/${match.user._id}`)}
                 >
-                  {lockedByLimit ? (
-                    <>
-                      <Lock className="w-4 h-4 mr-2" />
-                      Upgrade to view profile
-                    </>
-                  ) : (
-                    "View Profile"
-                  )}
+                  View Profile
                 </Button>
                 <AnimatePresence mode="wait">
                   {isAccepted ? (
-                    <Button
-                      disabled
-                      className="w-full bg-green-500 text-white cursor-default hover:bg-green-500"
-                    >
-                      <Check className="w-4 h-4 mr-2" />
-                      Interest Accepted
+                    <Button size="sm" disabled className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500 text-xs h-8">
+                      <Check className="w-3 h-3 mr-1" />Accepted
                     </Button>
                   ) : hasIncomingInterest ? (
-                    <Button
-                      disabled
-                      className="w-full bg-blue-500 text-white cursor-default hover:bg-blue-500"
-                    >
-                      💌 Received Interest
+                    <Button size="sm" disabled className="flex-1 bg-blue-500 text-white cursor-default hover:bg-blue-500 text-xs h-8">
+                      💌 Received
                     </Button>
                   ) : isInterestSent ? (
-                    <Button
-                      disabled
-                      className="w-full bg-green-500 text-white cursor-default hover:bg-green-500"
-                    >
-                      <Check className="w-4 h-4 mr-2" />
-                      Interest Sent
+                    <Button size="sm" disabled className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500 text-xs h-8">
+                      <Check className="w-3 h-3 mr-1" />Sent
                     </Button>
                   ) : (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() =>
-                        handleSendInterest(match.user._id, match.user.fullName)
-                      }
-                    >
+                    <Button size="sm" variant="outline" className="flex-1 text-xs h-8" onClick={() => handleSendInterest(match.user._id, match.user.fullName)}>
                       Send Interest
                     </Button>
                   )}
-                </AnimatePresence>
-              </div>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </Card>
