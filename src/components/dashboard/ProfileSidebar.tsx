@@ -28,6 +28,7 @@ interface Photo {
 interface Membership {
   plan?: {
     name?: string;
+    title?: string;
   };
 }
 
@@ -115,8 +116,7 @@ const ProfileSidebar = ({
         .join("")
         .toUpperCase() || "U",
   };
-  const planName = userData?.membership?.plan?.name || "Free Account";
-
+  const planName = userData?.membership?.plan?.title || "Free Account";
   return (
     <>
       {/* Mobile Overlay */}
@@ -159,7 +159,7 @@ const ProfileSidebar = ({
   ${
     planName === "Free Account"
       ? "bg-gray-200 text-gray-700"
-      : "bg-primary/10 text-primary"
+      : "bg-gradient-to-r from-primary to-secondary text-white"
   }`}
           >
             {planName}

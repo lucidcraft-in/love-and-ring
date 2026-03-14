@@ -11,6 +11,7 @@ import {
   GraduationCap,
   Eye,
   Briefcase,
+  Lock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -32,13 +33,14 @@ import Axios from "@/axios/axios";
 import FemaleDummy from "@/assets/UserWomen.png";
 import MaleDummy from "@/assets/UserMen.png";
 import DummyProfile from "@/assets/DummyProfile.png";
+import { toast } from "sonner";
 
 interface Profile {
   _id: string;
   fullName: string;
   dateOfBirth?: string;
   highestEducation?: { name: string };
-  photos?: { url: string; isPrimary: boolean }[];
+  photos?: { url: string; isPrimary: boolean; isHidden?: boolean }[];
   profileStatus?: string;
   city?: string;
   profession?: { name: string };
@@ -52,6 +54,10 @@ const BrowseProfiles = () => {
   const [likedUserIds, setLikedUserIds] = useState<Set<string>>(new Set());
   const [likingProfile, setLikingProfile] = useState<string | null>(null);
   const [showLikedOnly, setShowLikedOnly] = useState(false);
+  const [profileLimitReached, setProfileLimitReached] = useState(false);
+  const [viewedProfiles, setViewedProfiles] = useState<string[]>([]);
+  const [receivedInterests, setReceivedInterests] = useState<string[]>([]);
+  const [acceptedInterests, setAcceptedInterests] = useState<string[]>([]);
 
   const loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const loggedUserId = loggedUser?._id;
@@ -69,7 +75,6 @@ const BrowseProfiles = () => {
 
       const allProfiles = response.data || [];
 
-  
       const filtered = allProfiles.filter(
         (profile: Profile) => profile._id !== loggedUserId,
       );
@@ -98,9 +103,66 @@ const BrowseProfiles = () => {
     }
   };
 
+  const checkProfileLimit = async () => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+
+      if (!storedUser || !token) return;
+
+      const parsedUser = JSON.parse(storedUser);
+      const userId = parsedUser._id;
+
+      const res = await Axios.get(`/api/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const membership = res.data.membership;
+
+      setViewedProfiles(membership.viewedProfiles || []);
+
+      if (membership.chatProfilesUsed >= membership.chatProfilesLimit) {
+        setProfileLimitReached(true);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  const fetchReceivedInterests = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await Axios.get("/api/user/interests/received", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const ids = res.data.map((item: any) => item.fromUser?._id);
+      setReceivedInterests(ids);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  const fetchAcceptedInterests = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await Axios.get("/api/user/interests/accepted/interest", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const ids = res.data.map((item: any) => item.fromUser?._id);
+      setAcceptedInterests(ids);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchProfiles();
     fetchProfilesILiked();
+    checkProfileLimit();
+    fetchReceivedInterests();
+    fetchAcceptedInterests();
   }, []);
 
   const calculateAge = (dob?: string) => {
@@ -174,80 +236,116 @@ const BrowseProfiles = () => {
     }
   };
 
-  const ProfileCard = ({ profile }: { profile: (typeof profiles)[0] }) => (
-    <Card className="glass-card overflow-hidden hover:shadow-lg transition-all group">
-      <div className="relative h-64">
-        <img
-          src={getProfileImage(profile.photos)}
-          alt={profile.fullName}
-          className={`w-full h-full object-cover ${profile.profileStatus === "private" ? "blur-sm" : ""}`}
-        />
-        {profile.profileStatus === "private" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-            <Badge className="bg-white text-foreground">Private Profile</Badge>
-          </div>
-        )}
-        <Button
-          size="icon"
-          variant={likedUserIds.has(profile._id) ? "default" : "outline"}
-          className={`absolute top-2 right-2 bg-white/90 hover:bg-white ${
-            likedUserIds.has(profile._id)
-              ? "bg-gradient-to-r from-primary to-secondary text-white"
-              : ""
-          }`}
-          disabled={likingProfile === profile._id}
-          onClick={() =>
-            likedUserIds.has(profile._id)
-              ? handleUnlikeProfile(profile._id)
-              : handleLikeProfile(profile._id)
-          }
-        >
-          <Heart
-            className={`w-4 h-4 ${
-              likedUserIds.has(profile._id) ? "fill-white" : ""
+  const ProfileCard = ({ profile }: { profile: (typeof profiles)[0] }) => {
+    const primaryPhoto = profile.photos?.find((p) => p.isPrimary);
+    const isPhotoHidden = primaryPhoto?.isHidden;
+
+    const alreadyViewed = viewedProfiles.includes(profile._id);
+
+    const lockedByLimit = profileLimitReached && !alreadyViewed;
+
+    const canViewHiddenPhoto =
+      acceptedInterests.includes(profile._id) ||
+      receivedInterests.includes(profile._id);
+
+    return (
+      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all group">
+        <div className="relative h-64">
+          <img
+            src={getProfileImage(profile.photos)}
+            alt={profile.fullName}
+            className={`w-full h-full object-cover ${
+              isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""
             }`}
           />
-        </Button>
-      </div>
-
-      <div className="p-4">
-        <h3 className="text-lg font-bold mb-2">
-          {profile.fullName},{" "}
-          {profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : "--"}
-        </h3>
-
-        <div className="space-y-1 text-sm text-muted-foreground mb-3">
-          {/* City */}
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-primary" />
-            <span>{profile.city || "Location not specified"}</span>
-          </div>
-
-          {/* Profession */}
-          <div className="flex items-center gap-2">
-            <Briefcase className="w-4 h-4 text-primary" />
-            <span>
-              {profile.profession?.name || "Profession not specified"}
-            </span>
-          </div>
-        </div>
-
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-          {"No bio available."}
-        </p>
-
-        <div className="flex gap-2">
+          {profile.profileStatus === "private" && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+              <Badge className="bg-white text-foreground">
+                Private Profile
+              </Badge>
+            </div>
+          )}
           <Button
-            className="flex-1 bg-gradient-to-r from-primary to-secondary gap-2"
-            onClick={() => navigate(`/profile/${profile._id}`)}
+            size="icon"
+            variant={likedUserIds.has(profile._id) ? "default" : "outline"}
+            className={`absolute top-2 right-2 bg-white/90 hover:bg-white ${
+              likedUserIds.has(profile._id)
+                ? "bg-gradient-to-r from-primary to-secondary text-white"
+                : ""
+            }`}
+            disabled={likingProfile === profile._id}
+            onClick={() =>
+              likedUserIds.has(profile._id)
+                ? handleUnlikeProfile(profile._id)
+                : handleLikeProfile(profile._id)
+            }
           >
-            <Eye className="w-4 h-4" />
-            View Profile
+            <Heart
+              className={`w-4 h-4 ${
+                likedUserIds.has(profile._id) ? "fill-white" : ""
+              }`}
+            />
           </Button>
         </div>
-      </div>
-    </Card>
-  );
+
+        <div className="p-4">
+          <h3 className="text-lg font-bold mb-2">
+            {profile.fullName},{" "}
+            {profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : "--"}
+          </h3>
+
+          <div className="space-y-1 text-sm text-muted-foreground mb-3">
+            {/* City */}
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-primary" />
+              <span>{profile.city || "Location not specified"}</span>
+            </div>
+
+            {/* Profession */}
+            <div className="flex items-center gap-2">
+              <Briefcase className="w-4 h-4 text-primary" />
+              <span>
+                {profile.profession?.name || "Profession not specified"}
+              </span>
+            </div>
+          </div>
+
+          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+            {"No bio available."}
+          </p>
+
+          <div className="flex gap-2">
+            <Button
+              className="flex-1 bg-gradient-to-r from-primary to-secondary gap-2"
+              onClick={() => {
+                if (lockedByLimit) {
+                  toast.error(
+                    "Profile view limit reached. Upgrade your plan 🔒",
+                  );
+                  navigate("/pricing");
+                  return;
+                }
+
+                navigate(`/profile/${profile._id}`);
+              }}
+            >
+              {lockedByLimit ? (
+                <>
+                  <Lock className="w-4 h-4" />
+                  Upgrade
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4" />
+                  View Profile
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  };
 
   return (
     <div className="space-y-6">
