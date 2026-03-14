@@ -589,19 +589,19 @@ const Matches = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2 mt-auto pt-2">
+            <div className="flex flex-wrap gap-2 mt-auto pt-2">
               {isLocked ? (
                 <Button
-                  className="w-full bg-gradient-to-r from-primary to-secondary text-sm h-9"
+                  className="flex-1 min-w-[90px] bg-gradient-to-r from-primary to-secondary text-xs h-8 px-2"
                   onClick={() => navigate("/pricing")}
                 >
-                  <Lock className="w-4 h-4 mr-2" />
+                  <Lock className="w-3 h-3 mr-1" />
                   Upgrade to View Profile
                 </Button>
               ) : (
                 <>
                   <Button
-                    className="flex-1 bg-gradient-to-r from-primary to-secondary text-sm h-9"
+                    className="flex-1 min-w-[90px] bg-gradient-to-r from-primary to-secondary text-xs h-8 px-2"
                     onClick={() => {
                       if (lockedByLimit) {
                         toast.error(
@@ -615,8 +615,8 @@ const Matches = () => {
                   >
                     {lockedByLimit ? (
                       <>
-                        <Lock className="w-4 h-4 mr-2" />
-                        Upgrade to view profile
+                        <Lock className="w-3 h-3 mr-1" />
+                        Upgrade
                       </>
                     ) : (
                       "View Profile"
@@ -626,30 +626,30 @@ const Matches = () => {
                     {isAccepted ? (
                       <Button
                         disabled
-                        className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500 text-sm h-9"
+                        className="flex-1 min-w-[90px] bg-green-500 text-white cursor-default hover:bg-green-500 text-xs h-8 px-2"
                       >
-                        <Check className="w-4 h-4 mr-1" />
+                        <Check className="w-3 h-3 mr-1" />
                         Interest Sent
                       </Button>
                     ) : hasIncomingInterest ? (
                       <Button
                         disabled
-                        className="flex-1 bg-blue-500 text-white cursor-default hover:bg-blue-500 text-sm h-9"
+                        className="flex-1 min-w-[90px] bg-blue-500 text-white cursor-default hover:bg-blue-500 text-xs h-8 px-2"
                       >
-                        💌 Received Interest
+                        💌 Received
                       </Button>
                     ) : isInterestSent ? (
                       <Button
                         disabled
-                        className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500 text-sm h-9"
+                        className="flex-1 min-w-[90px] bg-green-500 text-white cursor-default hover:bg-green-500 text-xs h-8 px-2"
                       >
-                        <Check className="w-4 h-4 mr-1" />
+                        <Check className="w-3 h-3 mr-1" />
                         Interest Sent
                       </Button>
                     ) : (
                       <Button
                         variant="outline"
-                        className="flex-1 text-sm h-9"
+                        className="flex-1 min-w-[90px] text-xs h-8 px-2"
                         onClick={() =>
                           handleSendInterest(match.user._id, match.user.fullName)
                         }
