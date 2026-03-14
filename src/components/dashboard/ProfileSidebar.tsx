@@ -25,6 +25,11 @@ interface Photo {
   isPrimary: boolean;
   approvalStatus: string;
 }
+interface Membership {
+  plan?: {
+    name?: string;
+  };
+}
 
 interface User {
   _id: string;
@@ -34,6 +39,7 @@ interface User {
   countryCode?: string;
   profileId?: string;
   photos?: Photo[];
+  membership?: Membership;
 }
 
 const navigationItems = [
@@ -109,6 +115,7 @@ const ProfileSidebar = ({
         .join("")
         .toUpperCase() || "U",
   };
+  const planName = userData?.membership?.plan?.name || "Free Account";
 
   return (
     <>
@@ -147,8 +154,15 @@ const ProfileSidebar = ({
             </span>
           </p>
 
-          <span className="mt-2 px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full">
-            Free Account
+          <span
+            className={`mt-2 px-3 py-1 text-xs font-medium rounded-full
+  ${
+    planName === "Free Account"
+      ? "bg-gray-200 text-gray-700"
+      : "bg-primary/10 text-primary"
+  }`}
+          >
+            {planName}
           </span>
         </div>
 

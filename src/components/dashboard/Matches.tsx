@@ -33,6 +33,7 @@ interface MatchUser {
   photos?: {
     url: string;
     isPrimary: boolean;
+    isHidden?: boolean;
   }[];
 }
 
@@ -55,6 +56,8 @@ const Matches = () => {
   const [likedMe, setLikedMe] = useState<MatchItem[]>([]);
   const [receivedInterests, setReceivedInterests] = useState<string[]>([]);
   const [acceptedInterests, setAcceptedInterests] = useState<string[]>([]);
+  const [profileLimitReached, setProfileLimitReached] = useState(false);
+  const [viewedProfiles, setViewedProfiles] = useState<string[]>([]);
 
   const navigate = useNavigate();
 
@@ -224,6 +227,31 @@ const Matches = () => {
       console.error("Failed to fetch accepted interests", err);
     }
   };
+  const checkProfileLimit = async () => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+
+      if (!storedUser || !token) return;
+
+      const parsedUser = JSON.parse(storedUser);
+      const userId = parsedUser._id;
+
+      const res = await Axios.get(`/api/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const membership = res.data.membership;
+
+      setViewedProfiles(membership.viewedProfiles || []);
+
+      if (membership.chatProfilesUsed >= membership.chatProfilesLimit) {
+        setProfileLimitReached(true);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
   useEffect(() => {
     const init = async () => {
       const likedIdsArray = await fetchProfilesILiked();
@@ -232,6 +260,7 @@ const Matches = () => {
       await fetchReceivedInterests();
       await fetchAcceptedInterests();
       await fetchMatches(new Set(likedIdsArray));
+      await checkProfileLimit();
     };
 
     init();
@@ -446,6 +475,16 @@ const Matches = () => {
     const isLiking = likingProfile === match.user._id;
     const hasIncomingInterest = receivedInterests.includes(match.user._id);
     const isAccepted = acceptedInterests.includes(match.user._id);
+    const primaryPhoto = match.user.photos?.find((p) => p.isPrimary);
+    const isPhotoHidden = primaryPhoto?.isHidden;
+    const alreadyViewed = viewedProfiles.includes(match.user._id);
+    const lockedByLimit = profileLimitReached && !alreadyViewed;
+
+    const canViewHiddenPhoto =
+      acceptedInterests.includes(match.user._id) ||
+      receivedInterests.includes(match.user._id);
+
+    const photoSrc = getProfilePhoto(match.user.photos);
 
     return (
       <Card className="glass-card overflow-hidden hover:shadow-lg transition-all h-full">
@@ -454,10 +493,12 @@ const Matches = () => {
           {" "}
           <div className="sm:w-48 w-full h-48 sm:h-auto sm:self-stretch relative overflow-hidden bg-muted rounded-t-xl sm:rounded-l-xl sm:rounded-t-none">
             <OptimizedProfileImage
-              src={getProfilePhoto(match.user.photos)}
+              src={photoSrc}
               alt={match.user.fullName}
               isLocked={isLocked}
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover ${
+                isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""
+              }`}
             />
 
             {/* Match Badge */}
@@ -558,9 +599,27 @@ const Matches = () => {
               <div className="flex gap-2">
                 <Button
                   className="flex-1 bg-gradient-to-r from-primary to-secondary"
-                  onClick={() => navigate(`/profile/${match.user._id}`)}
+                  onClick={() => {
+                    if (lockedByLimit) {
+                      toast.error(
+                        "Profile view limit reached. Upgrade your plan 🔒",
+                      );
+
+                      navigate("/pricing");
+                      return;
+                    }
+
+                    navigate(`/profile/${match.user._id}`);
+                  }}
                 >
-                  View Profile
+                  {lockedByLimit ? (
+                    <>
+                      <Lock className="w-4 h-4 mr-2" />
+                      Upgrade to view profile
+                    </>
+                  ) : (
+                    "View Profile"
+                  )}
                 </Button>
                 <AnimatePresence mode="wait">
                   {isAccepted ? (

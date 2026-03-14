@@ -50,6 +50,8 @@ const EditProfile = () => {
   const [primaryEducations, setPrimaryEducations] = useState<Option[]>([]);
   const [higherEducations, setHigherEducations] = useState<Option[]>([]);
   const [professions, setProfessions] = useState<Option[]>([]);
+  const [hidePhoto, setHidePhoto] = useState(false);
+  const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(null);
 
   const currentMembership = profile?.membership || "Free";
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -73,6 +75,10 @@ const EditProfile = () => {
 
       const user = res.data;
       console.log("User", user);
+      const primaryPhoto = user.photos?.find((p: any) => p.isPrimary);
+
+      setPrimaryPhotoId(primaryPhoto?._id || null);
+      setHidePhoto(primaryPhoto?.isHidden || false);
       setProfile({
         fullName: user.fullName || "",
         email: user.email || "",
@@ -183,6 +189,35 @@ const EditProfile = () => {
       });
     } catch (err) {
       console.error("Update failed", err);
+    }
+  };
+
+  const handleHidePhotoToggle = async () => {
+    if (!primaryPhotoId) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      await Axios.patch(
+        `/api/users/hide-photo/${primaryPhotoId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      setHidePhoto((prev) => !prev);
+
+      toast.success(
+        !hidePhoto
+          ? "Profile photo hidden successfully 🔒"
+          : "Profile photo is now visible 👁️",
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update photo visibility");
     }
   };
 
@@ -313,6 +348,22 @@ const EditProfile = () => {
       <Card className="glass-card p-6">
         <h3 className="text-lg font-semibold mb-4">Personal Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2 flex items-center justify-between mt-4">
+            <Label>Hide Profile Photo</Label>
+
+            <button
+              onClick={handleHidePhotoToggle}
+              className={`w-12 h-6 flex items-center rounded-full p-1 transition ${
+                hidePhoto ? "bg-primary" : "bg-gray-300"
+              }`}
+            >
+              <div
+                className={`bg-white w-4 h-4 rounded-full shadow transform transition ${
+                  hidePhoto ? "translate-x-6" : ""
+                }`}
+              />
+            </button>
+          </div>
           <div>
             <Label htmlFor="height">Height</Label>
             <Input

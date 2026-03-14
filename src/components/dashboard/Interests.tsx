@@ -11,6 +11,7 @@ import {
   Check,
   X,
   Sparkles,
+  Lock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -31,6 +32,7 @@ interface InterestUser {
   photos?: {
     url: string;
     isPrimary: boolean;
+    isHidden?: boolean;
   }[];
 }
 
@@ -49,6 +51,8 @@ const Interests = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [accepted, setAccepted] = useState<InterestItem[]>([]);
   const [viewLoading, setViewLoading] = useState<string | null>(null);
+  const [profileLimitReached, setProfileLimitReached] = useState(false);
+  const [viewedProfiles, setViewedProfiles] = useState<string[]>([]);
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
   console.log("userId", userId);
@@ -62,7 +66,7 @@ const Interests = () => {
       const [receivedRes, sentRes, acceptedRes] = await Promise.all([
         Axios.get("/api/user/interests/received", { headers }),
         Axios.get("/api/user/interests/sent", { headers }),
-        Axios.get("/api/user/interests/accepted/interest", { headers }), // ✅ ADD THIS
+        Axios.get("/api/user/interests/accepted/interest", { headers }),
       ]);
       console.log("res", receivedRes.data, sentRes.data, acceptedRes.data);
       const mapInterest = (item: any, userKey: string): InterestItem => ({
@@ -129,8 +133,37 @@ const Interests = () => {
     }
   };
 
+  const checkProfileLimit = async () => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+
+      if (!storedUser || !token) {
+        console.warn("User or token missing");
+        return;
+      }
+      const parsedUser = JSON.parse(storedUser);
+      const userId = parsedUser._id;
+
+      const res = await Axios.get(`/api/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const membership = res.data.membership;
+
+      setViewedProfiles(membership.viewedProfiles || []);
+
+      if (membership.chatProfilesUsed >= membership.chatProfilesLimit) {
+        setProfileLimitReached(true);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchInterests();
+    checkProfileLimit();
   }, []);
 
   const calculateAge = (dob: string) => {
@@ -178,19 +211,25 @@ const Interests = () => {
 
   const handleViewProfile = async (targetUserId: string) => {
     try {
-      setViewLoading(targetUserId);
-
       const token = localStorage.getItem("token");
 
-      await Axios.get(`/api/membership/view-profile/${targetUserId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await Axios.get(
+        `/api/membership/view-profile/${targetUserId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (res.data?.limitReached) {
+        setProfileLimitReached(true);
+        toast.error("Profile view limit reached. Upgrade your plan 🔒");
+        return;
+      }
 
       navigate(`/profile/${targetUserId}`);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Limit reached");
-    } finally {
-      setViewLoading(null);
+      setProfileLimitReached(true);
+      toast.error(err.response?.data?.message || "Profile view limit reached");
     }
   };
 
@@ -250,6 +289,12 @@ const Interests = () => {
     type: "received" | "sent" | "accepted";
   }) => {
     const isActioning = actionLoading === item._id;
+    const alreadyViewed = viewedProfiles.includes(item.user._id);
+    const locked = profileLimitReached && !alreadyViewed;
+    const primaryPhoto = item.user.photos?.find((p) => p.isPrimary);
+    const isPhotoHidden = primaryPhoto?.isHidden;
+
+    const canViewHiddenPhoto = type === "received" || type === "accepted";
 
     return (
       <Card className="glass-card overflow-hidden hover:shadow-lg transition-all">
@@ -260,6 +305,9 @@ const Interests = () => {
               src={getProfilePhoto(item.user.photos)}
               alt={item.user.fullName}
               isLocked={false}
+              className={`w-full h-full object-cover ${
+                isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""
+              }`}
             />
 
             {/* Match Badge */}
@@ -313,12 +361,28 @@ const Interests = () => {
             {/* Action Buttons — same flex layout as MatchCard */}
             <div className="flex gap-2">
               <Button
-                className="flex-1 bg-gradient-to-r from-primary to-secondary"
-                onClick={() => handleViewProfile(item.user._id)}
-              >
-                View Profile
-              </Button>
+                className="flex-1 bg-gradient-to-r from-primary to-secondary flex items-center justify-center"
+                onClick={() => {
+                  if (locked) {
+                    toast.error(
+                      "Profile view limit reached. Upgrade your plan 🔒",
+                    );
+                    navigate("/pricing");
+                    return;
+                  }
 
+                  handleViewProfile(item.user._id);
+                }}
+              >
+                {locked ? (
+                  <>
+                    <Lock className="w-4 h-4 mr-2" />
+                    Upgrade to View Profile
+                  </>
+                ) : (
+                  "View Profile"
+                )}
+              </Button>
               {type === "received" && (
                 <>
                   <Button
