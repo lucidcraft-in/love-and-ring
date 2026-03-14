@@ -252,155 +252,79 @@ const Interests = () => {
     const isActioning = actionLoading === item._id;
 
     return (
-      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all">
-        <div className="flex flex-col sm:flex-row">
-          {/* Left: Profile Image — exact same as MatchCard */}
-          <div className="sm:w-48 w-full h-48 sm:h-auto relative overflow-hidden bg-muted rounded-t-xl sm:rounded-l-xl sm:rounded-t-none">
+      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all h-[240px] rounded-2xl">
+        <div className="grid grid-cols-[160px_1fr] h-full">
+          {/* Image Section - fixed 160px */}
+          <div className="relative overflow-hidden bg-muted rounded-l-2xl">
             <OptimizedProfileImage
               src={getProfilePhoto(item.user.photos)}
               alt={item.user.fullName}
               isLocked={false}
+              className="w-full h-full object-cover"
             />
-
-            {/* Match Badge */}
             {item.matchScore > 0 && (
               <div className="absolute top-2 right-2 z-10">
-                <Badge className="bg-gradient-to-r from-primary to-secondary">
-                  {item.matchScore}% Match
+                <Badge className="bg-gradient-to-r from-primary to-secondary text-[10px] px-1.5 py-0.5">
+                  {item.matchScore}%
                 </Badge>
               </div>
             )}
           </div>
 
-          {/* Right: Content — exact same as MatchCard */}
-          <div className="flex-1 p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold mb-1">
-                  {item.user.fullName}, {calculateAge(item.user.dateOfBirth)}
-                </h3>
-                <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    {item.user.city}, {item.user.state}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <GraduationCap className="w-4 h-4" />
-                    {item.user.education?.name || "—"}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Briefcase className="w-4 h-4" />
-                    {item.user.profession?.name || "—"}
-                  </span>
-                </div>
+          {/* Content Section */}
+          <div className="p-4 flex flex-col justify-between overflow-hidden">
+            <div>
+              <h3 className="text-sm font-bold truncate">
+                {item.user.fullName}, {calculateAge(item.user.dateOfBirth)}
+              </h3>
+              <div className="flex flex-col gap-0.5 text-xs text-muted-foreground mt-1">
+                <span className="flex items-center gap-1 truncate"><MapPin className="w-3 h-3 shrink-0" />{item.user.city}, {item.user.state}</span>
+                <span className="flex items-center gap-1 truncate"><GraduationCap className="w-3 h-3 shrink-0" />{item.user.education?.name || "—"}</span>
+                <span className="flex items-center gap-1 truncate"><Briefcase className="w-3 h-3 shrink-0" />{item.user.profession?.name || "—"}</span>
               </div>
-            </div>
-
-            {/* Interests tags */}
-            {item.user.interests.length > 0 && (
-              <div className="mb-4">
-                <p className="text-sm font-semibold mb-2">Interests:</p>
-                <div className="flex flex-wrap gap-2">
-                  {item.user.interests.map((interest, idx) => (
-                    <Badge key={`${interest}-${idx}`} variant="secondary">
+              {item.user.interests.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5 max-h-[36px] overflow-hidden">
+                  {item.user.interests.slice(0, 3).map((interest, idx) => (
+                    <Badge key={`${interest}-${idx}`} variant="secondary" className="text-[10px] px-1.5 py-0">
                       {interest}
                     </Badge>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* Action Buttons — same flex layout as MatchCard */}
-            <div className="flex gap-2">
-              <Button
-                className="flex-1 bg-gradient-to-r from-primary to-secondary"
-                onClick={() => handleViewProfile(item.user._id)}
-              >
+            {/* Buttons - always at bottom */}
+            <div className="flex gap-2 mt-auto pt-2">
+              <Button size="sm" className="flex-1 bg-gradient-to-r from-primary to-secondary text-xs h-8" onClick={() => handleViewProfile(item.user._id)}>
                 View Profile
               </Button>
 
               {type === "received" && (
                 <>
-                  <Button
-                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
-                    onClick={() => handleAccept(item._id, item.user.fullName)}
-                    disabled={isActioning}
-                  >
-                    {isActioning ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{
-                          duration: 1,
-                          repeat: Infinity,
-                          ease: "linear",
-                        }}
-                      >
-                        <Sparkles className="w-4 h-4" />
-                      </motion.div>
-                    ) : (
-                      <>
-                        <Check className="w-4 h-4 mr-1" />
-                        Accept
-                      </>
-                    )}
+                  <Button size="sm" className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-8" onClick={() => handleAccept(item._id, item.user.fullName)} disabled={isActioning}>
+                    {isActioning ? <Sparkles className="w-3 h-3 animate-spin" /> : <><Check className="w-3 h-3 mr-1" />Accept</>}
                   </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
-                    onClick={() => handleReject(item._id, item.user.fullName)}
-                    disabled={isActioning}
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    Reject
+                  <Button size="sm" variant="outline" className="flex-1 border-destructive text-destructive hover:bg-destructive/10 text-xs h-8" onClick={() => handleReject(item._id, item.user.fullName)} disabled={isActioning}>
+                    <X className="w-3 h-3 mr-1" />Reject
                   </Button>
                 </>
               )}
 
               {type === "sent" && (
-                <>
-                  {item.status?.toLowerCase() === "accepted" ? (
-                    <Button
-                      disabled
-                      className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500"
-                    >
-                      <Check className="w-4 h-4 mr-1" />
-                      Accepted
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
-                      onClick={() => handleCancel(item._id, item.user.fullName)}
-                      disabled={isActioning}
-                    >
-                      {isActioning ? (
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{
-                            duration: 1,
-                            repeat: Infinity,
-                            ease: "linear",
-                          }}
-                        >
-                          <Sparkles className="w-4 h-4" />
-                        </motion.div>
-                      ) : (
-                        <>
-                          <X className="w-4 h-4 mr-1" />
-                          Cancel Interest
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </>
+                item.status?.toLowerCase() === "accepted" ? (
+                  <Button size="sm" disabled className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500 text-xs h-8">
+                    <Check className="w-3 h-3 mr-1" />Accepted
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" className="flex-1 border-destructive text-destructive hover:bg-destructive/10 text-xs h-8" onClick={() => handleCancel(item._id, item.user.fullName)} disabled={isActioning}>
+                    {isActioning ? <Sparkles className="w-3 h-3 animate-spin" /> : <><X className="w-3 h-3 mr-1" />Cancel</>}
+                  </Button>
+                )
               )}
+
               {type === "accepted" && (
-                <Button
-                  disabled
-                  className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500"
-                >
-                  <Check className="w-4 h-4 mr-1" />
-                  Accepted
+                <Button size="sm" disabled className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500 text-xs h-8">
+                  <Check className="w-3 h-3 mr-1" />Accepted
                 </Button>
               )}
             </div>
