@@ -297,10 +297,10 @@ const Interests = () => {
     const canViewHiddenPhoto = type === "received" || type === "accepted";
 
     return (
-      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all">
-        <div className="flex flex-col sm:flex-row">
-          {/* Left: Profile Image — exact same as MatchCard */}
-          <div className="sm:w-48 w-full h-48 sm:h-auto relative overflow-hidden bg-muted rounded-t-xl sm:rounded-l-xl sm:rounded-t-none">
+      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all rounded-2xl">
+        <div className="grid grid-cols-[160px_1fr] h-[270px]">
+          {/* Image Section */}
+          <div className="relative overflow-hidden bg-muted rounded-l-2xl">
             <OptimizedProfileImage
               src={getProfilePhoto(item.user.photos)}
               alt={item.user.fullName}
@@ -313,64 +313,58 @@ const Interests = () => {
             {/* Match Badge */}
             {item.matchScore > 0 && (
               <div className="absolute top-2 right-2 z-10">
-                <Badge className="bg-gradient-to-r from-primary to-secondary">
+                <Badge className="bg-gradient-to-r from-primary to-secondary text-xs">
                   {item.matchScore}% Match
                 </Badge>
               </div>
             )}
           </div>
 
-          {/* Right: Content — exact same as MatchCard */}
-          <div className="flex-1 p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold mb-1">
-                  {item.user.fullName}, {calculateAge(item.user.dateOfBirth)}
-                </h3>
-                <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    {item.user.city}, {item.user.state}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <GraduationCap className="w-4 h-4" />
-                    {item.user.education?.name || "—"}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Briefcase className="w-4 h-4" />
-                    {item.user.profession?.name || "—"}
-                  </span>
-                </div>
+          {/* Content Section */}
+          <div className="p-5 flex flex-col justify-between overflow-hidden">
+            <div>
+              <h3 className="text-lg font-bold truncate mb-2">
+                {item.user.fullName}, {calculateAge(item.user.dateOfBirth)}
+              </h3>
+              <div className="flex flex-col gap-0.5 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1 truncate">
+                  <MapPin className="w-3.5 h-3.5 shrink-0" />
+                  {item.user.city}, {item.user.state}
+                </span>
+                <span className="flex items-center gap-1 truncate">
+                  <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                  {item.user.education?.name || "—"}
+                </span>
+                <span className="flex items-center gap-1 truncate">
+                  <Briefcase className="w-3.5 h-3.5 shrink-0" />
+                  {item.user.profession?.name || "—"}
+                </span>
               </div>
+
+              {item.user.interests.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-xs font-semibold mb-1">Interests:</p>
+                  <div className="flex flex-wrap gap-1.5 max-h-[36px] overflow-hidden">
+                    {item.user.interests.slice(0, 4).map((interest, idx) => (
+                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-xs px-2 py-0.5">
+                        {interest}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Interests tags */}
-            {item.user.interests.length > 0 && (
-              <div className="mb-4">
-                <p className="text-sm font-semibold mb-2">Interests:</p>
-                <div className="flex flex-wrap gap-2">
-                  {item.user.interests.map((interest, idx) => (
-                    <Badge key={`${interest}-${idx}`} variant="secondary">
-                      {interest}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons — same flex layout as MatchCard */}
-            <div className="flex gap-2">
+            {/* Action Buttons */}
+            <div className="flex gap-2 mt-auto pt-2">
               <Button
-                className="flex-1 bg-gradient-to-r from-primary to-secondary flex items-center justify-center"
+                className="flex-1 bg-gradient-to-r from-primary to-secondary text-sm h-9"
                 onClick={() => {
                   if (locked) {
-                    toast.error(
-                      "Profile view limit reached. Upgrade your plan 🔒",
-                    );
+                    toast.error("Profile view limit reached. Upgrade your plan 🔒");
                     navigate("/pricing");
                     return;
                   }
-
                   handleViewProfile(item.user._id);
                 }}
               >
@@ -383,21 +377,18 @@ const Interests = () => {
                   "View Profile"
                 )}
               </Button>
+
               {type === "received" && (
                 <>
                   <Button
-                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+                    className="flex-1 bg-green-500 hover:bg-green-600 text-white text-sm h-9"
                     onClick={() => handleAccept(item._id, item.user.fullName)}
                     disabled={isActioning}
                   >
                     {isActioning ? (
                       <motion.div
                         animate={{ rotate: 360 }}
-                        transition={{
-                          duration: 1,
-                          repeat: Infinity,
-                          ease: "linear",
-                        }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                       >
                         <Sparkles className="w-4 h-4" />
                       </motion.div>
@@ -410,7 +401,7 @@ const Interests = () => {
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
+                    className="flex-1 border-destructive text-destructive hover:bg-destructive/10 text-sm h-9"
                     onClick={() => handleReject(item._id, item.user.fullName)}
                     disabled={isActioning}
                   >
@@ -425,7 +416,7 @@ const Interests = () => {
                   {item.status?.toLowerCase() === "accepted" ? (
                     <Button
                       disabled
-                      className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500"
+                      className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500 text-sm h-9"
                     >
                       <Check className="w-4 h-4 mr-1" />
                       Accepted
@@ -433,18 +424,14 @@ const Interests = () => {
                   ) : (
                     <Button
                       variant="outline"
-                      className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
+                      className="flex-1 border-destructive text-destructive hover:bg-destructive/10 text-sm h-9"
                       onClick={() => handleCancel(item._id, item.user.fullName)}
                       disabled={isActioning}
                     >
                       {isActioning ? (
                         <motion.div
                           animate={{ rotate: 360 }}
-                          transition={{
-                            duration: 1,
-                            repeat: Infinity,
-                            ease: "linear",
-                          }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                         >
                           <Sparkles className="w-4 h-4" />
                         </motion.div>
@@ -458,10 +445,11 @@ const Interests = () => {
                   )}
                 </>
               )}
+
               {type === "accepted" && (
                 <Button
                   disabled
-                  className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500"
+                  className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500 text-sm h-9"
                 >
                   <Check className="w-4 h-4 mr-1" />
                   Accepted
