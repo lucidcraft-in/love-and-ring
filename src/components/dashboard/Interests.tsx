@@ -356,9 +356,9 @@ const Interests = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2 mt-auto pt-2">
+            <div className="flex flex-wrap gap-2 mt-auto pt-2">
               <Button
-                className="flex-1 bg-gradient-to-r from-primary to-secondary text-sm h-9"
+                className="flex-1 min-w-[90px] bg-gradient-to-r from-primary to-secondary text-xs h-8 px-2"
                 onClick={() => {
                   if (locked) {
                     toast.error("Profile view limit reached. Upgrade your plan 🔒");
@@ -370,8 +370,8 @@ const Interests = () => {
               >
                 {locked ? (
                   <>
-                    <Lock className="w-4 h-4 mr-2" />
-                    Upgrade to View Profile
+                    <Lock className="w-3 h-3 mr-1" />
+                    Upgrade
                   </>
                 ) : (
                   "View Profile"
@@ -381,7 +381,7 @@ const Interests = () => {
               {type === "received" && (
                 <>
                   <Button
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white text-sm h-9"
+                    className="flex-1 min-w-[90px] bg-green-500 hover:bg-green-600 text-white text-xs h-8 px-2"
                     onClick={() => handleAccept(item._id, item.user.fullName)}
                     disabled={isActioning}
                   >
@@ -390,22 +390,22 @@ const Interests = () => {
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                       >
-                        <Sparkles className="w-4 h-4" />
+                        <Sparkles className="w-3 h-3" />
                       </motion.div>
                     ) : (
                       <>
-                        <Check className="w-4 h-4 mr-1" />
+                        <Check className="w-3 h-3 mr-1" />
                         Accept
                       </>
                     )}
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-1 border-destructive text-destructive hover:bg-destructive/10 text-sm h-9"
+                    className="flex-1 min-w-[90px] border-destructive text-destructive hover:bg-destructive/10 text-xs h-8 px-2"
                     onClick={() => handleReject(item._id, item.user.fullName)}
                     disabled={isActioning}
                   >
-                    <X className="w-4 h-4 mr-1" />
+                    <X className="w-3 h-3 mr-1" />
                     Reject
                   </Button>
                 </>
@@ -416,15 +416,15 @@ const Interests = () => {
                   {item.status?.toLowerCase() === "accepted" ? (
                     <Button
                       disabled
-                      className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500 text-sm h-9"
+                      className="flex-1 min-w-[90px] bg-green-500 text-white cursor-default hover:bg-green-500 text-xs h-8 px-2"
                     >
-                      <Check className="w-4 h-4 mr-1" />
+                      <Check className="w-3 h-3 mr-1" />
                       Accepted
                     </Button>
                   ) : (
                     <Button
                       variant="outline"
-                      className="flex-1 border-destructive text-destructive hover:bg-destructive/10 text-sm h-9"
+                      className="flex-1 min-w-[90px] border-destructive text-destructive hover:bg-destructive/10 text-xs h-8 px-2"
                       onClick={() => handleCancel(item._id, item.user.fullName)}
                       disabled={isActioning}
                     >
@@ -433,12 +433,12 @@ const Interests = () => {
                           animate={{ rotate: 360 }}
                           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                         >
-                          <Sparkles className="w-4 h-4" />
+                          <Sparkles className="w-3 h-3" />
                         </motion.div>
                       ) : (
                         <>
-                          <X className="w-4 h-4 mr-1" />
-                          Cancel Interest
+                          <X className="w-3 h-3 mr-1" />
+                          Cancel
                         </>
                       )}
                     </Button>
@@ -449,9 +449,9 @@ const Interests = () => {
               {type === "accepted" && (
                 <Button
                   disabled
-                  className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500 text-sm h-9"
+                  className="flex-1 min-w-[90px] bg-green-500 text-white cursor-default hover:bg-green-500 text-xs h-8 px-2"
                 >
-                  <Check className="w-4 h-4 mr-1" />
+                  <Check className="w-3 h-3 mr-1" />
                   Accepted
                 </Button>
               )}
