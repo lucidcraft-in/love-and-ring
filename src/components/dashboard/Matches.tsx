@@ -487,11 +487,10 @@ const Matches = () => {
     const photoSrc = getProfilePhoto(match.user.photos);
 
     return (
-      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all h-full">
-        {" "}
-        <div className="flex flex-col sm:flex-row h-full">
-          {" "}
-          <div className="sm:w-48 w-full h-48 sm:h-auto sm:self-stretch relative overflow-hidden bg-muted rounded-t-xl sm:rounded-l-xl sm:rounded-t-none">
+      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all rounded-2xl">
+        <div className="grid grid-cols-[160px_1fr] h-[270px]">
+          {/* Image Section */}
+          <div className="relative overflow-hidden bg-muted rounded-l-2xl">
             <OptimizedProfileImage
               src={photoSrc}
               alt={match.user.fullName}
@@ -503,7 +502,7 @@ const Matches = () => {
 
             {/* Match Badge */}
             <div className="absolute top-2 right-2 z-10">
-              <Badge className="bg-gradient-to-r from-primary to-secondary">
+              <Badge className="bg-gradient-to-r from-primary to-secondary text-xs">
                 {match.matchScore}% Match
               </Badge>
             </div>
@@ -517,148 +516,151 @@ const Matches = () => {
               </div>
             )}
           </div>
-          <div className="flex-1 p-6 flex flex-col justify-between">
-            {" "}
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold mb-1">
+
+          {/* Content Section */}
+          <div className="p-5 flex flex-col justify-between overflow-hidden">
+            <div>
+              <div className="flex items-start justify-between mb-2">
+                <h3 className="text-lg font-bold truncate">
                   {match.user.fullName}, {calculateAge(match.user.dateOfBirth)}
                 </h3>
-                <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    {match.user.city}, {match.user.state}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <GraduationCap className="w-4 h-4" />
-                    {match.user.education?.name || "—"}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Briefcase className="w-4 h-4" />
-                    {match.user.profession?.name || "—"}
-                  </span>
+                {!isLocked && (
+                  <Button
+                    size="icon"
+                    variant={match.liked ? "default" : "outline"}
+                    className={`shrink-0 h-8 w-8 ${
+                      match.liked
+                        ? "bg-gradient-to-r from-primary to-secondary"
+                        : ""
+                    }`}
+                    disabled={isLiking}
+                    onClick={() => {
+                      if (match.liked) {
+                        handleUnlikeProfile(match.user._id);
+                      } else {
+                        handleLikeProfile(match.user._id);
+                      }
+                    }}
+                  >
+                    {isLiking ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
+                      >
+                        <Heart className="w-4 h-4" />
+                      </motion.div>
+                    ) : (
+                      <Heart
+                        className={`w-4 h-4 ${match.liked ? "fill-white" : ""}`}
+                      />
+                    )}
+                  </Button>
+                )}
+              </div>
+              <div className="flex flex-col gap-0.5 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1 truncate">
+                  <MapPin className="w-3.5 h-3.5 shrink-0" />
+                  {match.user.city}, {match.user.state}
+                </span>
+                <span className="flex items-center gap-1 truncate">
+                  <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                  {match.user.education?.name || "—"}
+                </span>
+                <span className="flex items-center gap-1 truncate">
+                  <Briefcase className="w-3.5 h-3.5 shrink-0" />
+                  {match.user.profession?.name || "—"}
+                </span>
+              </div>
+
+              <div className="mt-2">
+                <p className="text-xs font-semibold mb-1">Interests:</p>
+                <div className="flex flex-wrap gap-1.5 max-h-[36px] overflow-hidden">
+                  {match.user.interests.slice(0, 4).map((interest, idx) => (
+                    <Badge key={`${interest}-${idx}`} variant="secondary" className="text-xs px-2 py-0.5">
+                      {interest}
+                    </Badge>
+                  ))}
                 </div>
               </div>
-              {!isLocked && (
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 mt-auto pt-2">
+              {isLocked ? (
                 <Button
-                  size="icon"
-                  variant={match.liked ? "default" : "outline"}
-                  className={
-                    match.liked
-                      ? "bg-gradient-to-r from-primary to-secondary"
-                      : ""
-                  }
-                  disabled={isLiking}
-                  onClick={() => {
-                    if (match.liked) {
-                      handleUnlikeProfile(match.user._id);
-                    } else {
-                      handleLikeProfile(match.user._id);
-                    }
-                  }}
+                  className="w-full bg-gradient-to-r from-primary to-secondary text-sm h-9"
+                  onClick={() => navigate("/pricing")}
                 >
-                  {isLiking ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 1,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                    >
-                      <Heart className="w-4 h-4" />
-                    </motion.div>
-                  ) : (
-                    <Heart
-                      className={`w-4 h-4 ${match.liked ? "fill-white" : ""}`}
-                    />
-                  )}
+                  <Lock className="w-4 h-4 mr-2" />
+                  Upgrade to View Profile
                 </Button>
+              ) : (
+                <>
+                  <Button
+                    className="flex-1 bg-gradient-to-r from-primary to-secondary text-sm h-9"
+                    onClick={() => {
+                      if (lockedByLimit) {
+                        toast.error(
+                          "Profile view limit reached. Upgrade your plan 🔒",
+                        );
+                        navigate("/pricing");
+                        return;
+                      }
+                      navigate(`/profile/${match.user._id}`);
+                    }}
+                  >
+                    {lockedByLimit ? (
+                      <>
+                        <Lock className="w-4 h-4 mr-2" />
+                        Upgrade to view profile
+                      </>
+                    ) : (
+                      "View Profile"
+                    )}
+                  </Button>
+                  <AnimatePresence mode="wait">
+                    {isAccepted ? (
+                      <Button
+                        disabled
+                        className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500 text-sm h-9"
+                      >
+                        <Check className="w-4 h-4 mr-1" />
+                        Interest Sent
+                      </Button>
+                    ) : hasIncomingInterest ? (
+                      <Button
+                        disabled
+                        className="flex-1 bg-blue-500 text-white cursor-default hover:bg-blue-500 text-sm h-9"
+                      >
+                        💌 Received Interest
+                      </Button>
+                    ) : isInterestSent ? (
+                      <Button
+                        disabled
+                        className="flex-1 bg-green-500 text-white cursor-default hover:bg-green-500 text-sm h-9"
+                      >
+                        <Check className="w-4 h-4 mr-1" />
+                        Interest Sent
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="flex-1 text-sm h-9"
+                        onClick={() =>
+                          handleSendInterest(match.user._id, match.user.fullName)
+                        }
+                      >
+                        Send Interest
+                      </Button>
+                    )}
+                  </AnimatePresence>
+                </>
               )}
             </div>
-            <div className="mb-4">
-              <p className="text-sm font-semibold mb-2">Interests:</p>
-              <div className="flex flex-wrap gap-2">
-                {match.user.interests.map((interest, idx) => (
-                  <Badge key={`${interest}-${idx}`} variant="secondary">
-                    {interest}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            {/* Action Buttons */}
-            {isLocked ? (
-              <Button
-                className="w-full bg-gradient-to-r from-primary to-secondary"
-                onClick={() => navigate("/pricing")}
-              >
-                <Lock className="w-4 h-4 mr-2" />
-                Upgrade to View Profile
-              </Button>
-            ) : (
-              <div className="flex gap-2">
-                <Button
-                  className="flex-1 bg-gradient-to-r from-primary to-secondary"
-                  onClick={() => {
-                    if (lockedByLimit) {
-                      toast.error(
-                        "Profile view limit reached. Upgrade your plan 🔒",
-                      );
-
-                      navigate("/pricing");
-                      return;
-                    }
-
-                    navigate(`/profile/${match.user._id}`);
-                  }}
-                >
-                  {lockedByLimit ? (
-                    <>
-                      <Lock className="w-4 h-4 mr-2" />
-                      Upgrade to view profile
-                    </>
-                  ) : (
-                    "View Profile"
-                  )}
-                </Button>
-                <AnimatePresence mode="wait">
-                  {isAccepted ? (
-                    <Button
-                      disabled
-                      className="w-full bg-green-500 text-white cursor-default hover:bg-green-500"
-                    >
-                      <Check className="w-4 h-4 mr-2" />
-                      Interest Accepted
-                    </Button>
-                  ) : hasIncomingInterest ? (
-                    <Button
-                      disabled
-                      className="w-full bg-blue-500 text-white cursor-default hover:bg-blue-500"
-                    >
-                      💌 Received Interest
-                    </Button>
-                  ) : isInterestSent ? (
-                    <Button
-                      disabled
-                      className="w-full bg-green-500 text-white cursor-default hover:bg-green-500"
-                    >
-                      <Check className="w-4 h-4 mr-2" />
-                      Interest Sent
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() =>
-                        handleSendInterest(match.user._id, match.user.fullName)
-                      }
-                    >
-                      Send Interest
-                    </Button>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
           </div>
         </div>
       </Card>
