@@ -5,6 +5,7 @@ import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
 import heroSlide3 from "@/assets/hero-slide-3.jpg";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
 const sections = [
@@ -249,6 +250,42 @@ const PrivacyDetails = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const formatTextWithLinks = (text) => {
+    if (!text) return text;
+
+    const parts = text.split(
+      /(www\.loveandring\.com|Love\s*&\s*Ring\s*Ltd\.?)/g,
+    );
+
+    return parts.map((part, index) => {
+      // exact match for website
+      if (part === "www.loveandring.com") {
+        return (
+          <Link
+            key={index}
+            to="https://www.loveandring.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary font-medium hover:underline"
+          >
+            {part}
+          </Link>
+        );
+      }
+
+      // exact match for company name ONLY
+      if (/^Love\s*&\s*Ring\s*Ltd\.?$/.test(part)) {
+        return (
+          <span key={index} className="font-medium text-foreground">
+            {part}
+          </span>
+        );
+      }
+
+      return part;
+    });
+  };
+
   return (
     <div className="min-h-screen">
       {/* Hero Section - identical to Home */}
@@ -333,10 +370,25 @@ const PrivacyDetails = () => {
                   Our Commitment to Your Privacy
                 </h1>
                 <p className="text-[15px] text-foreground/80 leading-[1.7] mb-8 text-justify">
-                  This is the privacy policy established for Love & Ring Ltd.
-                  (collectively referred to as “Love and Ring”, “The Company”,
-                  “we”, “us” or “our” in this policy), our sites such as
-                  www.loveandring.com and our associated apps (“our sites”).
+                  This is the privacy policy established for{" "}
+                  <span className="font-medium text-black">
+                    Love & Ring Ltd.
+                  </span>
+                  . (collectively referred to as{" "}
+                  <span className="font-medium text-black">
+                    “Love and Ring”
+                  </span>
+                  , “The Company”, “we”, “us” or “our” in this policy), our
+                  sites such as
+                  <Link
+                    to="https://www.loveandring.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary font-medium hover:underline px-1"
+                  >
+                    www.loveandring.com
+                  </Link>{" "}
+                  and our associated apps (“our sites”).
                   <br />
                   <br />
                   This policy also incorporates core principles of specific data
@@ -346,12 +398,15 @@ const PrivacyDetails = () => {
                   imperative for a customer who uses our service to understand
                   that establishment and practice of a single applicable global
                   data privacy policy is not always practical. Therefore, we, at
-                  Love & Ring Ltd, is applying key principles of data protection
-                  linked to an individual that broadly covering the core
-                  principles of maintaining privacy of our customers. You will
-                  find below information on how we collect, use, share, transfer
-                  and apply your personal data. This privacy policy also
-                  explains your data privacy rights.
+                  <span className="font-medium text-black px-1">
+                    Love & Ring Ltd
+                  </span>
+                  , is applying key principles of data protection linked to an
+                  individual that broadly covering the core principles of
+                  maintaining privacy of our customers. You will find below
+                  information on how we collect, use, share, transfer and apply
+                  your personal data. This privacy policy also explains your
+                  data privacy rights.
                 </p>
 
                 <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
@@ -359,23 +414,34 @@ const PrivacyDetails = () => {
                   Who We Are
                 </h1>
                 <p className="text-[15px] text-foreground/80 leading-[1.7] mb-8 text-justify">
-                  Love & Ring ltd. (Thekkumattathil House, Marika P O,
-                  Koothattukulam, Ernakulam, 686662, KERALA, INIDIA) is a
-                  company incorporated in India with intended service reach to
-                  multiple regions and countries across EU, Latin America,
-                  Australia and GCC nations. We base everything on our values:
-                  honesty, cleanness (integrity), fairness, a sense of duty to
-                  the customer / Clients. Everything that we do – including our
-                  service approach to Clients and how we use their personal
-                  data. We are strongly committed to keeping your personal data
-                  safe. This commitment exists throughout the lifecycle of your
-                  personal data, from the design of any of our services which
-                  uses personal data to the deletion of that data. Love & Ring
-                  owns a digital platform (www.loveandring.com) through which we
-                  deliver ‘Matrimony Services’ to our clients. As part of client
-                  registration and onward service engagement, we will collect
-                  client’s personal data that will be essential to facilitate
-                  and aid our service delivery.
+                  <span className="font-medium text-black px-1">
+                    Love & Ring Ltd
+                  </span>
+                  .(Thekkumattathil House, Marika P O, Koothattukulam,
+                  Ernakulam, 686662, KERALA, INIDIA) is a company incorporated
+                  in India with intended service reach to multiple regions and
+                  countries across EU, Latin America, Australia and GCC nations.
+                  We base everything on our values: honesty, cleanness
+                  (integrity), fairness, a sense of duty to the customer /
+                  Clients. Everything that we do – including our service
+                  approach to Clients and how we use their personal data. We are
+                  strongly committed to keeping your personal data safe. This
+                  commitment exists throughout the lifecycle of your personal
+                  data, from the design of any of our services which uses
+                  personal data to the deletion of that data. Love & Ring owns a
+                  digital platform (
+                  <Link
+                    to="https://www.loveandring.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary font-medium hover:underline px-1"
+                  >
+                    www.loveandring.com
+                  </Link>{" "}
+                  ) through which we deliver ‘Matrimony Services’ to our
+                  clients. As part of client registration and onward service
+                  engagement, we will collect client’s personal data that will
+                  be essential to facilitate and aid our service delivery.
                 </p>
               </div>
               <motion.div
@@ -390,7 +456,7 @@ const PrivacyDetails = () => {
                       {section.title}
                     </h2>
                     <p className="text-[15px] text-foreground/80 leading-[1.7] mb-5">
-                      {section.paragraph}
+                      {formatTextWithLinks(section.paragraph)}
                     </p>
                     <ul className="space-y-2.5 text-foreground/70 text-[15px] leading-[1.7]">
                       {section.items.map((item) => (
@@ -470,7 +536,7 @@ const PrivacyDetails = () => {
                       {section.title}
                     </h2>
                     <p className="text-[15px] text-foreground/80 leading-[1.7] mb-5">
-                      {section.paragraph}
+                      {formatTextWithLinks(section.paragraph)}
                     </p>
                     <ul className="space-y-2.5 text-foreground/70 text-[15px] leading-[1.7]">
                       {section.items.map((item) => (
