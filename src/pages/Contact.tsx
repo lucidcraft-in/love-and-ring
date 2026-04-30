@@ -68,6 +68,7 @@ const Contact = () => {
         });
 
         const contact = res.data.find((page: any) => page.slug === "contact");
+        console.log("contact", contact);
 
         setContactPage(contact);
       } catch (err) {
@@ -90,23 +91,20 @@ const Contact = () => {
     {
       icon: Mail,
       title: "Email",
-      content: contactInfoSection?.fields?.email,
-      href: contactInfoSection?.fields?.email
-        ? `mailto:${contactInfoSection.fields.email}`
-        : null,
+      content: "loveandring123@gmail.com",
+      href: "mailto:loveandring123@gmail.com",
     },
     {
       icon: Phone,
       title: "Phone",
-      content: contactInfoSection?.fields?.phone,
-      href: contactInfoSection?.fields?.phone
-        ? `tel:${contactInfoSection.fields.phone}`
-        : null,
+      content: "+91 9074503259",
+      href: "tel:+919074503259",
     },
     {
       icon: MapPin,
       title: "Address",
-      content: contactInfoSection?.fields?.address,
+      content:
+        "Thekkumattathil House, Marika P O, Koothattukulam, Ernakulam, Kerala, India – 686662",
       href: null,
     },
   ];
@@ -323,10 +321,16 @@ const Contact = () => {
               {/* Map Placeholder */}
               <Card className="p-6 glass-card">
                 <h3 className="font-semibold mb-4">Our Location</h3>
-                <div className="bg-muted rounded-lg h-64 flex items-center justify-center">
-                  <p className="text-muted-foreground">
-                    Map view would appear here
-                  </p>
+                <div className="rounded-lg overflow-hidden h-64">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://www.google.com/maps?q=686662&output=embed`}
+                  ></iframe>
                 </div>
               </Card>
             </motion.div>

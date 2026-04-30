@@ -103,8 +103,7 @@ The legal ground may be one of the following:`,
   {
     title: "8. Changes to the Privacy Policy.",
     paragraph: `Original Version 1.0 22 Feb 2026
-
-MM Love & Ring Ltd.`,
+Love & Ring Ltd.`,
     items: [],
   },
 ];

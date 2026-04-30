@@ -13,7 +13,7 @@ const Footer = () => {
       { name: "FAQ", path: "/faq" },
       { name: "Privacy Policy", path: "/privacy-details" },
       { name: "Terms of Use", path: "/terms" },
-      { name: "Community Guidelines", path: "/community-guidelines" }, 
+      { name: "Community Guidelines", path: "/community-guidelines" },
       { name: "Refund Policy", path: "/refund-policy" },
     ],
     Plans: [
@@ -24,10 +24,10 @@ const Footer = () => {
   };
 
   const socialLinks = [
-    { icon: Facebook, href: "#" },
-    { icon: Twitter, href: "#" },
-    { icon: Instagram, href: "#" },
-    { icon: Linkedin, href: "#" },
+    { icon: Facebook, href: "https://www.facebook.com/share/17jBoT87vC/?mibextid=wwXIfr" },
+    // { icon: Twitter, href: "#" },
+    { icon: Instagram, href: "https://www.instagram.com/ringloveand" },
+    // { icon: Linkedin, href: "#" },
   ];
 
   return (
@@ -95,17 +95,17 @@ const Footer = () => {
           <p>
             Email:
             <a
-              href="mailto:support@loveandring.com"
+              href="mailto:loveandring123@gmail.com"
               className="hover:text-primary ml-1"
             >
-              support@loveandring.com
+              loveandring123@gmail.com
             </a>
           </p>
 
           <p>
             Phone:
-            <a href="tel:+91XXXXXXXXXX" className="hover:text-primary ml-1">
-              +91-XXXXXXXXXX
+            <a href="tel:+919074503259" className="hover:text-primary ml-1">
+              +91-9074503259
             </a>
           </p>
 
