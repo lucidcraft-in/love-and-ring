@@ -96,7 +96,12 @@ The legal ground may be one of the following:`,
     ],
   },
   {
-    title: "7. Changes to the Privacy Policy.",
+    title: "7. WhatsApp Communication",
+    paragraph: `Love & Ring enables users to initiate communication via WhatsApp for matchmaking purposes through our platform. We do not send unsolicited, automated, or bulk promotional messages via WhatsApp. All communication is strictly user-initiated and occurs only with user consent. Users are responsible for their interactions on WhatsApp, and we encourage safe and respectful communication at all times.`,
+    items: [],
+  },
+  {
+    title: "8. Changes to the Privacy Policy.",
     paragraph: `Original Version 1.0 22 Feb 2026
 
 MM Love & Ring Ltd.`,
@@ -407,6 +412,11 @@ const PrivacyDetails = () => {
                   information on how we collect, use, share, transfer and apply
                   your personal data. This privacy policy also explains your
                   data privacy rights.
+                  <br />
+                  <br />
+                  We may also enable user-initiated communication through
+                  third-party platforms such as WhatsApp, strictly based on user
+                  consent and in accordance with our communication policies.
                 </p>
 
                 <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
