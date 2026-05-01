@@ -24,10 +24,9 @@ const Contact = () => {
   const [loading, setLoading] = useState(true);
   const [showMalayalam, setShowMalayalam] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic validation
     if (!formData.name || !formData.email || !formData.message) {
       toast({
         title: "Error",
@@ -37,7 +36,6 @@ const Contact = () => {
       return;
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       toast({
@@ -48,14 +46,39 @@ const Contact = () => {
       return;
     }
 
-    toast({
-      title: "Message Sent!",
-      description: "We'll get back to you within 24 hours",
-    });
+    try {
+      setLoading(true);
 
-    setFormData({ name: "", email: "", subject: "", message: "" });
+      await Axios.post("/api/contact-us/contact", {
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+      });
+
+      toast({
+        title: "Message Sent!",
+        description: "Your message has been sent successfully ❤️",
+      });
+
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+    } catch (error: any) {
+      console.error(error);
+
+      toast({
+        title: "Error",
+        description: error?.response?.data?.message || "Failed to send message",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
-
   useEffect(() => {
     const fetchContactPage = async () => {
       try {
@@ -254,9 +277,10 @@ const Contact = () => {
 
                   <Button
                     type="submit"
+                    disabled={loading}
                     className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90"
                   >
-                    Send Message
+                    {loading ? "Sending..." : "Send Message"}
                   </Button>
                 </form>
               </Card>
