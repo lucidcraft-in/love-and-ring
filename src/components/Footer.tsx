@@ -95,10 +95,10 @@ const Footer = () => {
           <p>
             Email:
             <a
-              href="mailto:loveandring123@gmail.com"
+              href="mailto:loveandring.support@gmail.com"
               className="hover:text-primary ml-1"
             >
-              loveandring123@gmail.com
+              loveandring.support@gmail.com
             </a>
           </p>
 

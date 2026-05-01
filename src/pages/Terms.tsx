@@ -386,10 +386,10 @@ const Terms = () => {
             </p>
             <p className="text-[15px]">
               <a
-                href="mailto:loveandring123@gmail.com"
+                href="mailto:loveandring.support@gmail.com"
                 className="text-primary font-medium hover:underline"
               >
-                loveandring123@gmail.com
+               loveandring.support@gmail.com
               </a>
             </p>
           </div>

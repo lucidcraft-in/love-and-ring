@@ -91,8 +91,8 @@ const Contact = () => {
     {
       icon: Mail,
       title: "Email",
-      content: "loveandring123@gmail.com",
-      href: "mailto:loveandring123@gmail.com",
+      content: "loveandring.support@gmail.com",
+      href: "mailto:loveandring.support@gmail.com",
     },
     {
       icon: Phone,

@@ -519,10 +519,10 @@ const Support = () => {
               <p className="text-muted-foreground">
                 You can also reach us directly at{" "}
                 <a
-                  href="mailto:loveandring123@gmail.com"
+                  href="mailto:loveandring.support@gmail.com"
                   className="text-primary hover:underline font-medium"
                 >
-                  loveandring123@gmail.com
+                  loveandring.support@gmail.com
                 </a>
               </p>
             </Card>
