@@ -140,12 +140,18 @@ services for a business or commercial purpose, or that an entity brings on your 
 agree that any such claim or dispute must be resolved in a competent court.`,
     items: [],
   },
-  // {
-  //   title: "8. Changes to Terms",
-  //   paragraph:
-  //     "We may update these terms at any time. Users will be notified of significant changes. Continued use of the platform means acceptance of updated terms.",
-  //   items: [],
-  // },
+  {
+    title: "8. User Verification & Safety",
+    paragraph:
+      "Love & Ring may verify user profiles through email, phone, or other identity verification methods. Users are strictly prohibited from creating fake profiles, impersonating others, or engaging in fraudulent activities.We provide reporting and blocking features to ensure user safety. Any violation of these rules may result in account suspension or permanent ban.",
+    items: [],
+  },
+  {
+    title: "9. WhatsApp Communication",
+    paragraph:
+      "Love & Ring enables users to initiate communication via WhatsApp for matchmaking purposes through our platform. We do not send unsolicited promotional messages via WhatsApp, and all communication is user-initiated and occurs only with user consent. Users are responsible for their interactions on WhatsApp, and we encourage safe and respectful communication at all times.",
+    items: [],
+  },
 ];
 
 const Terms = () => {
@@ -372,7 +378,7 @@ const Terms = () => {
 
           <div>
             <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">
-              8. Contact Information
+              10. Contact Information
             </h2>
             <p className="text-[15px] text-foreground/80 leading-[1.7] mb-5">
               If you have questions regarding these Terms of Use, please
@@ -380,10 +386,10 @@ const Terms = () => {
             </p>
             <p className="text-[15px]">
               <a
-                href="mailto:support@loveandring.com"
+                href="mailto:loveandring.support@gmail.com"
                 className="text-primary font-medium hover:underline"
               >
-                support@loveandring.com
+               loveandring.support@gmail.com
               </a>
             </p>
           </div>

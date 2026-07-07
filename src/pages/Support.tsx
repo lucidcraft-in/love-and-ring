@@ -34,6 +34,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import Axios from "@/axios/axios";
 
 interface SupportCategory {
   id: string;
@@ -152,6 +153,16 @@ const categoryFromParam: Record<string, string> = {
   "partner-registration": "registration",
 };
 
+const categoryMap: Record<string, string> = {
+  signin: "Login",
+  registration: "Registration",
+  website: "Website Usage",
+  security: "Security",
+  privacy: "Privacy",
+  pricing: "Billing",
+  "support-quality": "Support",
+  special: "Feature Request",
+};
 const Support = () => {
   const [searchParams] = useSearchParams();
   const fromParam = searchParams.get("from");
@@ -181,24 +192,73 @@ const Support = () => {
     setShowForm(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!formData.category || !formData.description) {
-      toast.error("Please fill in all required fields");
+      toast.error("Please fill all required fields");
       return;
     }
-    setIsSubmitting(true);
-    setTimeout(() => {
-      toast.success("Your support request has been submitted. We'll get back to you soon!");
-      setFormData({ category: "", description: "", email: "" });
+
+    if (formData.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        toast.error("Please enter a valid email");
+        return;
+      }
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const token = localStorage.getItem("token");
+
+      const url = token
+        ? "/api/support-tickets"
+        : "/api/support-tickets/public";
+
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const isLoggedIn = !!token && user?._id;
+
+      await Axios.post(
+        isLoggedIn ? "/api/support-tickets" : "/api/support-tickets/public",
+        {
+          category: categoryMap[formData.category],
+          subject: categoryMap[formData.category],
+          message: formData.description.trim(), // ✅ ONLY THIS
+
+          // guest support
+          email: formData.email,
+          name: isLoggedIn ? user.name : "Guest User",
+        },
+        isLoggedIn
+          ? {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          : {},
+      );
+      toast.success("Support request submitted 🎉");
+
+      setFormData({
+        category: "",
+        description: "",
+        email: "",
+      });
+
       setShowForm(false);
       setSelectedCategory(null);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || "Failed to submit request");
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   const selectedCategoryData = supportCategories.find(
-    (cat) => cat.id === selectedCategory
+    (cat) => cat.id === selectedCategory,
   );
 
   return (
@@ -349,12 +409,16 @@ const Support = () => {
                     >
                       <div className="space-y-1.5">
                         <Label htmlFor="category">
-                          Issue Category <span className="text-destructive">*</span>
+                          Issue Category{" "}
+                          <span className="text-destructive">*</span>
                         </Label>
                         <Select
                           value={formData.category}
                           onValueChange={(value) =>
-                            setFormData((prev) => ({ ...prev, category: value }))
+                            setFormData((prev) => ({
+                              ...prev,
+                              category: value,
+                            }))
                           }
                         >
                           <SelectTrigger>
@@ -372,7 +436,8 @@ const Support = () => {
 
                       <div className="space-y-1.5">
                         <Label htmlFor="description">
-                          Describe your issue <span className="text-destructive">*</span>
+                          Describe your issue{" "}
+                          <span className="text-destructive">*</span>
                         </Label>
                         <Textarea
                           id="description"
@@ -389,9 +454,7 @@ const Support = () => {
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label htmlFor="email">
-                          Email (optional)
-                        </Label>
+                        <Label htmlFor="email">Email *</Label>
                         <Input
                           id="email"
                           type="email"
@@ -456,10 +519,10 @@ const Support = () => {
               <p className="text-muted-foreground">
                 You can also reach us directly at{" "}
                 <a
-                  href="mailto:support@lovering.com"
+                  href="mailto:loveandring.support@gmail.com"
                   className="text-primary hover:underline font-medium"
                 >
-                  support@lovering.com
+                  loveandring.support@gmail.com
                 </a>
               </p>
             </Card>

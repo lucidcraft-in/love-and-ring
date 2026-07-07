@@ -24,10 +24,9 @@ const Contact = () => {
   const [loading, setLoading] = useState(true);
   const [showMalayalam, setShowMalayalam] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic validation
     if (!formData.name || !formData.email || !formData.message) {
       toast({
         title: "Error",
@@ -37,7 +36,6 @@ const Contact = () => {
       return;
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       toast({
@@ -48,14 +46,39 @@ const Contact = () => {
       return;
     }
 
-    toast({
-      title: "Message Sent!",
-      description: "We'll get back to you within 24 hours",
-    });
+    try {
+      setLoading(true);
 
-    setFormData({ name: "", email: "", subject: "", message: "" });
+      await Axios.post("/api/contact-us/contact", {
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+      });
+
+      toast({
+        title: "Message Sent!",
+        description: "Your message has been sent successfully ❤️",
+      });
+
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+    } catch (error: any) {
+      console.error(error);
+
+      toast({
+        title: "Error",
+        description: error?.response?.data?.message || "Failed to send message",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
-
   useEffect(() => {
     const fetchContactPage = async () => {
       try {
@@ -68,6 +91,7 @@ const Contact = () => {
         });
 
         const contact = res.data.find((page: any) => page.slug === "contact");
+        console.log("contact", contact);
 
         setContactPage(contact);
       } catch (err) {
@@ -90,23 +114,20 @@ const Contact = () => {
     {
       icon: Mail,
       title: "Email",
-      content: contactInfoSection?.fields?.email,
-      href: contactInfoSection?.fields?.email
-        ? `mailto:${contactInfoSection.fields.email}`
-        : null,
+      content: "loveandring.support@gmail.com",
+      href: "mailto:loveandring.support@gmail.com",
     },
     {
       icon: Phone,
       title: "Phone",
-      content: contactInfoSection?.fields?.phone,
-      href: contactInfoSection?.fields?.phone
-        ? `tel:${contactInfoSection.fields.phone}`
-        : null,
+      content: "+91 9074503259",
+      href: "tel:+919074503259",
     },
     {
       icon: MapPin,
       title: "Address",
-      content: contactInfoSection?.fields?.address,
+      content:
+        "Thekkumattathil House, Marika P O, Koothattukulam, Ernakulam, Kerala, India – 686662",
       href: null,
     },
   ];
@@ -256,9 +277,10 @@ const Contact = () => {
 
                   <Button
                     type="submit"
+                    disabled={loading}
                     className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90"
                   >
-                    Send Message
+                    {loading ? "Sending..." : "Send Message"}
                   </Button>
                 </form>
               </Card>
@@ -323,10 +345,16 @@ const Contact = () => {
               {/* Map Placeholder */}
               <Card className="p-6 glass-card">
                 <h3 className="font-semibold mb-4">Our Location</h3>
-                <div className="bg-muted rounded-lg h-64 flex items-center justify-center">
-                  <p className="text-muted-foreground">
-                    Map view would appear here
-                  </p>
+                <div className="rounded-lg overflow-hidden h-64">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://www.google.com/maps?q=686662&output=embed`}
+                  ></iframe>
                 </div>
               </Card>
             </motion.div>

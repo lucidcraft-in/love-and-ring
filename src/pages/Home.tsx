@@ -267,6 +267,13 @@ const Home = () => {
     "നിങ്ങൾ ലോകത്തിൽ എവിടെയായാലും അനുയോജ്യരായ ജീവിത പങ്കാളിയെ കണ്ടെത്താൻ… ലവ് & റിങ്",
   ];
 
+  const trustItems = [
+    "Verified Profiles",
+    "Privacy Protected",
+    "Report & Block Users",
+    "Secure Communication",
+  ];
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTagline((prev) => (prev + 1) % heroTaglines.length);
@@ -374,6 +381,33 @@ const Home = () => {
                     <Link to="/register">Register Now</Link>
                   </Button>
                 </div>
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    visible: {
+                      transition: {
+                        staggerChildren: 0.2,
+                      },
+                    },
+                  }}
+                  className="mt-6 sm:mt-8 flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-white"
+                >
+                  {trustItems.map((item, index) => (
+                    <motion.span
+                      key={index}
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                      transition={{ duration: 0.4 }}
+                      whileHover={{ scale: 1.05 }}
+                      className="flex items-center gap-1.5"
+                    >
+                      ✔ {item}
+                    </motion.span>
+                  ))}
+                </motion.div>
               </motion.div>
             ) : formMode === "signin" ? (
               <motion.div

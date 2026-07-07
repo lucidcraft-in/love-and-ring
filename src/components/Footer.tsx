@@ -13,6 +13,8 @@ const Footer = () => {
       { name: "FAQ", path: "/faq" },
       { name: "Privacy Policy", path: "/privacy-details" },
       { name: "Terms of Use", path: "/terms" },
+      { name: "Community Guidelines", path: "/community-guidelines" },
+      { name: "Refund Policy", path: "/refund-policy" },
     ],
     Plans: [
       { name: "Pricing", path: "/pricing" },
@@ -22,10 +24,10 @@ const Footer = () => {
   };
 
   const socialLinks = [
-    { icon: Facebook, href: "#" },
-    { icon: Twitter, href: "#" },
-    { icon: Instagram, href: "#" },
-    { icon: Linkedin, href: "#" },
+    { icon: Facebook, href: "https://www.facebook.com/share/17jBoT87vC/?mibextid=wwXIfr" },
+    // { icon: Twitter, href: "#" },
+    { icon: Instagram, href: "https://www.instagram.com/ringloveand" },
+    // { icon: Linkedin, href: "#" },
   ];
 
   return (
@@ -35,11 +37,18 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
-              <img src={ringLogo} alt="Love & Ring" className="h-10 w-10 object-contain" />
-              <span className="text-xl font-bold gradient-text">Love & Ring</span>
+              <img
+                src={ringLogo}
+                alt="Love & Ring"
+                className="h-10 w-10 object-contain"
+              />
+              <span className="text-xl font-bold gradient-text">
+                Love & Ring
+              </span>
             </Link>
             <p className="text-muted-foreground text-sm">
-              Find your perfect match with trust, security, and complete privacy.
+              Find your perfect match with trust, security, and complete
+              privacy.
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((social, index) => (
@@ -75,8 +84,35 @@ const Footer = () => {
           ))}
         </div>
 
-        <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Love & Ring. All rights reserved.</p>
+        <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground space-y-2">
+          <p className="font-medium text-foreground">Love & Ring Ltd.</p>
+
+          <p>
+            Thekkumattathil House, Marika P O, Koothattukulam, Ernakulam,
+            Kerala, India – 686662
+          </p>
+
+          <p>
+            Email:
+            <a
+              href="mailto:loveandring.support@gmail.com"
+              className="hover:text-primary ml-1"
+            >
+              loveandring.support@gmail.com
+            </a>
+          </p>
+
+          <p>
+            Phone:
+            <a href="tel:+919074503259" className="hover:text-primary ml-1">
+              +91-9074503259
+            </a>
+          </p>
+
+          <p className="mt-2">
+            &copy; {new Date().getFullYear()} Love & Ring Ltd. All rights
+            reserved.
+          </p>
         </div>
       </div>
     </footer>

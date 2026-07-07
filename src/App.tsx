@@ -31,6 +31,8 @@ import NotFound from "./pages/NotFound";
 import CallPage from "./pages/CallPage";
 import socket from "@/socket";
 import { useNavigate } from "react-router-dom";
+import CommunityGuidelines from "./pages/CommunityGuidelines";
+import RefundPolicy from "./pages/RefundPolicy";
 
 const queryClient = new QueryClient();
 
@@ -104,6 +106,8 @@ const AppLayout = () => {
           <Route path="/support" element={<Support />} />
           <Route path="/privacy-details" element={<PrivacyDetails />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/community-guidelines" element={<CommunityGuidelines />} />
+          <Route path="/refund-policy" element={<RefundPolicy />} />
           <Route path="/call/:roomId" element={<CallPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
