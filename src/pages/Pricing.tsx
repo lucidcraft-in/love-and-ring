@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import Axios from "@/axios/axios";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import pricingHeroBg from "@/assets/pricing-hero-bg.jpg";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Plan {
   _id: string;
@@ -28,8 +30,138 @@ interface Plan {
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user, updateProfile } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [showMalayalam, setShowMalayalam] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState<string | null>(null);
+
+  const loadScript = (src: string) => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePayment = async (plan: Plan) => {
+    const token = localStorage.getItem("token");
+    if (!token || !user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to purchase a subscription plan.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+
+    setPaymentLoading(plan._id);
+
+    try {
+      // 1. Load Razorpay SDK
+      const sdkLoaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+      if (!sdkLoaded) {
+        toast({
+          title: "SDK Load Failed",
+          description: "Could not load payment gateway SDK. Are you online?",
+          variant: "destructive",
+        });
+        setPaymentLoading(null);
+        return;
+      }
+
+      // 2. Fetch Razorpay Key ID
+      const keyResponse = await Axios.get("/api/razorpay/key", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const razorpayKey = keyResponse.data.key;
+
+      // 3. Create checkout order
+      const orderResponse = await Axios.post(
+        "/api/razorpay/checkout",
+        { planId: plan._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const orderData = orderResponse.data;
+
+      // 4. Configure Razorpay Options
+      const options = {
+        key: razorpayKey,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Love & Ring",
+        description: `Upgrade to ${plan.title} Plan`,
+        order_id: orderData.id,
+        handler: async function (response: any) {
+          try {
+            const verifyResponse = await Axios.post(
+              "/api/razorpay/verify",
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                planId: plan._id,
+              },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            toast({
+              title: "Upgrade Successful!",
+              description: verifyResponse.data.message || "Your subscription has been activated.",
+            });
+
+            // Fetch latest user details and update profile state
+            try {
+              const userProfileResponse = await Axios.get(`/api/users/${user._id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              updateProfile(userProfileResponse.data);
+            } catch (err) {
+              console.error("Failed to fetch updated user info:", err);
+            }
+
+            // Redirect to dashboard
+            navigate("/dashboard");
+          } catch (verifyError: any) {
+            toast({
+              title: "Payment Verification Failed",
+              description: verifyError.response?.data?.message || "Something went wrong during payment verification.",
+              variant: "destructive",
+            });
+            setPaymentLoading(null);
+          }
+        },
+        prefill: {
+          name: user.fullName || "",
+          email: user.email || "",
+          contact: user.mobile || "",
+          method: "upi",
+        },
+        theme: {
+          color: "#E11D48",
+        },
+        modal: {
+          ondismiss: function () {
+            setPaymentLoading(null);
+          },
+        },
+      };
+
+      const paymentObject = new (window as any).Razorpay(options);
+      paymentObject.open();
+    } catch (err: any) {
+      console.error("Payment initiation error:", err);
+      toast({
+        title: "Payment Initiation Failed",
+        description: err.response?.data?.message || "Could not start the payment flow.",
+        variant: "destructive",
+      });
+      setPaymentLoading(null);
+    }
+  };
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -191,9 +323,10 @@ const Pricing = () => {
 
                   <Button
                     className="w-full bg-gradient-to-r from-primary to-secondary"
-                    onClick={() => navigate("/contact")}
+                    onClick={() => handlePayment(plan)}
+                    disabled={paymentLoading === plan._id}
                   >
-                    Choose Plan
+                    {paymentLoading === plan._id ? "Processing..." : "Choose Plan"}
                   </Button>
                 </Card>
               </motion.div>
