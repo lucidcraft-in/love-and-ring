@@ -38,6 +38,7 @@ import { toast } from "sonner";
 interface Profile {
   _id: string;
   fullName: string;
+  gender?: string;
   dateOfBirth?: string;
   highestEducation?: { name: string };
   photos?: { url: string; isPrimary: boolean; isHidden?: boolean }[];
@@ -185,6 +186,7 @@ const BrowseProfiles = () => {
   };
 
   const filteredProfiles = profiles.filter((p) => {
+    // Search query check
     const matchesSearch = (p.fullName ?? "")
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
@@ -252,7 +254,7 @@ const BrowseProfiles = () => {
       <Card className="glass-card overflow-hidden hover:shadow-lg transition-all group">
         <div className="relative h-64">
           <img
-            src={getProfileImage(profile.photos)}
+            src={getProfileImage(profile.photos, profile.gender)}
             alt={profile.fullName}
             className={`w-full h-full object-cover ${
               isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""
