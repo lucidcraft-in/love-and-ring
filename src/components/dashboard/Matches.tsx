@@ -733,7 +733,7 @@ const Matches = () => {
           {matches.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
               {" "}
-              {matches.slice(0, 2).map((match) => (
+              {matches.map((match) => (
                 <MatchCard key={match.user._id} match={match} />
               ))}
             </div>
