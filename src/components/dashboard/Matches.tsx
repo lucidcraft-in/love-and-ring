@@ -719,8 +719,8 @@ const Matches = () => {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        {/* Horizontal scroll container for mobile/tablet */}
-        <div className="overflow-x-auto scrollbar-hide lg:overflow-visible px-1 -mx-1">
+        {/* Horizontal scroll container for mobile/tablet - sticky header */}
+        <div className="sticky top-16 lg:top-0 z-20 bg-[#fafafa]/95 dark:bg-background/95 backdrop-blur-md py-3 px-1 -mx-1 border-b border-border/40 overflow-x-auto scrollbar-hide lg:overflow-visible">
           <TabsList className="w-max lg:w-auto flex-nowrap">
             <TabsTrigger value="new">New Matches</TabsTrigger>
             <TabsTrigger value="all">My Matches</TabsTrigger>
