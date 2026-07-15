@@ -64,38 +64,45 @@ const Matches = () => {
   // Mock user NRI plan status - set to false to simulate non-NRI user
   const hasNRIPlan = false;
   const fetchProfilesILiked = async (): Promise<string[]> => {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    const res = await Axios.get("/api/user/profile-likes/sent", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      const res = await Axios.get("/api/user/profile-likes/sent", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    const formatted: MatchItem[] = res.data.map((item: any) => ({
-      user: {
-        _id: item.likedUser._id,
-        fullName: item.likedUser.fullName,
-        dateOfBirth: item.likedUser.dateOfBirth,
-        city: item.likedUser.city,
-        state: item.likedUser.state,
-        interests: item.likedUser.interests || [],
-        education: item.likedUser.highestEducation
-          ? { name: item.likedUser.highestEducation.name }
-          : undefined,
-        profession: item.likedUser.profession
-          ? { name: item.likedUser.profession.name }
-          : undefined,
-        photos: item.likedUser.photos || [],
-      },
-      matchScore: item.matchPercentage ?? 0,
-      liked: true,
-    }));
+      const formatted: MatchItem[] = (res.data || [])
+        .filter((item: any) => item && item.likedUser)
+        .map((item: any) => ({
+          user: {
+            _id: item.likedUser._id,
+            fullName: item.likedUser.fullName,
+            dateOfBirth: item.likedUser.dateOfBirth,
+            city: item.likedUser.city,
+            state: item.likedUser.state,
+            interests: item.likedUser.interests || [],
+            education: item.likedUser.highestEducation
+              ? { name: item.likedUser.highestEducation.name }
+              : undefined,
+            profession: item.likedUser.profession
+              ? { name: item.likedUser.profession.name }
+              : undefined,
+            photos: item.likedUser.photos || [],
+          },
+          matchScore: item.matchPercentage ?? 0,
+          liked: true,
+        }));
 
-    setLikedByMe(formatted);
+      setLikedByMe(formatted);
 
-    const ids = formatted.map((m) => m.user._id);
-    setLikedUserIds(new Set(ids));
+      const ids = formatted.map((m) => m.user._id);
+      setLikedUserIds(new Set(ids));
 
-    return ids; // ✅ important
+      return ids;
+    } catch (err) {
+      console.error("Failed to fetch profiles I liked", err);
+      return [];
+    }
   };
 
   const fetchProfilesWhoLikedMe = async () => {
@@ -109,27 +116,29 @@ const Matches = () => {
       });
       console.log("RECEIVED:", res.data);
 
-      const formatted: MatchItem[] = res.data.map((item: any) => {
-        const u = item.likedBy;
+      const formatted: MatchItem[] = (res.data || [])
+        .filter((item: any) => item && item.likedBy)
+        .map((item: any) => {
+          const u = item.likedBy;
 
-        return {
-          user: {
-            _id: u._id,
-            fullName: u.fullName,
-            dateOfBirth: u.dateOfBirth,
-            city: u.city,
-            state: u.state,
-            interests: u.interests || [],
-            education: u.highestEducation
-              ? { name: u.highestEducation.name }
-              : undefined,
-            profession: u.profession ? { name: u.profession.name } : undefined,
-            photos: u.photos || [],
-          },
-          matchScore: item.matchPercentage ?? 0,
-          liked: false,
-        };
-      });
+          return {
+            user: {
+              _id: u._id,
+              fullName: u.fullName,
+              dateOfBirth: u.dateOfBirth,
+              city: u.city,
+              state: u.state,
+              interests: u.interests || [],
+              education: u.highestEducation
+                ? { name: u.highestEducation.name }
+                : undefined,
+              profession: u.profession ? { name: u.profession.name } : undefined,
+              photos: u.photos || [],
+            },
+            matchScore: item.matchPercentage ?? 0,
+            liked: false,
+          };
+        });
 
       setLikedMe(formatted);
     } catch (err) {
@@ -150,28 +159,33 @@ const Matches = () => {
 
       const raw = Array.isArray(res.data?.data) ? res.data.data : [];
 
-      const normalized: MatchItem[] = raw.map((item: any) => ({
-        user: {
-          _id: item.user._id,
-          fullName: item.user.fullName,
-          dateOfBirth: item.user.dateOfBirth,
-          heightCm: item.user.heightCm,
-          interests: item.user.interests || [],
-          education: item.user.highestEducation
-            ? { name: item.user.highestEducation.name }
-            : undefined,
-          profession: item.user.profession
-            ? { name: item.user.profession.name }
-            : undefined,
-          city: item.user.city,
-          state: item.user.state,
-          photos: item.user.photos || [],
-        },
-        matchScore: item.matchPercentage ?? 0,
-        liked: likedIds.has(item.user._id), // ✅ now correct
-      }));
+      const normalized: MatchItem[] = raw
+        .filter((item: any) => item && item.user)
+        .map((item: any) => ({
+          user: {
+            _id: item.user._id,
+            fullName: item.user.fullName,
+            dateOfBirth: item.user.dateOfBirth,
+            heightCm: item.user.heightCm,
+            interests: item.user.interests || [],
+            education: item.user.highestEducation
+              ? { name: item.user.highestEducation.name }
+              : undefined,
+            profession: item.user.profession
+              ? { name: item.user.profession.name }
+              : undefined,
+            city: item.user.city,
+            state: item.user.state,
+            photos: item.user.photos || [],
+          },
+          matchScore: item.matchPercentage ?? 0,
+          liked: likedIds.has(item.user._id), // ✅ now correct
+        }));
 
       setMatches(normalized);
+    } catch (err) {
+      console.error("Failed to fetch matches", err);
+      toast.error("Failed to load matches");
     } finally {
       setLoading(false);
     }
@@ -184,9 +198,9 @@ const Matches = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // console.log("SENT INTEREST RESPONSE:", res.data);
-
-      const ids = res.data.map((item: any) => item.toUser?._id);
+      const ids = (res.data || [])
+        .map((item: any) => item.toUser?._id)
+        .filter(Boolean);
 
       console.log("Extracted IDs:", ids);
 
@@ -203,7 +217,9 @@ const Matches = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const ids = res.data.map((item: any) => item.fromUser?._id);
+      const ids = (res.data || [])
+        .map((item: any) => item.fromUser?._id)
+        .filter(Boolean);
 
       setReceivedInterests(ids);
     } catch (err) {
@@ -218,9 +234,9 @@ const Matches = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const ids = res.data.map((item: any) => {
-        return item.fromUser?._id;
-      });
+      const ids = (res.data || [])
+        .map((item: any) => item.fromUser?._id)
+        .filter(Boolean);
 
       setAcceptedInterests(ids);
     } catch (err) {
@@ -254,13 +270,17 @@ const Matches = () => {
   };
   useEffect(() => {
     const init = async () => {
-      const likedIdsArray = await fetchProfilesILiked();
-      await fetchProfilesWhoLikedMe();
-      await fetchSentInterests();
-      await fetchReceivedInterests();
-      await fetchAcceptedInterests();
-      await fetchMatches(new Set(likedIdsArray));
-      await checkProfileLimit();
+      try {
+        const likedIdsArray = await fetchProfilesILiked();
+        await fetchProfilesWhoLikedMe();
+        await fetchSentInterests();
+        await fetchReceivedInterests();
+        await fetchAcceptedInterests();
+        await fetchMatches(new Set(likedIdsArray));
+        await checkProfileLimit();
+      } catch (err) {
+        console.error("Error during matches initialization", err);
+      }
     };
 
     init();
