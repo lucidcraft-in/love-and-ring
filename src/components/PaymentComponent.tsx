@@ -1,104 +1,61 @@
-import React, { useState } from 'react';
-import Axios from '@/axios/axios';
+import React, { useState } from "react";
+import Axios from "@/axios/axios";
 
 function PaymentComponent() {
   const [loading, setLoading] = useState(false);
 
-  // Helper function to load Razorpay SDK script
-  const loadScript = (src: string) => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = src;
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
-  const displayRazorpay = async () => {
+  const displayPayUCheckout = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert('Please login first to process payment.');
-      return;
-    }
-
-    const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
-    if (!res) {
-      alert('Razorpay SDK failed to load. Are you online?');
+      alert("Please login first to process payment.");
       return;
     }
 
     setLoading(true);
 
     try {
-      // 1. Fetch Key ID
-      const keyResponse = await Axios.get('/api/razorpay/key', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const razorpayKey = keyResponse.data.key;
-
-      // 2. Call backend to create an order (use a valid planId for testing)
-      const response = await Axios.post('/api/razorpay/checkout', 
-        { planId: 'TEST_PLAN_ID' },
+      // 1. Call backend to get generated PayU hash and parameters
+      const response = await Axios.post(
+        "/api/payu/checkout",
+        { planId: "TEST_PLAN_ID" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      const orderData = response.data;
-      setLoading(false);
 
-      // 3. Set up Razorpay Checkout Options
-      const options = {
-        key: razorpayKey,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'Love & Ring',
-        description: 'Membership Purchase Test',
-        order_id: orderData.id,
-        handler: async function (paymentRes: any) {
-          try {
-            const verifyResponse = await Axios.post('/api/razorpay/verify', 
-              {
-                razorpay_order_id: paymentRes.razorpay_order_id,
-                razorpay_payment_id: paymentRes.razorpay_payment_id,
-                razorpay_signature: paymentRes.razorpay_signature,
-                planId: 'TEST_PLAN_ID',
-              },
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
+      const payuData = response.data;
 
-            alert(verifyResponse.data.message || 'Payment Successful!');
-          } catch (verifyError: any) {
-            alert(verifyError.response?.data?.message || 'Payment Verification Failed.');
-          }
-        },
-        prefill: {
-          name: 'John Doe',
-          email: 'johndoe@example.com',
-          contact: '9999999999',
-          method: 'upi',
-        },
-        theme: {
-          color: '#E11D48',
-        },
-      };
+      // 2. Dynamically create an HTML form to post parameters to PayU hosted gateway
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = payuData.action; // PayU gateway URL
 
-      const paymentObject = new (window as any).Razorpay(options);
-      paymentObject.open();
+      // Append all required PayU payload parameters to form fields
+      Object.keys(payuData).forEach((key) => {
+        if (key !== "action") {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = payuData[key];
+          form.appendChild(input);
+        }
+      });
+
+      document.body.appendChild(form);
+      form.submit(); // Redirects user directly to PayU Gateway
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Could not initiate Razorpay transaction.');
+      alert(err.response?.data?.message || "Could not initiate PayU transaction.");
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h2>Razorpay Integration Test</h2>
-      <button 
-        onClick={displayRazorpay} 
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <h2>PayU Payment Integration</h2>
+      <button
+        onClick={displayPayUCheckout}
         disabled={loading}
-        style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}
+        style={{ padding: "10px 20px", fontSize: "16px", cursor: "pointer" }}
       >
-        {loading ? 'Processing...' : 'Pay Now'}
+        {loading ? "Processing..." : "Pay Now"}
       </button>
     </div>
   );
