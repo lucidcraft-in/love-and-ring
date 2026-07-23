@@ -34,6 +34,7 @@ interface UserProfile {
   profession?: string;
   profileImage?: string;
   membership?: string;
+  profileStatus?: string;
 }
 
 interface Option {
