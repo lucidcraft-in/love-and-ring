@@ -33,6 +33,9 @@ import socket from "@/socket";
 import { useNavigate } from "react-router-dom";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
 import RefundPolicy from "./pages/RefundPolicy";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentFailed from "./pages/PaymentFailed";
 
 const queryClient = new QueryClient();
 
@@ -97,18 +100,23 @@ const AppLayout = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/dashboard" element={<UserDashboard />} />
-          <Route path="/dashboard/contacts-viewed" element={<ContactsViewed />} />
-          <Route path="/dashboard/chats" element={<ChatsPage />} />
-          <Route path="/profile/:id" element={<SingleProfile />} />
           <Route path="/client-terms" element={<ClientTerms />} />
           <Route path="/client-registration" element={<ClientRegistration />} />
-          <Route path="/support" element={<Support />} />
           <Route path="/privacy-details" element={<PrivacyDetails />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/community-guidelines" element={<CommunityGuidelines />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
-          <Route path="/call/:roomId" element={<CallPage />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/payment-failed" element={<PaymentFailed />} />
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<UserDashboard />} />
+            <Route path="/dashboard/contacts-viewed" element={<ContactsViewed />} />
+            <Route path="/dashboard/chats" element={<ChatsPage />} />
+            <Route path="/profile/:id" element={<SingleProfile />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/call/:roomId" element={<CallPage />} />
+          </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
