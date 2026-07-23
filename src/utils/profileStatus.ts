@@ -38,6 +38,7 @@ export interface UserProfile {
   education?: string;
   traits?: string[];
   diets?: string[];
+  profileStatus:string;
 }
 
 export type ProfileStatus = "BASIC" | "COMPLETED";
