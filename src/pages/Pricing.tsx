@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Crown, Minus } from "lucide-react";
+import { Check, Crown, Send } from "lucide-react";
 import { useEffect, useState } from "react";
 import Axios from "@/axios/axios";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
@@ -22,6 +22,7 @@ interface Plan {
     isHighlighted: boolean;
   }[];
   isPopular: boolean;
+  millionClub?: boolean;
   duration?: {
     value: number;
     unit: string;
@@ -31,21 +32,13 @@ interface Plan {
 const Pricing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, updateProfile } = useAuth();
+  const { user } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [showMalayalam, setShowMalayalam] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState<string | null>(null);
+  const [requestLoading, setRequestLoading] = useState<string | null>(null);
 
-  const loadScript = (src: string) => {
-    return new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = src;
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
+  /* Handler for Standard Paid Plans (PayU Gateway) */
   const handlePayment = async (plan: Plan) => {
     const token = localStorage.getItem("token");
     if (!token || !user) {
@@ -61,97 +54,30 @@ const Pricing = () => {
     setPaymentLoading(plan._id);
 
     try {
-      // 1. Load Razorpay SDK
-      const sdkLoaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
-      if (!sdkLoaded) {
-        toast({
-          title: "SDK Load Failed",
-          description: "Could not load payment gateway SDK. Are you online?",
-          variant: "destructive",
-        });
-        setPaymentLoading(null);
-        return;
-      }
-
-      // 2. Fetch Razorpay Key ID
-      const keyResponse = await Axios.get("/api/razorpay/key", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const razorpayKey = keyResponse.data.key;
-
-      // 3. Create checkout order
-      const orderResponse = await Axios.post(
-        "/api/razorpay/checkout",
+      const response = await Axios.post(
+        "/api/payu/checkout",
         { planId: plan._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      const orderData = orderResponse.data;
 
-      // 4. Configure Razorpay Options
-      const options = {
-        key: razorpayKey,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "Love & Ring",
-        description: `Upgrade to ${plan.title} Plan`,
-        order_id: orderData.id,
-        handler: async function (response: any) {
-          try {
-            const verifyResponse = await Axios.post(
-              "/api/razorpay/verify",
-              {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                planId: plan._id,
-              },
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
+      const payuData = response.data;
 
-            toast({
-              title: "Upgrade Successful!",
-              description: verifyResponse.data.message || "Your subscription has been activated.",
-            });
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = payuData.action;
 
-            // Fetch latest user details and update profile state
-            try {
-              const userProfileResponse = await Axios.get(`/api/users/${user._id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
-              updateProfile(userProfileResponse.data);
-            } catch (err) {
-              console.error("Failed to fetch updated user info:", err);
-            }
+      Object.keys(payuData).forEach((key) => {
+        if (key !== "action") {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = payuData[key] ?? "";
+          form.appendChild(input);
+        }
+      });
 
-            // Redirect to dashboard
-            navigate("/dashboard");
-          } catch (verifyError: any) {
-            toast({
-              title: "Payment Verification Failed",
-              description: verifyError.response?.data?.message || "Something went wrong during payment verification.",
-              variant: "destructive",
-            });
-            setPaymentLoading(null);
-          }
-        },
-        prefill: {
-          name: user.fullName || "",
-          email: user.email || "",
-          contact: user.mobile || "",
-          method: "upi",
-        },
-        theme: {
-          color: "#E11D48",
-        },
-        modal: {
-          ondismiss: function () {
-            setPaymentLoading(null);
-          },
-        },
-      };
-
-      const paymentObject = new (window as any).Razorpay(options);
-      paymentObject.open();
+      document.body.appendChild(form);
+      form.submit();
     } catch (err: any) {
       console.error("Payment initiation error:", err);
       toast({
@@ -160,6 +86,47 @@ const Pricing = () => {
         variant: "destructive",
       });
       setPaymentLoading(null);
+    }
+  };
+
+  /* Handler for Million Club Access Request */
+  const handleMillionClubRequest = async (plan: Plan) => {
+    const token = localStorage.getItem("token");
+    if (!token || !user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to submit a Million Club membership request.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+
+    setRequestLoading(plan._id);
+
+    try {
+      const response = await Axios.post(
+        "/api/million-club/request",
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast({
+        title: "Request Submitted!",
+        description:
+          response.data.message ||
+          "Your request for Million Club membership has been sent to the admin team.",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Request Failed",
+        description:
+          err.response?.data?.message ||
+          "Could not send Million Club request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setRequestLoading(null);
     }
   };
 
@@ -182,6 +149,7 @@ const Pricing = () => {
 
     fetchPlans();
   }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setShowMalayalam((prev) => !prev);
@@ -190,8 +158,6 @@ const Pricing = () => {
     return () => clearInterval(interval);
   }, []);
 
-  
-
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -199,7 +165,6 @@ const Pricing = () => {
         id="hero-section"
         className="relative min-h-screen flex items-center justify-center overflow-hidden"
       >
-        {/* Background Image */}
         <div
           className="absolute inset-0"
           style={{
@@ -209,7 +174,6 @@ const Pricing = () => {
             backgroundRepeat: "no-repeat",
           }}
         />
-        {/* Dark Overlay */}
         <div
           className="absolute inset-0"
           style={{
@@ -217,9 +181,7 @@ const Pricing = () => {
               "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.65) 100%)",
           }}
         />
-        {/* Floating Brand Logos */}
         <FloatingBrandLogo variant="hero" />
-        {/* Hero Content */}
         <div className="relative z-10 container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -246,10 +208,10 @@ const Pricing = () => {
                   style={
                     showMalayalam
                       ? {
-                          fontFamily: "'Noto Sans Malayalam', sans-serif",
-                          fontSize: "0.9em",
-                          fontWeight: 500,
-                        }
+                        fontFamily: "'Noto Sans Malayalam', sans-serif",
+                        fontSize: "0.9em",
+                        fontWeight: 500,
+                      }
                       : {}
                   }
                 >
@@ -263,10 +225,10 @@ const Pricing = () => {
         </div>
       </section>
 
-      {/* Pricing Cards */}
+      {/* Pricing Cards - 4 Column Layout */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {plans.map((plan, index) => (
               <motion.div
                 key={plan._id}
@@ -275,10 +237,16 @@ const Pricing = () => {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="p-8 h-full flex flex-col relative">
+                <Card className="p-6 h-full flex flex-col relative">
                   {plan.isPopular && (
                     <span className="absolute top-4 right-4 text-xs px-2 py-1 rounded-full bg-primary text-white">
                       Popular
+                    </span>
+                  )}
+
+                  {plan.millionClub && (
+                    <span className="absolute top-4 right-4 text-xs px-2 py-1 rounded-full bg-amber-500 text-white font-medium">
+                      Million Club
                     </span>
                   )}
 
@@ -289,17 +257,23 @@ const Pricing = () => {
 
                     <h3 className="text-xl font-semibold mb-1">{plan.title}</h3>
 
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground min-h-[20px]">
                       {plan.heading}
                     </p>
 
                     <p className="text-2xl font-bold mt-4">
-                      ₹{plan.price}
-                      {plan.duration && (
-                        <span className="text-sm font-normal text-muted-foreground">
-                          {" "}
-                          / {plan.duration.value} {plan.duration.unit}
-                        </span>
+                      {plan.millionClub || plan.price === 0 ? (
+                        "Custom / On Request"
+                      ) : (
+                        <>
+                          ₹{plan.price}
+                          {plan.duration && (
+                            <span className="text-sm font-normal text-muted-foreground">
+                              {" "}
+                              / {plan.duration.value} {plan.duration.unit}
+                            </span>
+                          )}
+                        </>
                       )}
                     </p>
                   </div>
@@ -308,11 +282,10 @@ const Pricing = () => {
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-3">
                         <Check
-                          className={`h-4 w-4 mt-1 ${
-                            feature.isHighlighted
+                          className={`h-4 w-4 mt-1 shrink-0 ${feature.isHighlighted
                               ? "text-primary"
                               : "text-muted-foreground"
-                          }`}
+                            }`}
                         />
                         <span className="text-sm">
                           {feature.label}: <strong>{feature.value}</strong>
@@ -321,13 +294,32 @@ const Pricing = () => {
                     ))}
                   </ul>
 
-                  <Button
-                    className="w-full bg-gradient-to-r from-primary to-secondary"
-                    onClick={() => handlePayment(plan)}
-                    disabled={paymentLoading === plan._id}
-                  >
-                    {paymentLoading === plan._id ? "Processing..." : "Choose Plan"}
-                  </Button>
+                  {/* Million Club Action Button */}
+                  {plan.millionClub ? (
+                    user?.profileStatus?.toLowerCase().includes("million") ? (
+                      <Button className="w-full bg-green-600 hover:bg-green-600 text-white" disabled>
+                        <Check className="w-4 h-4 mr-2" />
+                        Active Member
+                      </Button>
+                    ) : (
+                      <Button
+                        className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
+                        onClick={() => handleMillionClubRequest(plan)}
+                        disabled={requestLoading === plan._id}
+                      >
+                        <Send className="w-4 h-4 mr-2" />
+                        {requestLoading === plan._id ? "Sending..." : "Request Membership"}
+                      </Button>
+                    )
+                  ) : (
+                    <Button
+                      className="w-full bg-gradient-to-r from-primary to-secondary"
+                      onClick={() => handlePayment(plan)}
+                      disabled={paymentLoading === plan._id}
+                    >
+                      {paymentLoading === plan._id ? "Processing..." : "Purchase Plan"}
+                    </Button>
+                  )}
                 </Card>
               </motion.div>
             ))}
