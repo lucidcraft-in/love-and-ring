@@ -116,8 +116,9 @@ const Login = () => {
 
   const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone || !otp || otp.length < 6) {
-      toast.error("Please enter phone number and OTP");
+    // 👈 Fixed OTP length check from 6 to 4
+    if (!phone || !otp || otp.length < 4) {
+      toast.error("Please enter a valid 4-digit OTP");
       return;
     }
     try {
@@ -357,33 +358,46 @@ const Login = () => {
                       </Button>
                     ) : (
                       <>
-                        <div className="space-y-1.5">
-                          <Label className="text-sm">Enter OTP</Label>
+                        {/* 👈 4-Digit OTP Input Fields */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Enter 4-Digit OTP</Label>
                           <div className="flex justify-center">
-                            <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                              <InputOTPGroup>
-                                <InputOTPSlot index={0} />
-                                <InputOTPSlot index={1} />
-                                <InputOTPSlot index={2} />
-                                <InputOTPSlot index={3} />
-                                <InputOTPSlot index={4} />
-                                <InputOTPSlot index={5} />
+                            <InputOTP maxLength={4} value={otp} onChange={setOtp}>
+                              <InputOTPGroup className="gap-3">
+                                <InputOTPSlot index={0} className="w-12 h-12 text-xl font-bold border-2 border-primary/40 rounded-lg text-center" />
+                                <InputOTPSlot index={1} className="w-12 h-12 text-xl font-bold border-2 border-primary/40 rounded-lg text-center" />
+                                <InputOTPSlot index={2} className="w-12 h-12 text-xl font-bold border-2 border-primary/40 rounded-lg text-center" />
+                                <InputOTPSlot index={3} className="w-12 h-12 text-xl font-bold border-2 border-primary/40 rounded-lg text-center" />
                               </InputOTPGroup>
                             </InputOTP>
                           </div>
-                          <button
-                            type="button"
-                            onClick={handleSendOtp}
-                            className="text-xs text-primary hover:underline mt-1"
-                            disabled={sendingOtp}
-                          >
-                            Resend OTP
-                          </button>
+
+                          <div className="flex justify-between items-center text-xs mt-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOtpSent(false);
+                                setOtp("");
+                              }}
+                              className="text-muted-foreground hover:underline"
+                            >
+                              Change Phone Number
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={handleSendOtp}
+                              className="text-primary font-medium hover:underline"
+                              disabled={sendingOtp}
+                            >
+                              {sendingOtp ? "Resending..." : "Resend OTP"}
+                            </button>
+                          </div>
                         </div>
 
                         <Button
                           type="submit"
-                          className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25 rounded-lg"
+                          className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25 rounded-lg mt-4"
                           disabled={isLoading}
                         >
                           {isLoading ? "Verifying..." : "Verify & Sign In"}
