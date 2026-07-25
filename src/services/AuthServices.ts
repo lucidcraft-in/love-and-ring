@@ -6,24 +6,32 @@ export const loginUserApi = async (email: string, password: string) => {
     password,
   });
   return response.data;
-}
-export const SendSignUpOtp=async(email:string)=>{
-    const response= await Axios.post("/api/user/auth/signup/send-otp",{email});
-    return response.data;
-}
+};
 
-export const VerifySignUpOtp=async(email:string,otp:string)=>{
-    const response= await Axios.post("/api/user/auth/signup/send-otp",{email,otp});
-    return response.data;
-}
-
-export const sendLoginOtp = async (phone: string) => {
-  const response = await Axios.post("/api/user/auth/login/send-otp", { phone });
+export const SendSignUpOtp = async (email: string) => {
+  const response = await Axios.post("/api/user/auth/signup/send-otp", { email });
   return response.data;
 };
 
+export const VerifySignUpOtp = async (email: string, otp: string) => {
+  const response = await Axios.post("/api/user/auth/signup/verify-otp", { email, otp });
+  return response.data;
+};
+
+// 1. Fixed payload key to 'mobile'
+export const sendLoginOtp = async (phone: string) => {
+  const response = await Axios.post("/api/user/auth/phone/send-otp", { 
+    mobile: phone 
+  });
+  return response.data;
+};
+
+// 2. Fixed endpoint path to '/phone/verify-otp' and payload key to 'mobile'
 export const verifyLoginOtp = async (phone: string, otp: string) => {
-  const response = await Axios.post("/api/user/auth/login/verify-otp", { phone, otp });
+  const response = await Axios.post("/api/user/auth/phone/verify-otp", { 
+    mobile: phone, 
+    otp 
+  });
   return response.data;
 };
 
@@ -33,15 +41,13 @@ export const sendForgotPasswordOtp = async (email: string) => {
   });
 };
 
-export const verifyForgotPasswordOtp = async (
-  email: string,
-  otp: string
-) => {
+export const verifyForgotPasswordOtp = async (email: string, otp: string) => {
   return Axios.post("/api/user/auth/forgot-password/verify-otp", {
     email,
     otp,
   });
 };
+
 export const resetPassword = async (
   email: string,
   otp: string,
@@ -51,6 +57,6 @@ export const resetPassword = async (
     email,
     otp,
     password: newPassword,
-    confirmPassword: newPassword, 
+    confirmPassword: newPassword,
   });
 };
