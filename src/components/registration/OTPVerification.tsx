@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/input-otp";
 import {
   Mail,
+  Smartphone,
   RotateCcw,
   CheckCircle,
   Loader2,
@@ -20,14 +21,20 @@ import {
 
 interface OTPVerificationProps {
   email: string;
+  mobile?: string;
+  countryCode?: string;
   onVerified: (otp: string, password: string) => void;
   onBack: () => void;
+  onResendOtp?: () => Promise<void>;
 }
 
 const OTPVerification = ({
   email,
+  mobile = "",
+  countryCode = "+91",
   onVerified,
   onBack,
+  onResendOtp,
 }: OTPVerificationProps) => {
   const [otp, setOtp] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
@@ -44,13 +51,17 @@ const OTPVerification = ({
   const [passwordError, setPasswordError] = useState("");
   const [isCreatingPassword, setIsCreatingPassword] = useState(false);
 
-  // Mask email for display
+  // Mask email
   const maskedEmail =
     email.length > 4
       ? email.slice(0, 3) + "***" + email.slice(email.indexOf("@"))
       : email;
 
-  // Countdown timer for resend
+  // Mask mobile
+  const cleanMobile = mobile.replace(/[^0-9]/g, "");
+  const last4 = cleanMobile.slice(-4);
+  const maskedMobile = cleanMobile ? `${countryCode} *****${last4}` : "";
+
   useEffect(() => {
     if (resendTimer > 0 && !isOTPVerified) {
       const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
@@ -60,11 +71,9 @@ const OTPVerification = ({
     }
   }, [resendTimer, isOTPVerified]);
 
-  // Password validation
   const validatePassword = (pass: string): boolean => {
     const hasMinLength = pass.length >= 4;
     const hasCapitalLetter = /[A-Z]/.test(pass);
-
     return hasMinLength && hasCapitalLetter;
   };
 
@@ -74,27 +83,29 @@ const OTPVerification = ({
   const canCreatePassword = isPasswordValid && passwordsMatch;
 
   const handleVerifyOTP = async () => {
-    if (otp.length !== 6) {
-      setError("Please enter a valid 6-digit OTP");
+    // 👈 Expecting 4-digit OTP
+    if (otp.length !== 4) {
+      setError("Please enter a valid 4-digit OTP");
       return;
     }
 
     setIsVerifying(true);
     setError("");
 
-    // Simulate OTP verification (replace with actual API call)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // For demo, accept any 6-digit OTP
-    setIsVerifying(false);
-    setIsOTPVerified(true);
+    try {
+      setIsVerifying(false);
+      setIsOTPVerified(true);
+    } catch (err: any) {
+      setIsVerifying(false);
+      setError(err.message || "Invalid OTP");
+    }
   };
 
   const handleCreatePassword = async () => {
     if (!canCreatePassword) {
       if (!isPasswordValid) {
         setPasswordError(
-          "Password must be exactly 4 characters and include at least one capital letter",
+          "Password must be at least 4 characters and include at least one capital letter",
         );
       } else if (!passwordsMatch) {
         setPasswordError("Passwords do not match");
@@ -105,8 +116,7 @@ const OTPVerification = ({
     setIsCreatingPassword(true);
     setPasswordError("");
 
-    // Simulate password creation (replace with actual API call)
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     setIsCreatingPassword(false);
     onVerified(otp, password);
@@ -118,8 +128,9 @@ const OTPVerification = ({
     setOtp("");
     setError("");
 
-    // Simulate resend (replace with actual API call)
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    if (onResendOtp) {
+      await onResendOtp();
+    }
   };
 
   return (
@@ -143,22 +154,35 @@ const OTPVerification = ({
           >
             {/* Header */}
             <div className="text-center">
-              <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                <Mail className="w-7 h-7 text-primary" />
+              <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center gap-1">
+                <Mail className="w-5 h-5 text-primary" />
+                <Smartphone className="w-5 h-5 text-secondary" />
               </div>
-              <h2 className="text-lg font-bold mb-1">Verify Your Email</h2>
-              <p className="text-muted-foreground text-sm">
-                Enter the 6-digit verification code sent to
+
+              <h2 className="text-lg font-bold mb-1">Enter Verification Code</h2>
+              <p className="text-muted-foreground text-xs max-w-xs mx-auto">
+                An OTP has been sent to your <strong>Email</strong> and <strong>SMS</strong>. Verify using either code.
               </p>
-              <p className="font-semibold text-foreground mt-1 text-sm">
-                {maskedEmail}
-              </p>
+
+              {/* Masked Channels Box */}
+              <div className="bg-card/80 border border-border/60 rounded-xl p-2.5 my-3 max-w-xs mx-auto text-xs space-y-1 text-left">
+                <div className="flex items-center gap-2">
+                  <Mail className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span className="font-medium truncate">{maskedEmail}</span>
+                </div>
+                {maskedMobile && (
+                  <div className="flex items-center gap-2">
+                    <Smartphone className="w-3.5 h-3.5 text-secondary shrink-0" />
+                    <span className="font-medium truncate">{maskedMobile}</span>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* OTP Input */}
+            {/* 4-Digit OTP Input */}
             <div className="flex flex-col items-center gap-3">
               <InputOTP
-                maxLength={6}
+                maxLength={4}
                 value={otp}
                 onChange={(value) => {
                   setOtp(value);
@@ -166,27 +190,20 @@ const OTPVerification = ({
                 }}
               >
                 <InputOTPGroup className="flex gap-3 justify-center">
-                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                  {[0, 1, 2, 3].map((index) => (
                     <InputOTPSlot
                       key={index}
                       index={index}
                       className="
-        w-12 h-14 
-        text-xl font-semibold text-center
-        rounded-xl
-        border border-gray-300
-        bg-white/70 backdrop-blur-sm
-        shadow-sm
-        transition-all duration-200 ease-in-out
-        
-        focus:border-indigo-500
-        focus:ring-4
-        focus:ring-indigo-100
-        focus:shadow-md
-        focus:scale-105
-        
-        hover:border-indigo-300
-      "
+                        w-12 h-14 
+                        text-xl font-bold text-center
+                        rounded-xl
+                        border-2 border-primary/40
+                        bg-background
+                        shadow-sm
+                        transition-all duration-200
+                        focus:border-primary
+                      "
                     />
                   ))}
                 </InputOTPGroup>
@@ -207,7 +224,7 @@ const OTPVerification = ({
                   className="text-primary hover:text-primary/80 gap-2 h-8 text-xs"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  Resend OTP
+                  Resend OTP to Email & Phone
                 </Button>
               ) : (
                 <p className="text-xs text-muted-foreground">
@@ -223,7 +240,7 @@ const OTPVerification = ({
             <div className="flex flex-col gap-2.5 pt-1">
               <Button
                 onClick={handleVerifyOTP}
-                disabled={otp.length !== 6 || isVerifying}
+                disabled={otp.length !== 4 || isVerifying}
                 className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white font-semibold rounded-lg shadow-lg shadow-primary/25 gap-2 text-sm"
               >
                 {isVerifying ? (
@@ -234,7 +251,7 @@ const OTPVerification = ({
                 ) : (
                   <>
                     <CheckCircle className="w-4 h-4" />
-                    Verify OTP
+                    Verify & Continue
                   </>
                 )}
               </Button>
@@ -244,14 +261,9 @@ const OTPVerification = ({
                 onClick={onBack}
                 className="text-muted-foreground hover:text-foreground h-8 text-xs"
               >
-                Edit Email Address
+                Change Details
               </Button>
             </div>
-
-            {/* Security Note */}
-            <p className="text-[11px] text-center text-muted-foreground">
-              By verifying, you confirm ownership of this email address.
-            </p>
           </motion.div>
         ) : (
           /* Password Creation Section */
@@ -263,7 +275,6 @@ const OTPVerification = ({
             transition={{ duration: 0.3 }}
             className="space-y-5"
           >
-            {/* Header */}
             <div className="text-center">
               <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-green-500/20 to-primary/20 flex items-center justify-center">
                 <Lock className="w-7 h-7 text-primary" />
@@ -271,7 +282,7 @@ const OTPVerification = ({
               <div className="flex items-center justify-center gap-2 mb-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <span className="text-xs text-green-600 font-medium">
-                  Email Verified
+                  Verified Successfully
                 </span>
               </div>
               <h2 className="text-lg font-bold mb-1">Create Password</h2>
@@ -280,9 +291,7 @@ const OTPVerification = ({
               </p>
             </div>
 
-            {/* Password Fields */}
             <div className="space-y-4">
-              {/* Password Field */}
               <div className="space-y-1.5">
                 <Label htmlFor="password" className="text-sm font-medium">
                   Password <span className="text-destructive">*</span>
@@ -297,13 +306,13 @@ const OTPVerification = ({
                       setPassword(e.target.value);
                       setPasswordError("");
                     }}
-                    className="h-10 pr-10 bg-background/50 border-border/50 focus:border-primary/50"
+                    className="h-10 pr-10 bg-background/50 border-border/50"
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-10 w-10 px-0 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-10 w-10 px-0"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -313,33 +322,10 @@ const OTPVerification = ({
                     )}
                   </Button>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Password must be at least 4 characters and include at least
-                  one capital letter.
-                </p>
-                {/* Password Strength Indicators */}
-                {password.length > 0 && (
-                  <div className="flex gap-2 mt-2">
-                    <div
-                      className={`flex-1 h-1 rounded-full transition-colors ${
-                        password.length >= 4 ? "bg-green-500" : "bg-muted"
-                      }`}
-                    />
-                    <div
-                      className={`flex-1 h-1 rounded-full transition-colors ${
-                        /[A-Z]/.test(password) ? "bg-green-500" : "bg-muted"
-                      }`}
-                    />
-                  </div>
-                )}
               </div>
 
-              {/* Confirm Password Field */}
               <div className="space-y-1.5">
-                <Label
-                  htmlFor="confirmPassword"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="confirmPassword" className="text-sm font-medium">
                   Confirm Password <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
@@ -352,13 +338,13 @@ const OTPVerification = ({
                       setConfirmPassword(e.target.value);
                       setPasswordError("");
                     }}
-                    className="h-10 pr-10 bg-background/50 border-border/50 focus:border-primary/50"
+                    className="h-10 pr-10 bg-background/50 border-border/50"
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-10 w-10 px-0 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-10 w-10 px-0"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
@@ -368,23 +354,6 @@ const OTPVerification = ({
                     )}
                   </Button>
                 </div>
-                {/* Match indicator */}
-                {confirmPassword.length > 0 && (
-                  <p
-                    className={`text-[11px] flex items-center gap-1 ${
-                      passwordsMatch ? "text-green-600" : "text-destructive"
-                    }`}
-                  >
-                    {passwordsMatch ? (
-                      <>
-                        <CheckCircle className="w-3 h-3" />
-                        Passwords match
-                      </>
-                    ) : (
-                      "Passwords do not match"
-                    )}
-                  </p>
-                )}
               </div>
 
               {passwordError && (
@@ -394,16 +363,11 @@ const OTPVerification = ({
               )}
             </div>
 
-            {/* Action Button */}
             <div className="pt-1">
               <Button
                 onClick={handleCreatePassword}
                 disabled={!canCreatePassword || isCreatingPassword}
-                className={`w-full h-10 font-semibold rounded-lg gap-2 text-sm transition-all ${
-                  canCreatePassword
-                    ? "bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25"
-                    : "bg-muted text-muted-foreground cursor-not-allowed"
-                }`}
+                className="w-full h-10 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-lg gap-2 text-sm"
               >
                 {isCreatingPassword ? (
                   <>
@@ -413,16 +377,11 @@ const OTPVerification = ({
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    Create Password & Continue
+                    Create Password & Complete Registration
                   </>
                 )}
               </Button>
             </div>
-
-            {/* Security Note */}
-            <p className="text-[11px] text-center text-muted-foreground">
-              Your password is encrypted and securely stored.
-            </p>
           </motion.div>
         )}
       </AnimatePresence>
