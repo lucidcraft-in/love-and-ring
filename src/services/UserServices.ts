@@ -1,9 +1,19 @@
 import Axios from "@/axios/axios";
 import type { RegistrationData } from "@/pages/Register";
 
-export const sendRegistrationOtp = (email: string) => {
-  return Axios.post("/api/users/send-otp", { email });
+export const sendRegistrationOtp = async (
+  email: string,
+  mobile?: string,
+  countryCode?: string
+) => {
+  const response = await Axios.post("/api/users/send-otp", {
+    email,
+    mobile,
+    countryCode,
+  });
+  return response.data;
 };
+
 
 export const verifyRegistrationOtp = (data: {
   email: string;
