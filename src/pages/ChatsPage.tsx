@@ -52,6 +52,7 @@ const ChatsPage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
+  const [isOnline, setIsOnline] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -59,6 +60,32 @@ const ChatsPage = () => {
   const [isMicOn, setIsMicOn] = useState(true);
 
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+  useEffect(() => {
+    if (!otherUserId) return;
+
+    socket.emit("check-user-status", { userId: otherUserId });
+
+    const handleStatusResponse = (data: { userId: string; isOnline: boolean }) => {
+      if (data.userId === otherUserId) {
+        setIsOnline(data.isOnline);
+      }
+    };
+
+    const handleStatusChanged = (data: { userId: string; isOnline: boolean }) => {
+      if (data.userId === otherUserId) {
+        setIsOnline(data.isOnline);
+      }
+    };
+
+    socket.on("user-status-response", handleStatusResponse);
+    socket.on("user-status-changed", handleStatusChanged);
+
+    return () => {
+      socket.off("user-status-response", handleStatusResponse);
+      socket.off("user-status-changed", handleStatusChanged);
+    };
+  }, [otherUserId]);
 
 
   useEffect(() => {
@@ -166,6 +193,25 @@ const ChatsPage = () => {
   }, [roomId])
 
 
+  const handleStartCall = () => {
+    if (!otherUserId || !currentUser?._id) return;
+    const ids = [currentUser._id, otherUserId].sort();
+    const callRoomId = `call_${ids[0]}_${ids[1]}`;
+
+    socket.emit("call-user", {
+      to: otherUserId,
+      from: currentUser._id,
+      fromUser: {
+        _id: currentUser._id,
+        fullName: currentUser.fullName,
+        photos: currentUser.photos,
+      },
+      roomId: callRoomId,
+    });
+
+    navigate(`/call/${callRoomId}`);
+  };
+
   const handleVideoCall = () => {
     setShowVideoCall(true);
   };
@@ -174,14 +220,6 @@ const ChatsPage = () => {
     setShowVideoCall(false);
     toast.info("Call ended");
   };
-
-  useEffect(() => {
-
-    if (currentUser?._id) {
-      socket.emit("register", currentUser._id);
-    }
-
-  }, []);
 
   const deleteSelectedMessages = async () => {
 
@@ -267,34 +305,32 @@ const ChatsPage = () => {
                   <h3 className="font-semibold">
                     {chatUser?.fullName}
                   </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Online
-                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-2 h-2 rounded-full ${isOnline ? "bg-green-500" : "bg-gray-400"}`} />
+                    <p className="text-xs text-muted-foreground">
+                      {isOnline ? "Online" : "Offline"}
+                    </p>
+                  </div>
                 </div>
 
               </div>
             </>
           )}
 
-          {/* <div className="flex items-center gap-2">
-
-            <Button variant="ghost" size="icon">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={handleStartCall} title="Audio Call">
               <Phone className="h-5 w-5" />
             </Button>
 
             <Button
               variant="ghost"
               size="icon"
-              onClick={handleVideoCall}
+              onClick={handleStartCall}
+              title="Video Call"
             >
               <Video className="h-5 w-5" />
             </Button>
-
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-5 w-5" />
-            </Button>
-
-          </div> */}
+          </div>
 
         </div>
 
