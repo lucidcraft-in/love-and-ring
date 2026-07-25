@@ -25,12 +25,7 @@ import OTPVerification from "@/components/registration/OTPVerification";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
 import heroSlide3 from "@/assets/hero-slide-3.jpg";
-import {
-  completeUserProfile,
-  sendRegistrationOtp,
-  verifyRegistrationOtp,
-  registerUser,
-} from "@/services/UserServices";
+import { completeUserProfile, verifyRegistrationOtp } from "@/services/UserServices";
 import Axios from "@/axios/axios";
 import PrivacyConsentModal from "@/components/registration/PrivacyConsentModal";
 
@@ -125,7 +120,6 @@ const Register = () => {
   const [sendingOtp, setSendingOtp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Preload hero images for smooth transitions
   useEffect(() => {
     heroSlides.forEach((src) => {
       const img = new Image();
@@ -133,7 +127,6 @@ const Register = () => {
     });
   }, []);
 
-  // Auto-rotate hero background slides
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
@@ -141,8 +134,7 @@ const Register = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const progress = (currentStep / totalSteps) * 100;
-
+  /* 👈 FIX: Pass email, mobile, and countryCode when requesting OTP */
   const handleSendOtp = async () => {
     if (!formData.email || !formData.mobile) {
       toast.error("Email and Mobile number are required");
@@ -152,22 +144,25 @@ const Register = () => {
     try {
       setSendingOtp(true);
 
-      // ✅ Check availability first
+      // 1. Check availability
       await Axios.post("/api/users/check-availability", {
         email: formData.email,
         mobile: formData.mobile,
       });
 
-      // ✅ If available → send OTP
-      await sendRegistrationOtp(formData.email);
+      // 2. Send OTP with email, mobile & countryCode
+      await Axios.post("/api/users/send-otp", {
+        email: formData.email,
+        mobile: formData.mobile,
+        countryCode: formData.countryCode || "+91",
+      });
 
       setOtpSent(true);
       setShowOTPVerification(true);
 
-      toast.success("OTP sent to email");
+      toast.success("OTP sent to your Email and Mobile number");
     } catch (err: any) {
       const message = err.response?.data?.message || "Something went wrong";
-
       toast.error(message);
     } finally {
       setSendingOtp(false);
@@ -175,7 +170,7 @@ const Register = () => {
   };
 
   const getRequiredFieldsForStep = (
-    step: number,
+    step: number
   ): (keyof RegistrationData)[] => {
     switch (step) {
       case 1:
@@ -215,7 +210,7 @@ const Register = () => {
       }
 
       if (typeof value === "object" && value !== null) {
-        return true; // for income or future objects
+        return true;
       }
 
       return false;
@@ -228,13 +223,12 @@ const Register = () => {
 
   const updateFormData = (
     field: keyof RegistrationData,
-    value: string | string[] | File | null,
+    value: string | string[] | File | null
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const nextStep = () => {
-    // On Step 1, show OTP verification instead of going to Step 2
     if (currentStep === 1 && !isOTPVerified) {
       setShowOTPVerification(true);
       return;
@@ -254,7 +248,6 @@ const Register = () => {
 
   const prevStep = () => {
     if (currentStep > 1) {
-      // If going back to step 1, keep OTP verified status
       setCurrentStep(currentStep - 1);
       setStepErrors({});
     }
@@ -262,7 +255,6 @@ const Register = () => {
 
   const handleOTPVerified = async (otp: string, password: string) => {
     try {
-      // 1️⃣ Verify OTP & create user
       const res = await verifyRegistrationOtp({
         email: formData.email,
         otp,
@@ -272,7 +264,6 @@ const Register = () => {
       const userId = res.data.user._id;
       setUserId(userId);
 
-      // 2️⃣ SAVE STEP-1 DATA IMMEDIATELY
       await completeUserProfile(userId, {
         fullName: formData.fullName,
         gender:
@@ -291,7 +282,6 @@ const Register = () => {
       toast.success("Account created successfully");
     } catch (err: any) {
       const message = err.response?.data?.message || "OTP verification failed";
-
       toast.error(message);
 
       if (
@@ -318,7 +308,6 @@ const Register = () => {
     try {
       setSubmitting(true);
 
-      // 🔥 1️⃣ Upload profile image to S3 first (if exists)
       if (formData.profileImage) {
         const form = new FormData();
         form.append("photo", formData.profileImage);
@@ -336,7 +325,6 @@ const Register = () => {
         });
       }
 
-      // 🔥 2️⃣ Complete profile
       await completeUserProfile(userId, {
         religion: formData.religion,
         caste: formData.caste,
@@ -363,10 +351,9 @@ const Register = () => {
     } catch (err: any) {
       const message =
         err.response?.data?.message || "Failed to complete profile";
-
       toast.error(message);
     } finally {
-      setSubmitting(false); // 🔥 stop loader
+      setSubmitting(false);
     }
   };
 
@@ -396,7 +383,6 @@ const Register = () => {
       case 5:
         return (
           <StepFive
-            // errors={stepErrors}
             formData={formData}
             updateFormData={updateFormData}
           />
@@ -442,14 +428,12 @@ const Register = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Privacy Consent Modal */}
       <PrivacyConsentModal
         open={showConsentModal}
         onAgree={handleConsentAgree}
         onDecline={handleConsentDecline}
       />
 
-      {/* Hero Carousel Background - Same as Home Page */}
       <div id="hero-section" className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
           <motion.div
@@ -467,15 +451,11 @@ const Register = () => {
             />
           </motion.div>
         </AnimatePresence>
-
-        {/* Dark Overlay for Readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
       </div>
 
-      {/* Floating Brand Logo */}
       <FloatingBrandLogo variant="auth" className="z-[5]" />
 
-      {/* Desktop/Tablet Close Button - Top Right of Screen */}
       <Button
         variant="ghost"
         size="icon"
@@ -485,11 +465,12 @@ const Register = () => {
         <X className="h-5 w-5" />
       </Button>
 
-      {/* Content Layer */}
       <div
-        className={`relative z-10 min-h-screen flex flex-col lg:flex-row transition-all duration-300 ${showConsentModal ? "blur-sm pointer-events-none select-none" : ""}`}
+        className={`relative z-10 min-h-screen flex flex-col lg:flex-row transition-all duration-300 ${
+          showConsentModal ? "blur-sm pointer-events-none select-none" : ""
+        }`}
       >
-        {/* Left Section - Marketing Content */}
+        {/* Left Section */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
@@ -497,14 +478,12 @@ const Register = () => {
           className="hidden lg:flex lg:w-[45%] text-white p-12 xl:p-16 flex-col justify-center relative"
         >
           <div className="relative z-10 max-w-lg">
-            {/* Brand */}
             <Link to="/" className="inline-block mb-10">
               <span className="text-2xl font-bold">
                 Love<span className="text-primary">&</span>Ring
               </span>
             </Link>
 
-            {/* Main Heading */}
             <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-6">
               Register Now
               <br />
@@ -513,14 +492,12 @@ const Register = () => {
               </span>
             </h1>
 
-            {/* Supporting Text */}
             <p className="text-lg text-white/80 leading-relaxed mb-10">
               Join thousands of verified profiles finding their perfect match.
               Our platform offers secure, private, and meaningful connections
               tailored to your preferences.
             </p>
 
-            {/* Feature Highlights */}
             <div className="grid grid-cols-2 gap-4 mb-10">
               {features.map((feature, index) => (
                 <motion.div
@@ -543,7 +520,6 @@ const Register = () => {
               ))}
             </div>
 
-            {/* Login Link */}
             <div className="pt-6 border-t border-white/10">
               <p className="text-white/70">
                 Already have an account?{" "}
@@ -558,7 +534,7 @@ const Register = () => {
           </div>
         </motion.div>
 
-        {/* Right Section - Registration Form */}
+        {/* Right Section */}
         <div className="flex-1 lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-8 min-h-screen lg:min-h-0">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -587,7 +563,6 @@ const Register = () => {
               </p>
             </div>
 
-            {/* Mobile Close Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -597,9 +572,7 @@ const Register = () => {
               <X className="h-5 w-5" />
             </Button>
 
-            {/* Form Card */}
             <Card className="relative mt-10 p-5 sm:p-6 lg:p-7 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
-              {/* Step Progress Indicator */}
               <div className="mb-5 pr-8 lg:pr-6">
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-base font-semibold text-foreground">
@@ -614,7 +587,6 @@ const Register = () => {
                   </span>
                 </div>
 
-                {/* Step Dots */}
                 <div className="flex items-center gap-1.5">
                   {Array.from({ length: totalSteps }, (_, i) => (
                     <div key={i} className="flex-1 flex items-center">
@@ -635,10 +607,14 @@ const Register = () => {
               {/* Form Content */}
               <AnimatePresence mode="wait">
                 {showOTPVerification ? (
+                  /* 👈 FIX: Pass mobile, countryCode & onResendOtp props */
                   <OTPVerification
                     email={formData.email}
+                    mobile={formData.mobile}
+                    countryCode={formData.countryCode}
                     onVerified={handleOTPVerified}
                     onBack={handleBackFromOTP}
+                    onResendOtp={handleSendOtp}
                   />
                 ) : (
                   <motion.div
@@ -653,7 +629,6 @@ const Register = () => {
                 )}
               </AnimatePresence>
 
-              {/* Validation Message & Navigation - Hide during OTP verification */}
               {!showOTPVerification && (
                 <>
                   {!canProceed && !isLastStep && (
@@ -669,7 +644,6 @@ const Register = () => {
                     </motion.div>
                   )}
 
-                  {/* Navigation Buttons */}
                   <div className="flex justify-between mt-5 pt-4 border-t border-border/50">
                     <Button
                       variant="outline"
@@ -727,7 +701,6 @@ const Register = () => {
               )}
             </Card>
 
-            {/* Help Text */}
             <div className="text-center mt-4 text-xs text-white/60">
               <p>
                 Need help creating your account?{" "}
