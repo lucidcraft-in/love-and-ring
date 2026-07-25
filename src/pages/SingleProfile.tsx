@@ -17,7 +17,6 @@ import {
   Utensils,
   Activity,
   Music,
-  Beaker,
 } from "lucide-react";
 import {
   Dialog,
@@ -27,9 +26,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { FaWhatsapp } from "react-icons/fa";
+import { toast } from "sonner";
 import Axios from "@/axios/axios";
 import socket from "@/socket";
-
 
 const SingleProfile = () => {
   const { id } = useParams();
@@ -38,26 +37,20 @@ const SingleProfile = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [liking, setLiking] = useState(false);
   const [profile, setProfile] = useState<any>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<any>(null); // Live logged-in user details
   const [loading, setLoading] = useState(false);
-  const [isMatch, setIsMatch] = useState<Boolean>(false);
-  console.log("mached user", isMatch)
-  const isPremium = false;
+  const [isMatch, setIsMatch] = useState<boolean>(false);
 
+  // 1. Fetch Target Profile
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-
-        if (!token) {
-          console.error("No token found");
-          return;
-        }
+        if (!token) return;
 
         const res = await Axios.get(`/api/users/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         setProfile(res.data);
@@ -71,34 +64,57 @@ const SingleProfile = () => {
     if (id) fetchProfile();
   }, [id]);
 
-  useEffect(()=>{
-    const checkMatch = async() =>{
+  // 2. Fetch Live Logged-in User Membership Details
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
       try {
-        const token = localStorage.getItem("token")
-        const res = await Axios.get(`/api/user/matches/isMatch/${id}`,{
-          headers: {Authorization: `Bearer ${token}` },
-        })
-        console.log(res, "data of the res match")
+        const token = localStorage.getItem("token");
+        const storedUser = localStorage.getItem("user");
+        const userId = storedUser ? JSON.parse(storedUser)._id : localStorage.getItem("userId");
 
-        setIsMatch(res.data.matched)
+        if (!token || !userId) return;
+
+        const res = await Axios.get(`/api/users/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setCurrentUserProfile(res.data);
+        localStorage.setItem("user", JSON.stringify(res.data));
+      } catch (err) {
+        console.error("Failed to fetch logged in user details", err);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
+
+  // 3. Check Match Status
+  useEffect(() => {
+    const checkMatch = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await Axios.get(`/api/user/matches/isMatch/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setIsMatch(res.data.matched);
       } catch (error) {
         console.error("Match check failed", error);
       }
-    }
+    };
     if (id) checkMatch();
-  },[id])
+  }, [id]);
 
+  // 4. Check Liked Status
   useEffect(() => {
     const checkIfLiked = async () => {
       try {
         const token = localStorage.getItem("token");
-
         const res = await Axios.get("/api/user/profile-likes/sent", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         const likedIds = res.data.map((item: any) => item.likedUser._id);
-
         if (likedIds.includes(id)) {
           setIsLiked(true);
         }
@@ -110,43 +126,41 @@ const SingleProfile = () => {
     if (id) checkIfLiked();
   }, [id]);
 
-  const handlePremiumAction = (action: string) => {
-    if (!isPremium) {
-      setShowUpgradeModal(true);
-    } else {
-      // Handle the action
-      console.log(`Action: ${action}`);
-    }
-  };
-
   const handleLike = async () => {
     try {
       setLiking(true);
       const token = localStorage.getItem("token");
 
       if (!isLiked) {
-        // LIKE
         await Axios.post(
           `/api/user/profile-likes/${id}`,
           {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         setIsLiked(true);
+        toast.success("Profile liked ❤️");
       } else {
-        // UNLIKE
         await Axios.delete(`/api/user/profile-likes/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setIsLiked(false);
+        toast.success("Profile unliked");
       }
     } catch (err: any) {
-      console.error("Like/unlike failed", err);
+      toast.error("Action failed");
     } finally {
       setLiking(false);
     }
   };
+
+  //   const handlePremiumAction = (action: string) => {
+  //   if (!isPremium) {
+  //     setShowUpgradeModal(true);
+  //   } else {
+  //     // Handle the action
+  //     console.log(`Action: ${action}`);
+  //   }
+  // };
 
   const calculateAge = (dob?: string) => {
     if (!dob) return "--";
@@ -169,26 +183,29 @@ const SingleProfile = () => {
     );
   };
 
-  if (loading) {
-    return <div className="py-20 text-center">Loading profile...</div>;
-  }
-
-  if (!profile) {
-    return <div className="py-20 text-center">Profile not found</div>;
-  }
-
-
+  /* 👈 FIX: Call Handler with Live Permission Checks */
   const handleCall = () => {
-    if(!isMatch){
-      return setShowUpgradeModal(true)
-    }
+    const membership = currentUserProfile?.membership || {};
+    const viewedProfiles = membership.viewedProfiles || [];
 
-    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!currentUser?.membership?.allowCall) {
+    // Check if user has unlocked this profile
+    const isUnlocked = viewedProfiles.some(
+      (v: any) => (typeof v === "string" ? v : v?._id) === profile?._id
+    );
+
+    if (!membership.allowCall) {
+      toast.error("Your plan does not include call access. Upgrade your plan 🔒");
       setShowUpgradeModal(true);
       return;
     }
 
+    if (!isMatch && !isUnlocked) {
+      toast.error("You need to unlock this profile or match to start a call.");
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    const currentUser = currentUserProfile || JSON.parse(localStorage.getItem("user") || "{}");
     const ids = [currentUser._id, profile._id].sort();
     const roomId = `call_${ids[0]}_${ids[1]}`;
 
@@ -200,22 +217,40 @@ const SingleProfile = () => {
     navigate(`/call/${roomId}`);
   };
 
-  const handleChat = () =>{
-    if(!isMatch){
-      return setShowUpgradeModal(true)
-    }
-    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+  /* 👈 FIX: Chat Handler with Live Permission Checks */
+  const handleChat = () => {
+    const membership = currentUserProfile?.membership || {};
+    const viewedProfiles = membership.viewedProfiles || [];
 
-    if(!currentUser?.membership?.allowChat){
-      setShowUpgradeModal(true)
+    const isUnlocked = viewedProfiles.some(
+      (v: any) => (typeof v === "string" ? v : v?._id) === profile?._id
+    );
+
+    if (!membership.allowChat) {
+      toast.error("Your plan does not include chat access. Upgrade your plan 🔒");
+      setShowUpgradeModal(true);
       return;
     }
 
-  const ids = [currentUser._id, profile._id].sort();
-  const roomId = `chat_${ids[0]}_${ids[1]}`;
+    if (!isMatch && !isUnlocked) {
+      toast.error("You need to unlock this profile or match to start chatting.");
+      setShowUpgradeModal(true);
+      return;
+    }
 
-  navigate(`/dashboard/chats?room=${roomId}&user=${profile._id}`);
+    const currentUser = currentUserProfile || JSON.parse(localStorage.getItem("user") || "{}");
+    const ids = [currentUser._id, profile._id].sort();
+    const roomId = `chat_${ids[0]}_${ids[1]}`;
 
+    navigate(`/dashboard/chats?room=${roomId}&user=${profile._id}`);
+  };
+
+  if (loading) {
+    return <div className="py-20 text-center">Loading profile...</div>;
+  }
+
+  if (!profile) {
+    return <div className="py-20 text-center">Profile not found</div>;
   }
 
   return (
@@ -241,47 +276,8 @@ const SingleProfile = () => {
                   className={`w-full h-96 object-cover ${profile.isPrivate && !isLiked ? "blur-md" : ""
                     }`}
                 />
-
-                {profile.isPrivate && !isLiked && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                    <div className="text-center text-white p-6">
-                      <p className="text-lg font-semibold mb-2">
-                        Private Profile
-                      </p>
-                      <p className="text-sm">
-                        Like this profile to view full details
-                      </p>
-                    </div>
-                  </div>
-                )}
               </div>
             </Card>
-
-            {/* Additional Photos */}
-            {(!profile.isPrivate || isLiked) && (
-              <div className="grid grid-cols-3 gap-2">
-                {profile.photos?.length > 1 && (
-                  <div className="overflow-x-auto">
-                    <div className="flex gap-3 min-w-max">
-                      {profile.photos
-                        .filter((photo: any) => !photo.isPrimary)
-                        .map((photo: any, idx: number) => (
-                          <Card
-                            key={idx}
-                            className="glass-card overflow-hidden flex-shrink-0 w-32 h-32"
-                          >
-                            <img
-                              src={photo.url}
-                              alt={`Photo ${idx + 2}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </Card>
-                        ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Action Buttons */}
             <Card className="glass-card p-4 space-y-2">
@@ -299,33 +295,24 @@ const SingleProfile = () => {
               <Button
                 className="w-full gap-2"
                 variant="outline"
-                onClick={() => handlePremiumAction("view-contact")}
+                onClick={handleCall}
               >
-                <Phone className="w-4 h-4" />
-                See Contact
-              </Button>
-
-              <Button
-                className="w-full gap-2"
-                variant="outline"
-                onClick={() => handleCall()}>
                 <Phone className="w-4 h-4" />
                 Call
               </Button>
-
-              <Button
+              {/* <Button
                 className="w-full gap-2 text-green-600 border-green-600 hover:bg-green-50"
                 variant="outline"
                 onClick={() => handlePremiumAction("whatsapp")}
               >
                 <FaWhatsapp className="w-4 h-4" />
                 WhatsApp
-              </Button>
+              </Button> */}
 
               <Button
                 className="w-full gap-2"
                 variant="outline"
-                onClick={() => handleChat()}
+                onClick={handleChat}
               >
                 <MessageCircle className="w-4 h-4" />
                 Chat
@@ -340,118 +327,137 @@ const SingleProfile = () => {
 
           {/* Right Column - Details */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Header */}
             <Card className="glass-card p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h1 className="text-3xl font-bold mb-2">
-                    {profile.fullName}, {calculateAge(profile.dateOfBirth)}
-                  </h1>
-                  <p className="text-muted-foreground">{profile.bio}</p>
-                </div>
-              </div>
+              <h1 className="text-3xl font-bold mb-2">
+                {profile.fullName}, {calculateAge(profile.dateOfBirth)}
+              </h1>
+              <p className="text-muted-foreground">{profile.bio}</p>
             </Card>
 
-            {/* Basic Information */}
             <Card className="glass-card p-6">
               <h2 className="text-xl font-bold mb-4">Basic Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InfoItem
-                  icon={MapPin}
-                  label="Location"
-                  value={profile.city || "Not specified"}
-                />
-                <InfoItem
-                  icon={Users}
-                  label="Religion"
-                  value={profile.religion?.name || "Not specified"}
-                />
-                <InfoItem
-                  icon={GraduationCap}
-                  label="Education"
-                  value={profile.highestEducation?.name || "Not specified"}
-                />
-                <InfoItem
-                  icon={Briefcase}
-                  label="Profession"
-                  value={profile.profession?.name || "Not specified"}
-                />
+                <InfoItem icon={MapPin} label="Location" value={profile.city || "Not specified"} />
+                <InfoItem icon={Users} label="Religion" value={profile.religion?.name || "Not specified"} />
+                <InfoItem icon={GraduationCap} label="Education" value={profile.highestEducation?.name || "Not specified"} />
+                <InfoItem icon={Briefcase} label="Profession" value={profile.profession?.name || "Not specified"} />
               </div>
             </Card>
+            {/* Right Column - Details */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Header */}
+              <Card className="glass-card p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h1 className="text-3xl font-bold mb-2">
+                      {profile.fullName}, {calculateAge(profile.dateOfBirth)}
+                    </h1>
+                    <p className="text-muted-foreground">{profile.bio}</p>
+                  </div>
+                </div>
+              </Card>
 
-            {/* Personal Details */}
-            <Card className="glass-card p-6">
-              <h2 className="text-xl font-bold mb-4">Personal Details</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InfoItem
-                  icon={Activity}
-                  label="Height"
-                  value={profile.heightCm}
-                />
-                <InfoItem
-                  icon={Activity}
-                  label="Body Type"
-                  value={profile.bodyType}
-                />
-                <InfoItem
-                  icon={Users}
-                  label="Marital Status"
-                  value={profile.maritalStatus}
-                />
-                <InfoItem
-                  icon={Utensils}
-                  label="Diet"
-                  value={profile.dietPreference}
-                />
-                <InfoItem
-                  icon={Home}
-                  label="Lives With Family"
-                  value={profile.livesWithFamily ? "Yes" : "No"}
-                />
-                {!profile.livesWithFamily && (
+              {/* Basic Information */}
+              <Card className="glass-card p-6">
+                <h2 className="text-xl font-bold mb-4">Basic Information</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <InfoItem
                     icon={MapPin}
-                    label="Family Location"
-                    value={profile.familyLocation}
+                    label="Location"
+                    value={profile.city || "Not specified"}
                   />
-                )}
-              </div>
-            </Card>
+                  <InfoItem
+                    icon={Users}
+                    label="Religion"
+                    value={profile.religion?.name || "Not specified"}
+                  />
+                  <InfoItem
+                    icon={GraduationCap}
+                    label="Education"
+                    value={profile.highestEducation?.name || "Not specified"}
+                  />
+                  <InfoItem
+                    icon={Briefcase}
+                    label="Profession"
+                    value={profile.profession?.name || "Not specified"}
+                  />
+                </div>
+              </Card>
 
-            {/* Interests */}
-            <Card className="glass-card p-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <Music className="w-5 h-5" />
-                Interests & Hobbies
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {profile.interests.map((interest) => (
-                  <Badge
-                    key={interest}
-                    variant="secondary"
-                    className="text-sm py-2 px-4"
-                  >
-                    {interest}
-                  </Badge>
-                ))}
-              </div>
-            </Card>
+              {/* Personal Details */}
+              <Card className="glass-card p-6">
+                <h2 className="text-xl font-bold mb-4">Personal Details</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <InfoItem
+                    icon={Activity}
+                    label="Height"
+                    value={profile.heightCm}
+                  />
+                  <InfoItem
+                    icon={Activity}
+                    label="Body Type"
+                    value={profile.bodyType}
+                  />
+                  <InfoItem
+                    icon={Users}
+                    label="Marital Status"
+                    value={profile.maritalStatus}
+                  />
+                  <InfoItem
+                    icon={Utensils}
+                    label="Diet"
+                    value={profile.dietPreference}
+                  />
+                  <InfoItem
+                    icon={Home}
+                    label="Lives With Family"
+                    value={profile.livesWithFamily ? "Yes" : "No"}
+                  />
+                  {!profile.livesWithFamily && (
+                    <InfoItem
+                      icon={MapPin}
+                      label="Family Location"
+                      value={profile.familyLocation}
+                    />
+                  )}
+                </div>
+              </Card>
 
-            {/* Personality Traits */}
-            <Card className="glass-card p-6">
-              <h2 className="text-xl font-bold mb-4">Personality Traits</h2>
-              <div className="flex flex-wrap gap-2">
-                {profile.personalityTraits.map((trait) => (
-                  <Badge
-                    key={trait}
-                    className="text-sm py-2 px-4 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20"
-                    variant="outline"
-                  >
-                    {trait}
-                  </Badge>
-                ))}
-              </div>
-            </Card>
+              {/* Interests */}
+              <Card className="glass-card p-6">
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Music className="w-5 h-5" />
+                  Interests & Hobbies
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {profile.interests.map((interest) => (
+                    <Badge
+                      key={interest}
+                      variant="secondary"
+                      className="text-sm py-2 px-4"
+                    >
+                      {interest}
+                    </Badge>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Personality Traits */}
+              <Card className="glass-card p-6">
+                <h2 className="text-xl font-bold mb-4">Personality Traits</h2>
+                <div className="flex flex-wrap gap-2">
+                  {profile.personalityTraits.map((trait) => (
+                    <Badge
+                      key={trait}
+                      className="text-sm py-2 px-4 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20"
+                      variant="outline"
+                    >
+                      {trait}
+                    </Badge>
+                  ))}
+                </div>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
@@ -468,24 +474,10 @@ const SingleProfile = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <h4 className="font-semibold">Premium Benefits:</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  View and call contact numbers
-                </li>
-                <li className="flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4" />
-                  Unlimited messaging with matches
-                </li>
-                <li className="flex items-center gap-2">
-                  <FaWhatsapp className="w-4 h-4" />
-                  Direct WhatsApp connect
-                </li>
-              </ul>
-            </div>
-            <Button className="w-full bg-gradient-to-r from-primary to-secondary">
+            <Button
+              className="w-full bg-gradient-to-r from-primary to-secondary"
+              onClick={() => navigate("/pricing")}
+            >
               View Plans
             </Button>
           </div>
@@ -495,15 +487,7 @@ const SingleProfile = () => {
   );
 };
 
-const InfoItem = ({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: any;
-  label: string;
-  value: string;
-}) => (
+const InfoItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
   <div className="flex items-start gap-3">
     <Icon className="w-5 h-5 text-primary mt-0.5" />
     <div>
