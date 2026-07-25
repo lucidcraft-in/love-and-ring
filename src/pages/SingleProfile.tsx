@@ -212,6 +212,11 @@ const SingleProfile = () => {
     socket.emit("call-user", {
       to: profile._id,
       from: currentUser._id,
+      fromUser: {
+        _id: currentUser._id,
+        fullName: currentUser.fullName,
+        photos: currentUser.photos,
+      },
       roomId,
     });
     navigate(`/call/${roomId}`);
