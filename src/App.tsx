@@ -58,37 +58,49 @@ const AppLayout = () => {
     location.pathname === route || location.pathname.startsWith(route + "/")
   );
 
-  // socket.io
+  // Video call page should be full screen without header/footer
+  const isCallRoute = location.pathname.startsWith("/call/");
 
+  // socket.io connection & call notifications
   useEffect(() => {
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-    });
-  }, []);
+    const registerUser = () => {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (user?._id) {
+        console.log("Registering user on socket:", user._id);
+        socket.emit("register", user._id);
+      }
+    };
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-
-    if (user?._id) {
-      socket.emit("register", user._id);
+    if (socket.connected) {
+      registerUser();
     }
 
-    socket.on("incoming-call", ({ from, roomId }) => {
-      console.log("Incoming call:", from, roomId);
+    socket.on("connect", registerUser);
 
-      setIncomingCall({ from, roomId });
-    });
+    const handleIncomingCall = (data: any) => {
+      console.log("Incoming call received:", data);
+      setIncomingCall(data);
+    };
+
+    const handleCallCanceled = ({ roomId }: { roomId: string }) => {
+      setIncomingCall((prev: any) => (prev?.roomId === roomId ? null : prev));
+    };
+
+    socket.on("incoming-call", handleIncomingCall);
+    socket.on("call-canceled", handleCallCanceled);
 
     return () => {
-      socket.off("incoming-call");
+      socket.off("connect", registerUser);
+      socket.off("incoming-call", handleIncomingCall);
+      socket.off("call-canceled", handleCallCanceled);
     };
   }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Single Navbar for all routes - handles hero/standard styling internally */}
-      <Navbar />
-      <main className={`flex-1 ${!isHeroRoute ? "pt-16" : ""}`}>
+      {/* Single Navbar for all routes - hidden on full-screen video call pages */}
+      {!isCallRoute && <Navbar />}
+      <main className={`flex-1 ${!isHeroRoute && !isCallRoute ? "pt-16" : ""}`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -121,22 +133,43 @@ const AppLayout = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      {/* Hide global footer on dashboard routes - they have their own */}
-      {!isDashboardRoute && <Footer />}
+      {/* Hide global footer on dashboard and video call routes */}
+      {!isDashboardRoute && !isCallRoute && <Footer />}
       {/* WhatsApp floating button - only on public pages */}
       {isPublicRoute && <WhatsAppButton />}
 
       {incomingCall && (
-        <div className="fixed bottom-5 right-5 bg-white shadow-lg rounded-xl p-4 w-72 z-50 border">
-          <p className="font-semibold mb-2">Incoming Call</p>
-          <p className="text-sm text-muted-foreground mb-3">
-            Someone is calling you...
-          </p>
+        <div className="fixed bottom-5 right-5 bg-white shadow-xl rounded-xl p-4 w-80 z-50 border border-primary/20 backdrop-blur-md">
+          <div className="flex items-center gap-3 mb-3">
+            {incomingCall.fromUser?.photos?.[0]?.url ? (
+              <img
+                src={incomingCall.fromUser.photos[0].url}
+                alt={incomingCall.fromUser.fullName}
+                className="w-12 h-12 rounded-full object-cover border"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-lg">
+                {incomingCall.fromUser?.fullName?.charAt(0) || "C"}
+              </div>
+            )}
+            <div>
+              <p className="font-semibold text-base">
+                {incomingCall.fromUser?.fullName || "Incoming Call"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Calling you...
+              </p>
+            </div>
+          </div>
 
           <div className="flex gap-2">
             <button
-              className="flex-1 bg-green-500 text-white py-1 rounded"
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-1 text-sm"
               onClick={() => {
+                socket.emit("accept-call", {
+                  to: incomingCall.from,
+                  roomId: incomingCall.roomId,
+                });
                 navigate(`/call/${incomingCall.roomId}`);
                 setIncomingCall(null);
               }}
@@ -145,8 +178,12 @@ const AppLayout = () => {
             </button>
 
             <button
-              className="flex-1 bg-red-500 text-white py-1 rounded"
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-1 text-sm"
               onClick={() => {
+                socket.emit("reject-call", {
+                  to: incomingCall.from,
+                  roomId: incomingCall.roomId,
+                });
                 setIncomingCall(null);
               }}
             >
