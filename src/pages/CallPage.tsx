@@ -13,8 +13,8 @@ const CallPage = () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-      1995432894,
-      "da237b5a688adfd238d18700e0065fbf",
+      2045140554,
+      "e226659060e96da78e82c2133c804e88",
       roomId,
       user._id,
       user.fullName
