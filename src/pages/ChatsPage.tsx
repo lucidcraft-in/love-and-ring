@@ -249,8 +249,8 @@ const ChatsPage = () => {
   };
 
   return (
-    <div className="h-screen w-full bg-background pt-16 flex flex-col items-center justify-start overflow-hidden">
-      <div className="w-full max-w-4xl flex-1 flex flex-col bg-card border-x border-t rounded-t-2xl shadow-xl overflow-hidden">
+    <div className="fixed top-16 inset-x-0 bottom-0 bg-background flex justify-center items-center p-2 sm:p-4 overflow-hidden">
+      <div className="w-full max-w-4xl h-full flex flex-col bg-card border rounded-2xl shadow-xl overflow-hidden">
         {/* HEADER */}
         <div className="p-3 sm:p-4 border-b flex items-center justify-between bg-card/90 backdrop-blur-sm z-10">
           {selectedMessages.length > 0 ? (
