@@ -188,6 +188,7 @@ const EditProfile = () => {
         description: "Your changes have been saved.",
         duration: 3000,
       });
+      window.dispatchEvent(new Event("userProfileUpdated"));
     } catch (err) {
       console.error("Update failed", err);
     }
@@ -216,6 +217,7 @@ const EditProfile = () => {
           ? "Profile photo hidden successfully 🔒"
           : "Profile photo is now visible 👁️",
       );
+      window.dispatchEvent(new Event("userProfileUpdated"));
     } catch (err) {
       console.error(err);
       toast.error("Failed to update photo visibility");
