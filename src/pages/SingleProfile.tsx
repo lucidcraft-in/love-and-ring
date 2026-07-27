@@ -17,6 +17,9 @@ import {
   Utensils,
   Activity,
   Music,
+  Check,
+  X,
+  Sparkles,
 } from "lucide-react";
 import {
   Dialog,
@@ -25,7 +28,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { FaWhatsapp } from "react-icons/fa";
 import { toast } from "sonner";
 import Axios from "@/axios/axios";
 import socket from "@/socket";
@@ -33,13 +35,21 @@ import socket from "@/socket";
 const SingleProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [liking, setLiking] = useState(false);
   const [profile, setProfile] = useState<any>(null);
-  const [currentUserProfile, setCurrentUserProfile] = useState<any>(null); // Live logged-in user details
+  const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [isMatch, setIsMatch] = useState<boolean>(false);
+
+  // Interest State Management
+  const [interestStatus, setInterestStatus] = useState<
+    "none" | "sent" | "received" | "accepted"
+  >("none");
+  const [interestId, setInterestId] = useState<string | null>(null);
+  const [interestLoading, setInterestLoading] = useState(false);
 
   // 1. Fetch Target Profile
   useEffect(() => {
@@ -70,7 +80,9 @@ const SingleProfile = () => {
       try {
         const token = localStorage.getItem("token");
         const storedUser = localStorage.getItem("user");
-        const userId = storedUser ? JSON.parse(storedUser)._id : localStorage.getItem("userId");
+        const userId = storedUser
+          ? JSON.parse(storedUser)._id
+          : localStorage.getItem("userId");
 
         if (!token || !userId) return;
 
@@ -126,6 +138,66 @@ const SingleProfile = () => {
     if (id) checkIfLiked();
   }, [id]);
 
+  // 5. Check Interest Status (Sent / Received / Accepted)
+  useEffect(() => {
+    const checkInterestStatus = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token || !id) return;
+
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const [sentRes, receivedRes, acceptedRes] = await Promise.all([
+          Axios.get("/api/user/interests/sent", { headers }),
+          Axios.get("/api/user/interests/received", { headers }),
+          Axios.get("/api/user/interests/accepted/interest", { headers }),
+        ]);
+
+        // Check if mutually accepted
+        const isAccepted = (acceptedRes.data || []).some(
+          (item: any) =>
+            item.fromUser?._id === id || item.toUser?._id === id
+        );
+
+        if (isAccepted) {
+          setInterestStatus("accepted");
+          return;
+        }
+
+        // Check if received interest from target user
+        const receivedItem = (receivedRes.data || []).find(
+          (item: any) =>
+            item.fromUser?._id === id &&
+            item.status?.toLowerCase() === "pending"
+        );
+
+        if (receivedItem) {
+          setInterestStatus("received");
+          setInterestId(receivedItem._id);
+          return;
+        }
+
+        // Check if sent interest to target user
+        const sentItem = (sentRes.data || []).find(
+          (item: any) => item.toUser?._id === id
+        );
+
+        if (sentItem) {
+          setInterestStatus("sent");
+          setInterestId(sentItem._id);
+          return;
+        }
+
+        setInterestStatus("none");
+        setInterestId(null);
+      } catch (err) {
+        console.error("Failed to check interest status", err);
+      }
+    };
+
+    if (id) checkInterestStatus();
+  }, [id]);
+
   const handleLike = async () => {
     try {
       setLiking(true);
@@ -153,14 +225,75 @@ const SingleProfile = () => {
     }
   };
 
-  //   const handlePremiumAction = (action: string) => {
-  //   if (!isPremium) {
-  //     setShowUpgradeModal(true);
-  //   } else {
-  //     // Handle the action
-  //     console.log(`Action: ${action}`);
-  //   }
-  // };
+  // Interest Action Handlers
+  const handleSendInterest = async () => {
+    setInterestLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await Axios.post(
+        `/api/user/interests/${id}/send`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setInterestStatus("sent");
+      setInterestId(res.data?._id || null);
+      toast.success(`Interest sent to ${profile?.fullName || "user"}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to send interest");
+    } finally {
+      setInterestLoading(false);
+    }
+  };
+
+  const handleCancelInterest = async () => {
+    if (!interestId) {
+      toast.error("Interest record not found");
+      return;
+    }
+
+    setInterestLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await Axios.post(
+        `/api/user/interests/${interestId}/cancel`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setInterestStatus("none");
+      setInterestId(null);
+      toast.success("Interest cancelled");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to cancel interest");
+    } finally {
+      setInterestLoading(false);
+    }
+  };
+
+  const handleAcceptInterest = async () => {
+    if (!interestId) {
+      toast.error("Interest record not found");
+      return;
+    }
+
+    setInterestLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await Axios.patch(
+        `/api/user/interests/${interestId}/accept`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setInterestStatus("accepted");
+      toast.success(`Accepted interest from ${profile?.fullName || "user"}! 🎉`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to accept interest");
+    } finally {
+      setInterestLoading(false);
+    }
+  };
 
   const calculateAge = (dob?: string) => {
     if (!dob) return "--";
@@ -183,12 +316,10 @@ const SingleProfile = () => {
     );
   };
 
-  /* 👈 FIX: Call Handler with Live Permission Checks */
   const handleCall = () => {
     const membership = currentUserProfile?.membership || {};
     const viewedProfiles = membership.viewedProfiles || [];
 
-    // Check if user has unlocked this profile
     const isUnlocked = viewedProfiles.some(
       (v: any) => (typeof v === "string" ? v : v?._id) === profile?._id
     );
@@ -205,7 +336,8 @@ const SingleProfile = () => {
       return;
     }
 
-    const currentUser = currentUserProfile || JSON.parse(localStorage.getItem("user") || "{}");
+    const currentUser =
+      currentUserProfile || JSON.parse(localStorage.getItem("user") || "{}");
     const ids = [currentUser._id, profile._id].sort();
     const roomId = `call_${ids[0]}_${ids[1]}`;
 
@@ -222,7 +354,6 @@ const SingleProfile = () => {
     navigate(`/call/${roomId}`);
   };
 
-  /* 👈 FIX: Chat Handler with Live Permission Checks */
   const handleChat = () => {
     const membership = currentUserProfile?.membership || {};
     const viewedProfiles = membership.viewedProfiles || [];
@@ -243,7 +374,8 @@ const SingleProfile = () => {
       return;
     }
 
-    const currentUser = currentUserProfile || JSON.parse(localStorage.getItem("user") || "{}");
+    const currentUser =
+      currentUserProfile || JSON.parse(localStorage.getItem("user") || "{}");
     const ids = [currentUser._id, profile._id].sort();
     const roomId = `chat_${ids[0]}_${ids[1]}`;
 
@@ -271,24 +403,66 @@ const SingleProfile = () => {
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Images */}
+          {/* Left Column - Images & Primary Actions */}
           <div className="lg:col-span-1 space-y-4">
             <Card className="glass-card overflow-hidden">
               <div className="relative">
                 <img
                   src={getProfileImage(profile.photos)}
                   alt={profile.fullName}
-                  className={`w-full h-96 object-cover ${profile.isPrivate && !isLiked ? "blur-md" : ""
-                    }`}
+                  className={`w-full h-96 object-cover ${
+                    profile.isPrivate && !isLiked ? "blur-md" : ""
+                  }`}
                 />
               </div>
             </Card>
 
             {/* Action Buttons */}
             <Card className="glass-card p-4 space-y-2">
+              {/* Interest Buttons (Send / Cancel / Accept) */}
+              {interestStatus === "accepted" ? (
+                <Button
+                  disabled
+                  className="w-full gap-2 bg-green-500 text-white cursor-default"
+                >
+                  <Check className="w-4 h-4" />
+                  Matched / Interest Accepted
+                </Button>
+              ) : interestStatus === "received" ? (
+                <Button
+                  className="w-full gap-2 bg-green-500 hover:bg-green-600 text-white"
+                  onClick={handleAcceptInterest}
+                  disabled={interestLoading}
+                >
+                  <Check className="w-4 h-4" />
+                  {interestLoading ? "Accepting..." : "Accept Interest"}
+                </Button>
+              ) : interestStatus === "sent" ? (
+                <Button
+                  variant="outline"
+                  className="w-full gap-2 border-amber-500 text-amber-600 hover:bg-amber-50"
+                  onClick={handleCancelInterest}
+                  disabled={interestLoading}
+                >
+                  <X className="w-4 h-4" />
+                  {interestLoading ? "Cancelling..." : "Cancel Interest"}
+                </Button>
+              ) : (
+                <Button
+                  className="w-full gap-2 bg-gradient-to-r from-primary to-secondary"
+                  onClick={handleSendInterest}
+                  disabled={interestLoading}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {interestLoading ? "Sending..." : "Send Interest"}
+                </Button>
+              )}
+
+              {/* Like Button */}
               <Button
-                className={`w-full gap-2 ${isLiked ? "bg-gradient-to-r from-primary to-secondary" : ""
-                  }`}
+                className={`w-full gap-2 ${
+                  isLiked ? "bg-gradient-to-r from-primary to-secondary" : ""
+                }`}
                 variant={isLiked ? "default" : "outline"}
                 onClick={handleLike}
                 disabled={liking}
@@ -297,6 +471,7 @@ const SingleProfile = () => {
                 {isLiked ? "Liked" : "Like Profile"}
               </Button>
 
+              {/* Call Button */}
               <Button
                 className="w-full gap-2"
                 variant="outline"
@@ -305,15 +480,8 @@ const SingleProfile = () => {
                 <Phone className="w-4 h-4" />
                 Call
               </Button>
-              {/* <Button
-                className="w-full gap-2 text-green-600 border-green-600 hover:bg-green-50"
-                variant="outline"
-                onClick={() => handlePremiumAction("whatsapp")}
-              >
-                <FaWhatsapp className="w-4 h-4" />
-                WhatsApp
-              </Button> */}
 
+              {/* Chat Button */}
               <Button
                 className="w-full gap-2"
                 variant="outline"
@@ -323,6 +491,7 @@ const SingleProfile = () => {
                 Chat
               </Button>
 
+              {/* Share Button */}
               <Button className="w-full gap-2" variant="outline">
                 <Share2 className="w-4 h-4" />
                 Share Profile
@@ -330,7 +499,7 @@ const SingleProfile = () => {
             </Card>
           </div>
 
-          {/* Right Column - Details */}
+          {/* Right Column - Profile Details */}
           <div className="lg:col-span-2 space-y-6">
             <Card className="glass-card p-6">
               <h1 className="text-3xl font-bold mb-2">
@@ -342,64 +511,76 @@ const SingleProfile = () => {
             <Card className="glass-card p-6">
               <h2 className="text-xl font-bold mb-4">Basic Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InfoItem icon={MapPin} label="Location" value={profile.city || "Not specified"} />
-                <InfoItem icon={Users} label="Religion" value={profile.religion?.name || "Not specified"} />
-                <InfoItem icon={GraduationCap} label="Education" value={profile.highestEducation?.name || "Not specified"} />
-                <InfoItem icon={Briefcase} label="Profession" value={profile.profession?.name || "Not specified"} />
+                <InfoItem
+                  icon={MapPin}
+                  label="Location"
+                  value={profile.city || "Not specified"}
+                />
+                <InfoItem
+                  icon={Users}
+                  label="Religion"
+                  value={profile.religion?.name || "Not specified"}
+                />
+                <InfoItem
+                  icon={GraduationCap}
+                  label="Education"
+                  value={profile.highestEducation?.name || "Not specified"}
+                />
+                <InfoItem
+                  icon={Briefcase}
+                  label="Profession"
+                  value={profile.profession?.name || "Not specified"}
+                />
               </div>
             </Card>
-            {/* Right Column - Details */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Header */}
 
+            <Card className="glass-card p-6">
+              <h2 className="text-xl font-bold mb-4">Personal Details</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InfoItem
+                  icon={Activity}
+                  label="Height"
+                  value={profile.heightCm ? `${profile.heightCm} cm` : "N/A"}
+                />
+                <InfoItem
+                  icon={Activity}
+                  label="Body Type"
+                  value={profile.bodyType || "Not specified"}
+                />
+                <InfoItem
+                  icon={Users}
+                  label="Marital Status"
+                  value={profile.maritalStatus || "Not specified"}
+                />
+                <InfoItem
+                  icon={Utensils}
+                  label="Diet"
+                  value={profile.dietPreference || "Not specified"}
+                />
+                <InfoItem
+                  icon={Home}
+                  label="Lives With Family"
+                  value={profile.livesWithFamily ? "Yes" : "No"}
+                />
+                {!profile.livesWithFamily && (
+                  <InfoItem
+                    icon={MapPin}
+                    label="Family Location"
+                    value={profile.familyLocation || "N/A"}
+                  />
+                )}
+              </div>
+            </Card>
 
-              {/* Personal Details */}
-              <Card className="glass-card p-6">
-                <h2 className="text-xl font-bold mb-4">Personal Details</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InfoItem
-                    icon={Activity}
-                    label="Height"
-                    value={profile.heightCm}
-                  />
-                  <InfoItem
-                    icon={Activity}
-                    label="Body Type"
-                    value={profile.bodyType}
-                  />
-                  <InfoItem
-                    icon={Users}
-                    label="Marital Status"
-                    value={profile.maritalStatus}
-                  />
-                  <InfoItem
-                    icon={Utensils}
-                    label="Diet"
-                    value={profile.dietPreference}
-                  />
-                  <InfoItem
-                    icon={Home}
-                    label="Lives With Family"
-                    value={profile.livesWithFamily ? "Yes" : "No"}
-                  />
-                  {!profile.livesWithFamily && (
-                    <InfoItem
-                      icon={MapPin}
-                      label="Family Location"
-                      value={profile.familyLocation}
-                    />
-                  )}
-                </div>
-              </Card>
-
-              {/* Interests */}
+            {/* Interests */}
+            {profile.interests && profile.interests.length > 0 && (
               <Card className="glass-card p-6">
                 <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                   <Music className="w-5 h-5" />
                   Interests & Hobbies
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  {profile.interests.map((interest) => (
+                  {profile.interests.map((interest: string) => (
                     <Badge
                       key={interest}
                       variant="secondary"
@@ -410,23 +591,26 @@ const SingleProfile = () => {
                   ))}
                 </div>
               </Card>
+            )}
 
-              {/* Personality Traits */}
-              <Card className="glass-card p-6">
-                <h2 className="text-xl font-bold mb-4">Personality Traits</h2>
-                <div className="flex flex-wrap gap-2">
-                  {profile.personalityTraits.map((trait) => (
-                    <Badge
-                      key={trait}
-                      className="text-sm py-2 px-4 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20"
-                      variant="outline"
-                    >
-                      {trait}
-                    </Badge>
-                  ))}
-                </div>
-              </Card>
-            </div>
+            {/* Personality Traits */}
+            {profile.personalityTraits &&
+              profile.personalityTraits.length > 0 && (
+                <Card className="glass-card p-6">
+                  <h2 className="text-xl font-bold mb-4">Personality Traits</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.personalityTraits.map((trait: string) => (
+                      <Badge
+                        key={trait}
+                        className="text-sm py-2 px-4 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20"
+                        variant="outline"
+                      >
+                        {trait}
+                      </Badge>
+                    ))}
+                  </div>
+                </Card>
+              )}
           </div>
         </div>
       </div>
@@ -456,7 +640,15 @@ const SingleProfile = () => {
   );
 };
 
-const InfoItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
+const InfoItem = ({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: any;
+  label: string;
+  value: string;
+}) => (
   <div className="flex items-start gap-3">
     <Icon className="w-5 h-5 text-primary mt-0.5" />
     <div>
