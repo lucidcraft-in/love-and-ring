@@ -6,6 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import {
   Heart,
   Phone,
+  PhoneCall,
+  PhoneIncoming,
+  PhoneOutgoing,
+  Clock,
   MessageCircle,
   Share2,
   ArrowLeft,
@@ -50,6 +54,48 @@ const SingleProfile = () => {
   >("none");
   const [interestId, setInterestId] = useState<string | null>(null);
   const [interestLoading, setInterestLoading] = useState(false);
+
+  // Call History State Management
+  const [callHistory, setCallHistory] = useState<any[]>([]);
+  const [callHistoryLoading, setCallHistoryLoading] = useState(false);
+  const [showCallHistoryModal, setShowCallHistoryModal] = useState(false);
+
+  const formatUTCDateTime = (dateString: string) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "N/A";
+
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} UTC`;
+  };
+
+  const fetchCallHistory = async () => {
+    setCallHistoryLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token || !id) return;
+
+      const res = await Axios.get(`/api/user/calls/history/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setCallHistory(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch call history", err);
+    } finally {
+      setCallHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) fetchCallHistory();
+  }, [id]);
 
   // 1. Fetch Target Profile
   useEffect(() => {
@@ -341,6 +387,20 @@ const SingleProfile = () => {
     const ids = [currentUser._id, profile._id].sort();
     const roomId = `call_${ids[0]}_${ids[1]}`;
 
+    // Log call event to backend
+    try {
+      const token = localStorage.getItem("token");
+      Axios.post(
+        "/api/user/calls",
+        { receiverId: profile._id, roomId, status: "initiated" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      ).then(() => {
+        fetchCallHistory();
+      }).catch((err) => console.error("Failed to log call", err));
+    } catch (err) {
+      console.error("Error logging call", err);
+    }
+
     socket.emit("call-user", {
       to: profile._id,
       from: currentUser._id,
@@ -496,6 +556,16 @@ const SingleProfile = () => {
                 <Share2 className="w-4 h-4" />
                 Share Profile
               </Button>
+
+              {/* Call History Button */}
+              <Button
+                className="w-full gap-2"
+                variant="outline"
+                onClick={() => setShowCallHistoryModal(true)}
+              >
+                <Clock className="w-4 h-4 text-primary" />
+                Call History
+              </Button>
             </Card>
           </div>
 
@@ -633,6 +703,79 @@ const SingleProfile = () => {
             >
               View Plans
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Call History Modal */}
+      <Dialog open={showCallHistoryModal} onOpenChange={setShowCallHistoryModal}>
+        <DialogContent className="glass-card max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <PhoneCall className="w-6 h-6 text-primary" />
+              Call History
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              Past call history with {profile?.fullName || "this user"} (Timestamps in UTC).
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1">
+            {callHistoryLoading ? (
+              <p className="text-sm text-muted-foreground text-center py-6">
+                Loading call history...
+              </p>
+            ) : callHistory.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground border border-dashed rounded-xl">
+                <Clock className="w-8 h-8 mx-auto mb-2 opacity-50 text-muted-foreground" />
+                <p className="text-sm font-medium">No call history with this user</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {callHistory.map((call: any) => {
+                  const currentUser =
+                    currentUserProfile || JSON.parse(localStorage.getItem("user") || "{}");
+                  const callerId =
+                    typeof call.caller === "string" ? call.caller : call.caller?._id;
+                  const isOutgoing = String(callerId) === String(currentUser._id);
+
+                  return (
+                    <div
+                      key={call._id}
+                      className="flex items-center justify-between p-3.5 rounded-xl bg-card/50 border border-border/50 hover:bg-card transition shadow-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-full bg-primary/10 text-primary">
+                          {isOutgoing ? (
+                            <PhoneOutgoing className="w-4 h-4" />
+                          ) : (
+                            <PhoneIncoming className="w-4 h-4 text-green-500" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">
+                            {isOutgoing ? "Outgoing Call" : "Incoming Call"}
+                          </p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                            <Clock className="w-3 h-3 text-primary/70" />
+                            <span className="font-mono text-xs text-foreground/80">
+                              {formatUTCDateTime(call.createdAt)}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <Badge
+                        variant={call.status === "completed" ? "default" : "outline"}
+                        className="capitalize text-xs px-3 py-1"
+                      >
+                        {call.status}
+                      </Badge>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
