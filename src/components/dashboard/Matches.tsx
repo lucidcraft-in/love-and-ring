@@ -19,10 +19,14 @@ import { toast } from "sonner";
 import OptimizedProfileImage from "./OptimizedProfileImage";
 import FiltersModal from "./FiltersModal";
 import Axios from "@/axios/axios";
+import FemaleDummy from "@/assets/UserWomen.png";
+import MaleDummy from "@/assets/UserMen.png";
+import DummyProfile from "@/assets/DummyProfile.png";
 
 interface MatchUser {
   _id: string;
   fullName: string;
+  gender?: string;
   dateOfBirth: string;
   heightCm?: number;
   interests: string[];
@@ -325,9 +329,13 @@ const Matches = () => {
     return age;
   };
 
-  const getProfilePhoto = (photos?: any[]) => {
-    if (!photos || photos.length === 0) return "/placeholder-user.jpg";
-    return photos.find((p) => p.isPrimary)?.url || photos[0].url;
+  const getProfilePhoto = (photos?: any[], gender?: string) => {
+    if (!photos || photos.length === 0) {
+      if (gender === "female") return FemaleDummy;
+      if (gender === "male") return MaleDummy;
+      return DummyProfile;
+    }
+    return photos.find((p) => p.isPrimary)?.url || photos[0]?.url || DummyProfile;
   };
 
   const handleLikeProfile = async (targetUserId: string) => {
@@ -487,7 +495,7 @@ const Matches = () => {
       acceptedInterests.includes(match.user._id) ||
       receivedInterests.includes(match.user._id);
 
-    const photoSrc = getProfilePhoto(match.user.photos);
+    const photoSrc = getProfilePhoto(match.user.photos, match.user.gender);
 
     return (
       <Card className="glass-card overflow-hidden hover:shadow-lg transition-all rounded-2xl">
