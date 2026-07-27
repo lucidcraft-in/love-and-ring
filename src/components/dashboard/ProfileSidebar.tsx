@@ -90,6 +90,15 @@ const ProfileSidebar = ({
 
   useEffect(() => {
     fetchUser();
+
+    const handleUserUpdate = () => {
+      fetchUser();
+    };
+
+    window.addEventListener("userProfileUpdated", handleUserUpdate);
+    return () => {
+      window.removeEventListener("userProfileUpdated", handleUserUpdate);
+    };
   }, []);
 
   const getProfilePhoto = () => {
