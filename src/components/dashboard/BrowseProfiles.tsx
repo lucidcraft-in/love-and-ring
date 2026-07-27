@@ -256,8 +256,8 @@ const BrowseProfiles = () => {
       receivedInterests.includes(profile._id);
 
     return (
-      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all group">
-        <div className="relative h-64">
+      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all group rounded-2xl border border-border/40">
+        <div className="relative h-48 sm:h-56">
           <img
             src={getProfileImage(profile.photos, profile.gender)}
             alt={profile.fullName}
@@ -267,7 +267,7 @@ const BrowseProfiles = () => {
           />
           {profile.profileStatus === "private" && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-              <Badge className="bg-white text-foreground">
+              <Badge className="bg-white text-foreground text-xs">
                 Private Profile
               </Badge>
             </div>
@@ -275,7 +275,7 @@ const BrowseProfiles = () => {
           <Button
             size="icon"
             variant={likedUserIds.has(profile._id) ? "default" : "outline"}
-            className={`absolute top-2 right-2 bg-white/90 hover:bg-white ${
+            className={`absolute top-2 right-2 bg-white/90 hover:bg-white h-8 w-8 ${
               likedUserIds.has(profile._id)
                 ? "bg-gradient-to-r from-primary to-secondary text-white"
                 : ""
@@ -295,35 +295,33 @@ const BrowseProfiles = () => {
           </Button>
         </div>
 
-        <div className="p-4">
-          <h3 className="text-lg font-bold mb-2">
-            {profile.fullName},{" "}
-            {profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : "--"}
-          </h3>
+        <div className="p-3 sm:p-4 flex flex-col justify-between">
+          <div>
+            <h3 className="text-base sm:text-lg font-bold mb-1 truncate">
+              {profile.fullName},{" "}
+              {profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : "--"}
+            </h3>
 
-          <div className="space-y-1 text-sm text-muted-foreground mb-3">
-            {/* City */}
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary" />
-              <span>{profile.city || "Location not specified"}</span>
-            </div>
+            <div className="space-y-1 text-xs sm:text-sm text-muted-foreground mb-3">
+              {/* City */}
+              <div className="flex items-center gap-1.5 truncate">
+                <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="truncate">{profile.city || "Location not specified"}</span>
+              </div>
 
-            {/* Profession */}
-            <div className="flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-primary" />
-              <span>
-                {profile.profession?.name || "Profession not specified"}
-              </span>
+              {/* Profession */}
+              <div className="flex items-center gap-1.5 truncate">
+                <Briefcase className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="truncate">
+                  {profile.profession?.name || "Profession not specified"}
+                </span>
+              </div>
             </div>
           </div>
 
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-            {"No bio available."}
-          </p>
-
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-1 border-t border-border/30">
             <Button
-              className="flex-1 bg-gradient-to-r from-primary to-secondary gap-2"
+              className="flex-1 bg-gradient-to-r from-primary to-secondary gap-1.5 text-xs h-8"
               onClick={() => {
                 if (lockedByLimit) {
                   toast.error(
@@ -338,12 +336,12 @@ const BrowseProfiles = () => {
             >
               {lockedByLimit ? (
                 <>
-                  <Lock className="w-4 h-4" />
+                  <Lock className="w-3.5 h-3.5" />
                   Upgrade
                 </>
               ) : (
                 <>
-                  <Eye className="w-4 h-4" />
+                  <Eye className="w-3.5 h-3.5" />
                   View Profile
                 </>
               )}
@@ -494,7 +492,7 @@ const BrowseProfiles = () => {
       </Card>
 
       {/* Profiles Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {filteredProfiles.map((profile) => (
           <ProfileCard key={profile._id} profile={profile} />
         ))}
