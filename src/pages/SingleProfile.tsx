@@ -351,43 +351,7 @@ const SingleProfile = () => {
             {/* Right Column - Details */}
             <div className="lg:col-span-2 space-y-6">
               {/* Header */}
-              <Card className="glass-card p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h1 className="text-3xl font-bold mb-2">
-                      {profile.fullName}, {calculateAge(profile.dateOfBirth)}
-                    </h1>
-                    <p className="text-muted-foreground">{profile.bio}</p>
-                  </div>
-                </div>
-              </Card>
 
-              {/* Basic Information */}
-              <Card className="glass-card p-6">
-                <h2 className="text-xl font-bold mb-4">Basic Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InfoItem
-                    icon={MapPin}
-                    label="Location"
-                    value={profile.city || "Not specified"}
-                  />
-                  <InfoItem
-                    icon={Users}
-                    label="Religion"
-                    value={profile.religion?.name || "Not specified"}
-                  />
-                  <InfoItem
-                    icon={GraduationCap}
-                    label="Education"
-                    value={profile.highestEducation?.name || "Not specified"}
-                  />
-                  <InfoItem
-                    icon={Briefcase}
-                    label="Profession"
-                    value={profile.profession?.name || "Not specified"}
-                  />
-                </div>
-              </Card>
 
               {/* Personal Details */}
               <Card className="glass-card p-6">
