@@ -498,8 +498,8 @@ const Matches = () => {
     const photoSrc = getProfilePhoto(match.user.photos, match.user.gender);
 
     return (
-      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all rounded-2xl">
-        <div className="grid grid-cols-[160px_1fr] h-[270px]">
+      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all rounded-2xl border border-border/40">
+        <div className="grid grid-cols-[110px_1fr] sm:grid-cols-[150px_1fr] md:grid-cols-[160px_1fr] min-h-[200px] sm:h-[245px]">
           {/* Image Section */}
           <div className="relative overflow-hidden bg-muted rounded-l-2xl">
             <OptimizedProfileImage
@@ -511,33 +511,33 @@ const Matches = () => {
               }`}
             />
 
-            <div className="absolute top-2 right-2 z-10">
-              <Badge className="bg-gradient-to-r from-primary to-secondary text-xs">
+            <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10">
+              <Badge className="bg-gradient-to-r from-primary to-secondary text-[10px] sm:text-xs px-1.5 py-0.5">
                 {match.matchScore}% Match
               </Badge>
             </div>
 
             {isLocked && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
-                <div className="bg-white/90 rounded-full p-4 shadow-lg">
-                  <Lock className="w-8 h-8 text-primary" />
+                <div className="bg-white/90 rounded-full p-2.5 sm:p-4 shadow-lg">
+                  <Lock className="w-5 h-5 sm:w-8 sm:h-8 text-primary" />
                 </div>
               </div>
             )}
           </div>
 
           {/* Content Section */}
-          <div className="p-5 flex flex-col justify-between overflow-hidden">
+          <div className="p-3 sm:p-4 flex flex-col justify-between overflow-hidden">
             <div>
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="text-lg font-bold truncate">
+              <div className="flex items-start justify-between gap-1 mb-1">
+                <h3 className="text-sm sm:text-base font-bold truncate">
                   {match.user.fullName}, {calculateAge(match.user.dateOfBirth)}
                 </h3>
                 {!isLocked && (
                   <Button
                     size="icon"
                     variant={match.liked ? "default" : "outline"}
-                    className={`shrink-0 h-8 w-8 ${
+                    className={`shrink-0 h-7 w-7 sm:h-8 sm:w-8 ${
                       match.liked ? "bg-gradient-to-r from-primary to-secondary" : ""
                     }`}
                     disabled={isLiking}
@@ -554,47 +554,49 @@ const Matches = () => {
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                       >
-                        <Heart className="w-4 h-4" />
+                        <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </motion.div>
                     ) : (
-                      <Heart className={`w-4 h-4 ${match.liked ? "fill-white" : ""}`} />
+                      <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${match.liked ? "fill-white" : ""}`} />
                     )}
                   </Button>
                 )}
               </div>
 
-              <div className="flex flex-col gap-0.5 text-sm text-muted-foreground">
+              <div className="flex flex-col gap-0.5 text-xs sm:text-sm text-muted-foreground">
                 <span className="flex items-center gap-1 truncate">
-                  <MapPin className="w-3.5 h-3.5 shrink-0" />
+                  <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-primary/80" />
                   {match.user.city || "N/A"}, {match.user.state || ""}
                 </span>
                 <span className="flex items-center gap-1 truncate">
-                  <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                  <GraduationCap className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-primary/80" />
                   {match.user.education?.name || "—"}
                 </span>
                 <span className="flex items-center gap-1 truncate">
-                  <Briefcase className="w-3.5 h-3.5 shrink-0" />
+                  <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-primary/80" />
                   {match.user.profession?.name || "—"}
                 </span>
               </div>
 
-              <div className="mt-2">
-                <p className="text-xs font-semibold mb-1">Interests:</p>
-                <div className="flex flex-wrap gap-1.5 max-h-[36px] overflow-hidden">
-                  {match.user.interests.slice(0, 4).map((interest, idx) => (
-                    <Badge key={`${interest}-${idx}`} variant="secondary" className="text-xs px-2 py-0.5">
-                      {interest}
-                    </Badge>
-                  ))}
+              {match.user.interests && match.user.interests.length > 0 && (
+                <div className="mt-1.5">
+                  <p className="text-[11px] sm:text-xs font-semibold mb-0.5 text-foreground/80">Interests:</p>
+                  <div className="flex flex-wrap gap-1 max-h-[42px] overflow-y-auto">
+                    {match.user.interests.map((interest, idx) => (
+                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0.2">
+                        {interest}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2 mt-auto pt-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 pt-1.5 border-t border-border/30">
               {isLocked ? (
                 <Button
-                  className="flex-1 min-w-[90px] bg-gradient-to-r from-primary to-secondary text-xs h-8 px-2"
+                  className="flex-1 min-w-[80px] bg-gradient-to-r from-primary to-secondary text-[11px] sm:text-xs h-7 sm:h-8 px-2"
                   onClick={() => navigate("/pricing")}
                 >
                   <Lock className="w-3 h-3 mr-1" /> Upgrade
@@ -602,7 +604,7 @@ const Matches = () => {
               ) : (
                 <>
                   <Button
-                    className="flex-1 min-w-[90px] bg-gradient-to-r from-primary to-secondary text-xs h-8 px-2"
+                    className="flex-1 min-w-[80px] bg-gradient-to-r from-primary to-secondary text-[11px] sm:text-xs h-7 sm:h-8 px-2"
                     onClick={() => {
                       if (lockedByLimit) {
                         toast.error("Profile view limit reached. Upgrade your plan 🔒");
@@ -625,25 +627,25 @@ const Matches = () => {
                     {isAccepted ? (
                       <Button
                         disabled
-                        className="flex-1 min-w-[90px] bg-green-500 text-white cursor-default text-xs h-8 px-2"
+                        className="flex-1 min-w-[80px] bg-green-500 text-white cursor-default text-[11px] sm:text-xs h-7 sm:h-8 px-2"
                       >
                         <Check className="w-3 h-3 mr-1" /> Matched
                       </Button>
                     ) : hasIncomingInterest ? (
                       <Button
                         disabled
-                        className="flex-1 min-w-[90px] bg-blue-500 text-white cursor-default text-xs h-8 px-2"
+                        className="flex-1 min-w-[80px] bg-blue-500 text-white cursor-default text-[11px] sm:text-xs h-7 sm:h-8 px-2"
                       >
                         💌 Received
                       </Button>
                     ) : isInterestSent ? (
                       <Button
                         variant="outline"
-                        className="flex-1 min-w-[90px] border-amber-500 text-amber-600 hover:bg-amber-50 text-xs h-8 px-2"
+                        className="flex-1 min-w-[80px] border-amber-500 text-amber-600 hover:bg-amber-50 text-[11px] sm:text-xs h-7 sm:h-8 px-2"
                         onClick={() => handleCancelInterest(match.user._id, match.user.fullName)}
                         disabled={isCanceling}
                       >
-                        {isCanceling ? (  
+                        {isCanceling ? (
                           "Canceling..."
                         ) : (
                           <>
@@ -654,7 +656,7 @@ const Matches = () => {
                     ) : (
                       <Button
                         variant="outline"
-                        className="flex-1 min-w-[90px] text-xs h-8 px-2"
+                        className="flex-1 min-w-[80px] text-[11px] sm:text-xs h-7 sm:h-8 px-2"
                         disabled={isSending}
                         onClick={() => handleSendInterest(match.user._id, match.user.fullName)}
                       >
