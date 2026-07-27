@@ -118,12 +118,18 @@ const BrowseProfiles = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const membership = res.data.membership;
+      const membership = res.data.membership || {};
+      const rawViewed = membership.viewedProfiles || [];
+      const formattedViewed = rawViewed.map((v: any) =>
+        typeof v === "object" && v !== null ? String(v._id || v) : String(v)
+      );
 
-      setViewedProfiles(membership.viewedProfiles || []);
+      setViewedProfiles(formattedViewed);
 
       if (membership.chatProfilesUsed >= membership.chatProfilesLimit) {
         setProfileLimitReached(true);
+      } else {
+        setProfileLimitReached(false);
       }
     } catch (err) {
       console.error(err);
@@ -242,8 +248,7 @@ const BrowseProfiles = () => {
     const primaryPhoto = profile.photos?.find((p) => p.isPrimary);
     const isPhotoHidden = primaryPhoto?.isHidden;
 
-    const alreadyViewed = viewedProfiles.includes(profile._id);
-
+    const alreadyViewed = viewedProfiles.some((id) => String(id) === String(profile._id));
     const lockedByLimit = profileLimitReached && !alreadyViewed;
 
     const canViewHiddenPhoto =
