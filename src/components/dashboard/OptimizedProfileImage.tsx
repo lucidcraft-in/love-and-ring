@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import DummyProfile from "@/assets/DummyProfile.png";
 
 interface OptimizedProfileImageProps {
   src: string;
@@ -52,8 +53,7 @@ const OptimizedProfileImage = ({
           loading="lazy"
           onLoad={() => setIsLoaded(true)}
           onError={(e) => {
-            e.currentTarget.src =
-              "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400";
+            e.currentTarget.src = DummyProfile;
             setIsLoaded(true);
           }}
           className={cn(
