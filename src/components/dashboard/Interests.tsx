@@ -311,8 +311,8 @@ const Interests = () => {
     const canViewHiddenPhoto = type === "received" || type === "accepted";
 
     return (
-      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all rounded-2xl">
-        <div className="grid grid-cols-[160px_1fr] h-[270px]">
+      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all rounded-2xl border border-border/40">
+        <div className="grid grid-cols-[110px_1fr] sm:grid-cols-[150px_1fr] md:grid-cols-[160px_1fr] min-h-[200px] sm:h-[245px]">
           {/* Image Section */}
           <div className="relative overflow-hidden bg-muted rounded-l-2xl">
             <OptimizedProfileImage
@@ -326,8 +326,8 @@ const Interests = () => {
 
             {/* Match Badge */}
             {item.matchScore > 0 && (
-              <div className="absolute top-2 right-2 z-10">
-                <Badge className="bg-gradient-to-r from-primary to-secondary text-xs">
+              <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10">
+                <Badge className="bg-gradient-to-r from-primary to-secondary text-[10px] sm:text-xs px-1.5 py-0.5">
                   {item.matchScore}% Match
                 </Badge>
               </div>
@@ -335,32 +335,32 @@ const Interests = () => {
           </div>
 
           {/* Content Section */}
-          <div className="p-5 flex flex-col justify-between overflow-hidden">
+          <div className="p-3 sm:p-4 flex flex-col justify-between overflow-hidden">
             <div>
-              <h3 className="text-lg font-bold truncate mb-2">
+              <h3 className="text-sm sm:text-base font-bold truncate mb-1">
                 {item.user.fullName}, {calculateAge(item.user.dateOfBirth)}
               </h3>
-              <div className="flex flex-col gap-0.5 text-sm text-muted-foreground">
+              <div className="flex flex-col gap-0.5 text-xs sm:text-sm text-muted-foreground">
                 <span className="flex items-center gap-1 truncate">
-                  <MapPin className="w-3.5 h-3.5 shrink-0" />
+                  <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-primary/80" />
                   {item.user.city}, {item.user.state}
                 </span>
                 <span className="flex items-center gap-1 truncate">
-                  <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                  <GraduationCap className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-primary/80" />
                   {item.user.education?.name || "—"}
                 </span>
                 <span className="flex items-center gap-1 truncate">
-                  <Briefcase className="w-3.5 h-3.5 shrink-0" />
+                  <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-primary/80" />
                   {item.user.profession?.name || "—"}
                 </span>
               </div>
 
-              {item.user.interests.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-xs font-semibold mb-1">Interests:</p>
-                  <div className="flex flex-wrap gap-1.5 max-h-[36px] overflow-hidden">
-                    {item.user.interests.slice(0, 4).map((interest, idx) => (
-                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-xs px-2 py-0.5">
+              {item.user.interests && item.user.interests.length > 0 && (
+                <div className="mt-1.5">
+                  <p className="text-[11px] sm:text-xs font-semibold mb-0.5 text-foreground/80">Interests:</p>
+                  <div className="flex flex-wrap gap-1 max-h-[42px] overflow-y-auto">
+                    {item.user.interests.map((interest, idx) => (
+                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0.2">
                         {interest}
                       </Badge>
                     ))}
@@ -370,9 +370,9 @@ const Interests = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2 mt-auto pt-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 pt-1.5 border-t border-border/30">
               <Button
-                className="flex-1 min-w-[90px] bg-gradient-to-r from-primary to-secondary text-xs h-8 px-2"
+                className="flex-1 min-w-[75px] bg-gradient-to-r from-primary to-secondary text-[11px] sm:text-xs h-7 sm:h-8 px-1.5 sm:px-2"
                 onClick={() => {
                   if (locked) {
                     toast.error("Profile view limit reached. Upgrade your plan 🔒");
@@ -395,7 +395,7 @@ const Interests = () => {
               {type === "received" && (
                 <>
                   <Button
-                    className="flex-1 min-w-[90px] bg-green-500 hover:bg-green-600 text-white text-xs h-8 px-2"
+                    className="flex-1 min-w-[75px] bg-green-500 hover:bg-green-600 text-white text-[11px] sm:text-xs h-7 sm:h-8 px-1.5 sm:px-2"
                     onClick={() => handleAccept(item._id, item.user.fullName)}
                     disabled={isActioning}
                   >
@@ -415,7 +415,7 @@ const Interests = () => {
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-1 min-w-[90px] border-destructive text-destructive hover:bg-destructive/10 text-xs h-8 px-2"
+                    className="flex-1 min-w-[75px] border-destructive text-destructive hover:bg-destructive/10 text-[11px] sm:text-xs h-7 sm:h-8 px-1.5 sm:px-2"
                     onClick={() => handleReject(item._id, item.user.fullName)}
                     disabled={isActioning}
                   >
@@ -430,7 +430,7 @@ const Interests = () => {
                   {item.status?.toLowerCase() === "accepted" ? (
                     <Button
                       disabled
-                      className="flex-1 min-w-[90px] bg-green-500 text-white cursor-default hover:bg-green-500 text-xs h-8 px-2"
+                      className="flex-1 min-w-[75px] bg-green-500 text-white cursor-default hover:bg-green-500 text-[11px] sm:text-xs h-7 sm:h-8 px-1.5 sm:px-2"
                     >
                       <Check className="w-3 h-3 mr-1" />
                       Accepted
@@ -438,7 +438,7 @@ const Interests = () => {
                   ) : (
                     <Button
                       variant="outline"
-                      className="flex-1 min-w-[90px] border-destructive text-destructive hover:bg-destructive/10 text-xs h-8 px-2"
+                      className="flex-1 min-w-[75px] border-destructive text-destructive hover:bg-destructive/10 text-[11px] sm:text-xs h-7 sm:h-8 px-1.5 sm:px-2"
                       onClick={() => handleCancel(item._id, item.user.fullName)}
                       disabled={isActioning}
                     >
@@ -463,7 +463,7 @@ const Interests = () => {
               {type === "accepted" && (
                 <Button
                   disabled
-                  className="flex-1 min-w-[90px] bg-green-500 text-white cursor-default hover:bg-green-500 text-xs h-8 px-2"
+                  className="flex-1 min-w-[75px] bg-green-500 text-white cursor-default hover:bg-green-500 text-[11px] sm:text-xs h-7 sm:h-8 px-1.5 sm:px-2"
                 >
                   <Check className="w-3 h-3 mr-1" />
                   Accepted
