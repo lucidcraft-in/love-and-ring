@@ -18,10 +18,14 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import OptimizedProfileImage from "./OptimizedProfileImage";
 import Axios from "@/axios/axios";
+import FemaleDummy from "@/assets/UserWomen.png";
+import MaleDummy from "@/assets/UserMen.png";
+import DummyProfile from "@/assets/DummyProfile.png";
 
 interface InterestUser {
   _id: string;
   fullName: string;
+  gender?: string;
   dateOfBirth: string;
   heightCm?: number;
   interests: string[];
@@ -181,9 +185,13 @@ const Interests = () => {
     return age;
   };
 
-  const getProfilePhoto = (photos?: any[]) => {
-    if (!photos || photos.length === 0) return "/placeholder-user.jpg";
-    return photos.find((p: any) => p.isPrimary)?.url || photos[0].url;
+  const getProfilePhoto = (photos?: any[], gender?: string) => {
+    if (!photos || photos.length === 0) {
+      if (gender === "female") return FemaleDummy;
+      if (gender === "male") return MaleDummy;
+      return DummyProfile;
+    }
+    return photos.find((p: any) => p.isPrimary)?.url || photos[0].url || DummyProfile;
   };
 
   const handleAccept = async (interestId: string, name: string) => {
@@ -308,7 +316,7 @@ const Interests = () => {
           {/* Image Section */}
           <div className="relative overflow-hidden bg-muted rounded-l-2xl">
             <OptimizedProfileImage
-              src={getProfilePhoto(item.user.photos)}
+              src={getProfilePhoto(item.user.photos, item.user.gender)}
               alt={item.user.fullName}
               isLocked={false}
               className={`w-full h-full object-cover ${
