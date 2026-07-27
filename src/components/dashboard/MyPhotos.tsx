@@ -72,6 +72,7 @@ const MyPhotos = () => {
 
       toast.success("Photo uploaded");
       fetchPhotos();
+      window.dispatchEvent(new Event("userProfileUpdated"));
     } catch {
       toast.error("Upload failed");
     }
@@ -83,6 +84,7 @@ const MyPhotos = () => {
 
       toast.success("Profile photo updated");
       fetchPhotos();
+      window.dispatchEvent(new Event("userProfileUpdated"));
     } catch {
       toast.error("Failed to set profile photo");
     }
@@ -109,6 +111,7 @@ const MyPhotos = () => {
 
       toast.success("Photo deleted");
       fetchPhotos();
+      window.dispatchEvent(new Event("userProfileUpdated"));
     } catch (error) {
       toast.error("Failed to delete photo");
       console.error(error);
