@@ -4,11 +4,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, ChevronRight, X, AlertCircle, Shield, Users, Lock, CheckCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, AlertCircle, Shield, Users, Lock, CheckCircle, Loader2 } from "lucide-react";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
+import Axios from "@/axios/axios";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
 import heroSlide3 from "@/assets/hero-slide-3.jpg";
@@ -23,31 +23,32 @@ import {
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
 interface ClientFormData {
+  username: string;
   fullName: string;
   email: string;
   countryCode: string;
   mobile: string;
-  city: string;
-  state: string;
-  experience: string;
-  organization: string;
-  about: string;
+  regions: string;
+  password: string;
+  confirmPassword: string;
+  licenseNumber: string;
 }
 
 const ClientRegistration = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isStepValid, setIsStepValid] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<ClientFormData>({
+    username: "",
     fullName: "",
     email: "",
     countryCode: "+91",
     mobile: "",
-    city: "",
-    state: "",
-    experience: "",
-    organization: "",
-    about: "",
+    regions: "",
+    password: "",
+    confirmPassword: "",
+    licenseNumber: "",
   });
   const totalSteps = 2;
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -73,9 +74,9 @@ const ClientRegistration = () => {
   const getRequiredFieldsForStep = (step: number): (keyof ClientFormData)[] => {
     switch (step) {
       case 1:
-        return ["fullName", "email", "countryCode", "mobile", "city", "state"];
+        return ["username", "fullName", "email", "countryCode", "mobile"];
       case 2:
-        return ["experience", "about"];
+        return ["regions", "password", "confirmPassword"];
       default:
         return [];
     }
@@ -109,13 +110,38 @@ const ClientRegistration = () => {
     }
   };
 
-  const handleSubmit = () => {
-    toast.success("Registration submitted successfully! We will contact you soon.");
-    navigate("/");
+  const handleSubmit = async () => {
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const fullPhone = `${formData.countryCode} ${formData.mobile}`;
+      await Axios.post("/api/consultants/register", {
+        username: formData.username,
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: fullPhone,
+        regions: formData.regions,
+        licenseNumber: formData.licenseNumber,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword
+      });
+
+      toast.success("Registration submitted successfully! Awaiting admin approval.");
+      navigate("/");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Failed to submit consultant registration";
+      toast.error(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isLastStep = currentStep === totalSteps;
-  const canProceed = isStepValid;
+  const canProceed = isStepValid && !isSubmitting;
 
   const features = [
     { icon: Shield, title: "Verified Partner", desc: "Become an official partner" },
@@ -133,32 +159,39 @@ const ClientRegistration = () => {
     { value: "+61", label: "Australia (+61)" },
   ];
 
-  const experienceOptions = [
-    "Less than 1 year",
-    "1-3 years",
-    "3-5 years",
-    "5-10 years",
-    "More than 10 years",
-  ];
-
   const renderStep = () => {
     switch (currentStep) {
       case 1:
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="fullName" className="text-sm">
-                  Full Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  value={formData.fullName}
-                  onChange={(e) => updateFormData("fullName", e.target.value)}
-                  placeholder="Enter your full name"
-                  className="h-10"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="username" className="text-sm">
+                    Username <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    value={formData.username}
+                    onChange={(e) => updateFormData("username", e.target.value)}
+                    placeholder="broker_name"
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="fullName" className="text-sm">
+                    Full Name <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) => updateFormData("fullName", e.target.value)}
+                    placeholder="Enter full name"
+                    className="h-10"
+                  />
+                </div>
               </div>
 
               <div className="space-y-1.5">
@@ -170,14 +203,14 @@ const ClientRegistration = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => updateFormData("email", e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder="email@agency.com"
                   className="h-10"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <Label className="text-sm">
-                  Mobile Number <span className="text-destructive">*</span>
+                  Mobile / Phone Number <span className="text-destructive">*</span>
                 </Label>
                 <div className="flex gap-2">
                   <Select
@@ -204,35 +237,6 @@ const ClientRegistration = () => {
                   />
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="city" className="text-sm">
-                    City <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="city"
-                    type="text"
-                    value={formData.city}
-                    onChange={(e) => updateFormData("city", e.target.value)}
-                    placeholder="Your city"
-                    className="h-10"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="state" className="text-sm">
-                    State <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="state"
-                    type="text"
-                    value={formData.state}
-                    onChange={(e) => updateFormData("state", e.target.value)}
-                    placeholder="Your state"
-                    className="h-10"
-                  />
-                </div>
-              </div>
             </div>
           </div>
         );
@@ -240,51 +244,61 @@ const ClientRegistration = () => {
         return (
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="experience" className="text-sm">
-                Matchmaking Experience <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={formData.experience}
-                onValueChange={(value) => updateFormData("experience", value)}
-              >
-                <SelectTrigger className="h-10">
-                  <SelectValue placeholder="Select your experience" />
-                </SelectTrigger>
-                <SelectContent>
-                  {experienceOptions.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="organization" className="text-sm">
-                Organization/Agency Name (Optional)
+              <Label htmlFor="regions" className="text-sm">
+                Operating Regions / Cities <span className="text-destructive">*</span>
               </Label>
               <Input
-                id="organization"
+                id="regions"
                 type="text"
-                value={formData.organization}
-                onChange={(e) => updateFormData("organization", e.target.value)}
-                placeholder="If applicable"
+                value={formData.regions}
+                onChange={(e) => updateFormData("regions", e.target.value)}
+                placeholder="e.g. Mumbai, Pune, Delhi"
                 className="h-10"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="about" className="text-sm">
-                Tell Us About Yourself <span className="text-destructive">*</span>
+              <Label htmlFor="licenseNumber" className="text-sm">
+                License / Registration No. (Optional)
               </Label>
-              <Textarea
-                id="about"
-                value={formData.about}
-                onChange={(e) => updateFormData("about", e.target.value)}
-                placeholder="Briefly describe your experience and why you want to partner with us..."
-                className="min-h-[120px] resize-none"
+              <Input
+                id="licenseNumber"
+                type="text"
+                value={formData.licenseNumber}
+                onChange={(e) => updateFormData("licenseNumber", e.target.value)}
+                placeholder="License or Agency ID"
+                className="h-10"
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-sm">
+                  Password <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => updateFormData("password", e.target.value)}
+                  placeholder="Min. 6 characters"
+                  className="h-10"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="confirmPassword" className="text-sm">
+                  Confirm Password <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => updateFormData("confirmPassword", e.target.value)}
+                  placeholder="Confirm password"
+                  className="h-10"
+                />
+              </div>
             </div>
           </div>
         );
@@ -439,8 +453,8 @@ const ClientRegistration = () => {
                     Step {currentStep} of {totalSteps}
                   </h2>
                   <span className="text-xs text-muted-foreground">
-                    {currentStep === 1 && "Personal Details"}
-                    {currentStep === 2 && "Professional Info"}
+                    {currentStep === 1 && "Account & Contact"}
+                    {currentStep === 2 && "Region & Credentials"}
                   </span>
                 </div>
 
@@ -490,7 +504,7 @@ const ClientRegistration = () => {
                 <Button
                   variant="outline"
                   onClick={prevStep}
-                  disabled={currentStep === 1}
+                  disabled={currentStep === 1 || isSubmitting}
                   className="gap-1.5 rounded-lg px-4 h-9 text-sm disabled:opacity-40"
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -499,15 +513,26 @@ const ClientRegistration = () => {
 
                 <Button
                   onClick={isLastStep ? handleSubmit : nextStep}
-                  disabled={!canProceed}
+                  disabled={!canProceed || isSubmitting}
                   className={`gap-1.5 rounded-lg px-6 h-9 text-sm ${
-                    canProceed
+                    canProceed && !isSubmitting
                       ? "bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25"
                       : "opacity-40 cursor-not-allowed"
                   }`}
                 >
-                  {isLastStep ? "Submit" : "Continue"}
-                  <ChevronRight className="h-4 w-4" />
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                      Submitting...
+                    </>
+                  ) : isLastStep ? (
+                    "Submit Registration"
+                  ) : (
+                    <>
+                      Continue
+                      <ChevronRight className="h-4 w-4" />
+                    </>
+                  )}
                 </Button>
               </div>
             </Card>
