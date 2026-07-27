@@ -149,12 +149,18 @@ const Interests = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const membership = res.data.membership;
+      const membership = res.data.membership || {};
+      const rawViewed = membership.viewedProfiles || [];
+      const formattedViewed = rawViewed.map((v: any) =>
+        typeof v === "object" && v !== null ? String(v._id || v) : String(v)
+      );
 
-      setViewedProfiles(membership.viewedProfiles || []);
+      setViewedProfiles(formattedViewed);
 
       if (membership.chatProfilesUsed >= membership.chatProfilesLimit) {
         setProfileLimitReached(true);
+      } else {
+        setProfileLimitReached(false);
       }
     } catch (err) {
       console.error(err);
@@ -289,7 +295,7 @@ const Interests = () => {
     type: "received" | "sent" | "accepted";
   }) => {
     const isActioning = actionLoading === item._id;
-    const alreadyViewed = viewedProfiles.includes(item.user._id);
+    const alreadyViewed = viewedProfiles.some((id) => String(id) === String(item.user._id));
     const locked = profileLimitReached && !alreadyViewed;
     const primaryPhoto = item.user.photos?.find((p) => p.isPrimary);
     const isPhotoHidden = primaryPhoto?.isHidden;
