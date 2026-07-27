@@ -35,16 +35,22 @@ import MaleDummy from "@/assets/UserMen.png";
 import DummyProfile from "@/assets/DummyProfile.png";
 import { toast } from "sonner";
 
+import { motion } from "framer-motion";
+import OptimizedProfileImage from "@/components/dashboard/OptimizedProfileImage";
+
 interface Profile {
   _id: string;
   fullName: string;
   gender?: string;
   dateOfBirth?: string;
   highestEducation?: { name: string };
+  education?: { name: string };
   photos?: { url: string; isPrimary: boolean; isHidden?: boolean }[];
   profileStatus?: string;
   city?: string;
+  state?: string;
   profession?: { name: string };
+  interests?: string[];
 }
 
 const BrowseProfiles = () => {
@@ -244,7 +250,7 @@ const BrowseProfiles = () => {
     }
   };
 
-  const ProfileCard = ({ profile }: { profile: (typeof profiles)[0] }) => {
+  const ProfileCard = ({ profile }: { profile: Profile }) => {
     const primaryPhoto = profile.photos?.find((p) => p.isPrimary);
     const isPhotoHidden = primaryPhoto?.isHidden;
 
@@ -255,97 +261,139 @@ const BrowseProfiles = () => {
       acceptedInterests.includes(profile._id) ||
       receivedInterests.includes(profile._id);
 
+    const photoSrc = getProfileImage(profile.photos, profile.gender);
+    const isLiking = likingProfile === profile._id;
+    const isLiked = likedUserIds.has(profile._id);
+
     return (
-      <Card className="glass-card overflow-hidden hover:shadow-lg transition-all group rounded-2xl border border-border/40">
-        <div className="relative h-48 sm:h-56">
-          <img
-            src={getProfileImage(profile.photos, profile.gender)}
-            alt={profile.fullName}
-            className={`w-full h-full object-cover ${
-              isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""
-            }`}
-          />
-          {profile.profileStatus === "private" && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-              <Badge className="bg-white text-foreground text-xs">
-                Private Profile
-              </Badge>
-            </div>
-          )}
-          <Button
-            size="icon"
-            variant={likedUserIds.has(profile._id) ? "default" : "outline"}
-            className={`absolute top-2 right-2 bg-white/90 hover:bg-white h-8 w-8 ${
-              likedUserIds.has(profile._id)
-                ? "bg-gradient-to-r from-primary to-secondary text-white"
-                : ""
-            }`}
-            disabled={likingProfile === profile._id}
-            onClick={() =>
-              likedUserIds.has(profile._id)
-                ? handleUnlikeProfile(profile._id)
-                : handleLikeProfile(profile._id)
-            }
-          >
-            <Heart
-              className={`w-4 h-4 ${
-                likedUserIds.has(profile._id) ? "fill-white" : ""
+      <Card className="glass-card overflow-hidden hover:shadow-md md:hover:shadow-lg transition-all rounded-xl md:rounded-2xl border border-border/40">
+        <div className="grid grid-cols-[90px_1fr] md:grid-cols-[160px_1fr] min-h-[145px] md:h-[240px]">
+          {/* Image Section */}
+          <div className="relative overflow-hidden bg-muted rounded-l-xl md:rounded-l-2xl">
+            <OptimizedProfileImage
+              src={photoSrc}
+              alt={profile.fullName}
+              isLocked={false}
+              className={`w-full h-full object-cover ${
+                isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""
               }`}
             />
-          </Button>
-        </div>
 
-        <div className="p-3 sm:p-4 flex flex-col justify-between">
-          <div>
-            <h3 className="text-base sm:text-lg font-bold mb-1 truncate">
-              {profile.fullName},{" "}
-              {profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : "--"}
-            </h3>
+            {profile.profileStatus === "private" && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
+                <Badge className="bg-white text-foreground text-[9px] md:text-xs">
+                  Private Profile
+                </Badge>
+              </div>
+            )}
+          </div>
 
-            <div className="space-y-1 text-xs sm:text-sm text-muted-foreground mb-3">
-              {/* City */}
-              <div className="flex items-center gap-1.5 truncate">
-                <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="truncate">{profile.city || "Location not specified"}</span>
+          {/* Content Section */}
+          <div className="p-2.5 md:p-4 flex flex-col justify-between overflow-hidden">
+            <div>
+              <div className="flex items-start justify-between gap-1 mb-0.5 md:mb-1">
+                <h3 className="text-xs md:text-base font-bold truncate leading-tight">
+                  {profile.fullName},{" "}
+                  {profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : "--"}
+                </h3>
+
+                <Button
+                  size="icon"
+                  variant={isLiked ? "default" : "outline"}
+                  className={`shrink-0 h-6 w-6 md:h-8 md:w-8 ${
+                    isLiked ? "bg-gradient-to-r from-primary to-secondary text-white" : ""
+                  }`}
+                  disabled={isLiking}
+                  onClick={() =>
+                    isLiked
+                      ? handleUnlikeProfile(profile._id)
+                      : handleLikeProfile(profile._id)
+                  }
+                >
+                  {isLiking ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Heart className="w-3 h-3 md:w-4 md:h-4" />
+                    </motion.div>
+                  ) : (
+                    <Heart className={`w-3 h-3 md:w-4 md:h-4 ${isLiked ? "fill-white" : ""}`} />
+                  )}
+                </Button>
               </div>
 
-              {/* Profession */}
-              <div className="flex items-center gap-1.5 truncate">
-                <Briefcase className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="truncate">
+              <div className="flex flex-col gap-0.5 mt-0.5 md:mt-1 text-[11px] md:text-sm text-muted-foreground">
+                <span className="flex items-center gap-1 truncate">
+                  <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
+                  {profile.city || "Location not specified"}{profile.state ? `, ${profile.state}` : ""}
+                </span>
+                <span className="hidden md:flex items-center gap-1 truncate">
+                  <GraduationCap className="w-3.5 h-3.5 shrink-0 text-primary/80" />
+                  {profile.education?.name || profile.highestEducation?.name || "—"}
+                </span>
+                <span className="flex items-center gap-1 truncate">
+                  <Briefcase className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
                   {profile.profession?.name || "Profession not specified"}
                 </span>
               </div>
-            </div>
-          </div>
 
-          <div className="flex gap-2 pt-1 border-t border-border/30">
-            <Button
-              className="flex-1 bg-gradient-to-r from-primary to-secondary gap-1.5 text-xs h-8"
-              onClick={() => {
-                if (lockedByLimit) {
-                  toast.error(
-                    "Profile view limit reached. Upgrade your plan 🔒",
-                  );
-                  navigate("/pricing");
-                  return;
-                }
+              {profile.interests && profile.interests.length > 0 && (
+                <div className="mt-1 md:mt-2">
+                  <p className="hidden md:block text-xs font-semibold mb-1 text-foreground/80">Interests:</p>
 
-                navigate(`/profile/${profile._id}`);
-              }}
-            >
-              {lockedByLimit ? (
-                <>
-                  <Lock className="w-3.5 h-3.5" />
-                  Upgrade
-                </>
-              ) : (
-                <>
-                  <Eye className="w-3.5 h-3.5" />
-                  View Profile
-                </>
+                  {/* Mobile Interests (Compact) */}
+                  <div className="flex md:hidden flex-wrap gap-1">
+                    {profile.interests.slice(0, 2).map((interest, idx) => (
+                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-[9px] px-1.5 py-0 font-normal">
+                        {interest}
+                      </Badge>
+                    ))}
+                    {profile.interests.length > 2 && (
+                      <Badge variant="outline" className="text-[9px] px-1 py-0 text-muted-foreground">
+                        +{profile.interests.length - 2}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Desktop Interests (Spacious) */}
+                  <div className="hidden md:flex flex-wrap gap-1.5 max-h-[42px] overflow-y-auto">
+                    {profile.interests.map((interest, idx) => (
+                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-xs px-2 py-0.5">
+                        {interest}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               )}
-            </Button>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-1.5 md:gap-2 mt-2 pt-1 md:pt-1.5 border-t border-border/30">
+              <Button
+                className="w-full bg-gradient-to-r from-primary to-secondary gap-1.5 text-[10px] md:text-xs h-7 md:h-8 px-2"
+                onClick={() => {
+                  if (lockedByLimit) {
+                    toast.error("Profile view limit reached. Upgrade your plan 🔒");
+                    navigate("/pricing");
+                    return;
+                  }
+                  navigate(`/profile/${profile._id}`);
+                }}
+              >
+                {lockedByLimit ? (
+                  <>
+                    <Lock className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                    Upgrade
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                    View Profile
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </Card>
@@ -492,7 +540,7 @@ const BrowseProfiles = () => {
       </Card>
 
       {/* Profiles Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {filteredProfiles.map((profile) => (
           <ProfileCard key={profile._id} profile={profile} />
         ))}
