@@ -280,7 +280,12 @@ const Matches = () => {
       });
 
       const membership = res.data.membership || {};
-      setViewedProfiles(membership.viewedProfiles || []);
+      const rawViewed = membership.viewedProfiles || [];
+      const formattedViewed = rawViewed.map((v: any) =>
+        typeof v === "object" && v !== null ? String(v._id || v) : String(v)
+      );
+
+      setViewedProfiles(formattedViewed);
 
       if (membership.chatProfilesUsed >= membership.chatProfilesLimit) {
         setProfileLimitReached(true);
@@ -475,7 +480,7 @@ const Matches = () => {
     const isAccepted = acceptedInterests.includes(match.user._id);
     const primaryPhoto = match.user.photos?.find((p) => p.isPrimary);
     const isPhotoHidden = primaryPhoto?.isHidden;
-    const alreadyViewed = viewedProfiles.includes(match.user._id);
+    const alreadyViewed = viewedProfiles.some((id) => String(id) === String(match.user._id));
     const lockedByLimit = profileLimitReached && !alreadyViewed;
 
     const canViewHiddenPhoto =
@@ -630,7 +635,7 @@ const Matches = () => {
                         onClick={() => handleCancelInterest(match.user._id, match.user.fullName)}
                         disabled={isCanceling}
                       >
-                        {isCanceling ? (
+                        {isCanceling ? (  
                           "Canceling..."
                         ) : (
                           <>
