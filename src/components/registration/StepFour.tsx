@@ -202,7 +202,7 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
 
         {/* CV Upload */}
         <div className="space-y-2 md:col-span-2">
-          <Label>Upload Your CV *</Label>
+          <Label>Upload Your CV <span className="text-muted-foreground font-normal text-xs">(Optional)</span></Label>
           <input
             ref={cvInputRef}
             type="file"
