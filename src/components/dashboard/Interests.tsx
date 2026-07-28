@@ -67,6 +67,16 @@ const Interests = () => {
   const [viewLoading, setViewLoading] = useState<string | null>(null);
   const [profileLimitReached, setProfileLimitReached] = useState(false);
   const [viewedProfiles, setViewedProfiles] = useState<string[]>([]);
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+  const checkMillionStatus = (userObj: any) => {
+    if (!userObj) return false;
+    const status = (userObj.profileStatus || "").toLowerCase();
+    const planName = (userObj.membership?.plan?.name || "").toLowerCase();
+    const isPlanMillion = userObj.membership?.plan?.millionClub === true;
+    return status.includes("million") || planName.includes("million") || isPlanMillion === true || userObj.isMillionClub === true;
+  };
+  const [isCurrentMillionClubUser, setIsCurrentMillionClubUser] = useState<boolean>(() => checkMillionStatus(parsedUser));
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
   console.log("userId", userId);
@@ -174,6 +184,7 @@ const Interests = () => {
       );
 
       setViewedProfiles(formattedViewed);
+      setIsCurrentMillionClubUser(checkMillionStatus(res.data));
 
       if (membership.chatProfilesUsed >= membership.chatProfilesLimit) {
         setProfileLimitReached(true);
@@ -541,6 +552,24 @@ const Interests = () => {
     </div>
   );
 
+  const isTargetMillionClubUser = (user: InterestUser) => {
+    if (!user) return false;
+    const status = (user.profileStatus || "").toLowerCase();
+    return user.isMillionClub || status.includes("million");
+  };
+
+  const displayedReceived = isCurrentMillionClubUser
+    ? received
+    : received.filter((item) => !isTargetMillionClubUser(item.user));
+
+  const displayedSent = isCurrentMillionClubUser
+    ? sent
+    : sent.filter((item) => !isTargetMillionClubUser(item.user));
+
+  const displayedAccepted = isCurrentMillionClubUser
+    ? accepted
+    : accepted.filter((item) => !isTargetMillionClubUser(item.user));
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
@@ -565,9 +594,9 @@ const Interests = () => {
         </div>
 
         <TabsContent value="received" className="mt-6">
-          {received.length > 0 ? (
+          {displayedReceived.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {received.map((item) => (
+              {displayedReceived.map((item) => (
                 <InterestCard key={item._id} item={item} type="received" />
               ))}
             </div>
@@ -577,9 +606,9 @@ const Interests = () => {
         </TabsContent>
 
         <TabsContent value="sent" className="mt-6">
-          {sent.length > 0 ? (
+          {displayedSent.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {sent.map((item) => (
+              {displayedSent.map((item) => (
                 <InterestCard key={item._id} item={item} type="sent" />
               ))}
             </div>
@@ -588,9 +617,9 @@ const Interests = () => {
           )}
         </TabsContent>
         <TabsContent value="accepted" className="mt-6">
-          {accepted.length > 0 ? (
+          {displayedAccepted.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {accepted.map((item) => (
+              {displayedAccepted.map((item) => (
                 <InterestCard key={item._id} item={item} type="accepted" />
               ))}
             </div>
