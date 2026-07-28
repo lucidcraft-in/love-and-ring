@@ -13,10 +13,17 @@ import {
   X,
   Sparkles,
   Eye,
+  Crown,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import OptimizedProfileImage from "./OptimizedProfileImage";
 import FiltersModal from "./FiltersModal";
 import Axios from "@/axios/axios";
@@ -35,6 +42,8 @@ interface MatchUser {
   profession?: { name: string };
   city?: string;
   state?: string;
+  profileStatus?: string;
+  isMillionClub?: boolean;
   photos?: {
     url: string;
     isPrimary: boolean;
@@ -58,6 +67,7 @@ const Matches = () => {
   const [matches, setMatches] = useState<MatchItem[]>([]);
   const [myMatches, setMyMatches] = useState<MatchItem[]>([]); // Mutual / Accepted matches
   const [millionClubMatches, setMillionClubMatches] = useState<MatchItem[]>([]);
+  const [millionClubUserIds, setMillionClubUserIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [likingProfile, setLikingProfile] = useState<string | null>(null);
   const [likedUserIds, setLikedUserIds] = useState<Set<string>>(new Set());
@@ -169,6 +179,8 @@ const Matches = () => {
               : undefined,
             city: item.user.city,
             state: item.user.state,
+            profileStatus: item.user.profileStatus,
+            isMillionClub: item.user.profileStatus?.toLowerCase().includes("million"),
             photos: item.user.photos || [],
           },
           matchScore: item.matchPercentage ?? 0,
@@ -210,6 +222,8 @@ const Matches = () => {
               : undefined,
             city: item.city,
             state: item.state,
+            profileStatus: item.profileStatus || "Million Club",
+            isMillionClub: true,
             photos: item.photos || [],
           },
           matchScore: 100,
@@ -217,6 +231,7 @@ const Matches = () => {
         }));
 
       setMillionClubMatches(formatted);
+      setMillionClubUserIds(new Set(raw.map((item: any) => String(item._id))));
     } catch (err) {
       console.error("Failed to fetch Million Club users", err);
     }
@@ -534,6 +549,7 @@ const Matches = () => {
     const isLiking = likingProfile === match.user._id;
     const hasIncomingInterest = receivedInterests.includes(match.user._id);
     const isAccepted = acceptedInterests.includes(match.user._id);
+    const isMillionClub = match.user.isMillionClub || match.user.profileStatus?.toLowerCase().includes("million") || millionClubUserIds.has(String(match.user._id)) || activeTab === "millionClub";
     const primaryPhoto = match.user.photos?.find((p) => p.isPrimary);
     const isPhotoHidden = primaryPhoto?.isHidden;
     const alreadyViewed = viewedProfiles.some((id) => String(id) === String(match.user._id));
@@ -577,9 +593,26 @@ const Matches = () => {
           <div className="p-2.5 md:p-4 flex flex-col justify-between overflow-hidden">
             <div>
               <div className="flex items-start justify-between gap-1 mb-0.5 md:mb-1">
-                <h3 className="text-xs md:text-base font-bold truncate leading-tight">
-                  {match.user.fullName}, {calculateAge(match.user.dateOfBirth)}
-                </h3>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <h3 className="text-xs md:text-base font-bold truncate leading-tight">
+                    {match.user.fullName}, {calculateAge(match.user.dateOfBirth)}
+                  </h3>
+                  {isMillionClub && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center justify-center p-1 bg-amber-500/10 rounded-full text-amber-500 hover:bg-amber-500/20 transition-colors cursor-pointer shrink-0">
+                            <Crown className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-none shadow-md font-semibold text-xs flex items-center gap-1 z-50">
+                          <Crown className="w-3.5 h-3.5 fill-white text-white" />
+                          <span>Million Club Member</span>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
                 {!isLocked && (
                   <Button
                     size="icon"
