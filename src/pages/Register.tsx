@@ -25,7 +25,7 @@ import OTPVerification from "@/components/registration/OTPVerification";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
 import heroSlide3 from "@/assets/hero-slide-3.jpg";
-import { completeUserProfile, verifyRegistrationOtp } from "@/services/UserServices";
+import { completeUserProfile, verifyRegistrationOtp, registerFullUserApi } from "@/services/UserServices";
 import Axios from "@/axios/axios";
 import PrivacyConsentModal from "@/components/registration/PrivacyConsentModal";
 
@@ -35,6 +35,7 @@ export interface RegistrationData {
   accountFor: string;
   fullName: string;
   email: string;
+  password?: string;
   countryCode: string;
   mobile: string;
   gender: string;
@@ -88,6 +89,7 @@ const Register = () => {
     accountFor: "",
     fullName: "",
     email: "",
+    password: "",
     countryCode: "+91",
     mobile: "",
     gender: "",
@@ -253,53 +255,19 @@ const Register = () => {
     }
   };
 
-  const handleOTPVerified = async (otp: string, password: string) => {
+  const handleOTPVerified = async (_otp: string, password: string) => {
     try {
-      const res = await verifyRegistrationOtp({
-        email: formData.email,
-        otp,
-        password,
-      });
-
-      const userId = res.data.user._id;
-      setUserId(userId);
-
-      await completeUserProfile(userId, {
-        fullName: formData.fullName,
-        gender:
-          formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1),
-        accountFor:
-          formData.accountFor.charAt(0).toUpperCase() +
-          formData.accountFor.slice(1),
-        mobile: formData.mobile,
-        countryCode: formData.countryCode,
-      });
-
+      setFormData((prev) => ({ ...prev, password }));
       setIsOTPVerified(true);
       setShowOTPVerification(false);
       setCurrentStep(2);
-
-      toast.success("Account created successfully");
+      toast.success("OTP verified. Please complete your registration details.");
     } catch (err: any) {
-      const message = err.response?.data?.message || "OTP verification failed";
-      toast.error(message);
-
-      if (
-        message.toLowerCase().includes("phone") ||
-        message.toLowerCase().includes("email")
-      ) {
-        setShowOTPVerification(false);
-        setCurrentStep(1);
-      }
+      toast.error("Failed to proceed after OTP verification");
     }
   };
 
   const handleSubmit = async () => {
-    if (!userId) {
-      toast.error("User not created");
-      return;
-    }
-
     if (!consentAccepted) {
       toast.error("Privacy consent is required");
       return;
@@ -308,49 +276,69 @@ const Register = () => {
     try {
       setSubmitting(true);
 
+      const submitData = new FormData();
+      submitData.append("email", formData.email);
+      submitData.append("password", formData.password);
+      submitData.append("fullName", formData.fullName);
+      submitData.append(
+        "accountFor",
+        formData.accountFor
+          ? formData.accountFor.charAt(0).toUpperCase() + formData.accountFor.slice(1)
+          : "Self"
+      );
+      submitData.append("mobile", formData.mobile);
+      submitData.append("countryCode", formData.countryCode || "+91");
+      submitData.append(
+        "gender",
+        formData.gender
+          ? formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1)
+          : "Male"
+      );
+
+      if (formData.dob) submitData.append("dob", formData.dob);
+      if (formData.religion) submitData.append("religion", formData.religion);
+      if (formData.caste) submitData.append("caste", formData.caste);
+      if (formData.motherTongue) submitData.append("motherTongue", formData.motherTongue);
+      if (formData.height) submitData.append("height", formData.height);
+      if (formData.weight) submitData.append("weight", formData.weight);
+      if (formData.maritalStatus) submitData.append("maritalStatus", formData.maritalStatus);
+      if (formData.bodyType) submitData.append("bodyType", formData.bodyType);
+      if (formData.city) submitData.append("city", formData.city);
+      if (formData.primaryEducation) submitData.append("primaryEducation", formData.primaryEducation);
+      if (formData.highestEducation) submitData.append("highestEducation", formData.highestEducation);
+      if (formData.profession) submitData.append("profession", formData.profession);
+
+      submitData.append("physicallyChallenged", String(formData.physicallyChallenged));
+      submitData.append("livingWithFamily", String(formData.liveWithFamily));
+
+      if (formData.interests && formData.interests.length > 0) {
+        formData.interests.forEach((item) => submitData.append("interests[]", item));
+      }
+      if (formData.traits && formData.traits.length > 0) {
+        formData.traits.forEach((item) => submitData.append("personalityTraits[]", item));
+      }
+      if (formData.diets && formData.diets.length > 0) {
+        formData.diets.forEach((item) => submitData.append("dietPreference[]", item));
+      }
+      if (formData.income) {
+        submitData.append("income[amount]", String(formData.income.amount));
+        submitData.append("income[type]", formData.income.type);
+      }
+
       if (formData.profileImage) {
-        const form = new FormData();
-        form.append("photo", formData.profileImage);
-
-        await Axios.post(`/api/users/${userId}/photos`, form, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        submitData.append("photo", formData.profileImage);
       }
-
       if (formData.cv) {
-        const cvForm = new FormData();
-        cvForm.append("cv", formData.cv);
-        await Axios.post(`/api/users/${userId}/cv`, cvForm, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        submitData.append("cv", formData.cv);
       }
 
-      await completeUserProfile(userId, {
-        religion: formData.religion,
-        caste: formData.caste,
-        motherTongue: formData.motherTongue,
-        heightCm: Number(formData.height),
-        weightKg: Number(formData.weight),
-        dob: formData.dob,
-        maritalStatus: formData.maritalStatus,
-        bodyType: formData.bodyType,
-        city: formData.city,
-        highestEducation: formData.highestEducation,
-        primaryEducation: formData.primaryEducation,
-        profession: formData.profession,
-        interests: formData.interests,
-        personalityTraits: formData.traits,
-        dietPreference: formData.diets,
-        physicallyChallenged: formData.physicallyChallenged,
-        liveWithFamily: formData.liveWithFamily,
-        income: formData.income,
-      });
+      await registerFullUserApi(submitData);
 
-      toast.success("Profile completed successfully");
+      toast.success("Profile created successfully!");
       navigate("/login");
     } catch (err: any) {
       const message =
-        err.response?.data?.message || "Failed to complete profile";
+        err.response?.data?.message || "Failed to complete registration";
       toast.error(message);
     } finally {
       setSubmitting(false);
