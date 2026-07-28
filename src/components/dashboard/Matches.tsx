@@ -12,6 +12,7 @@ import {
   Lock,
   X,
   Sparkles,
+  Eye,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -56,6 +57,7 @@ const Matches = () => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [matches, setMatches] = useState<MatchItem[]>([]);
   const [myMatches, setMyMatches] = useState<MatchItem[]>([]); // Mutual / Accepted matches
+  const [millionClubMatches, setMillionClubMatches] = useState<MatchItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [likingProfile, setLikingProfile] = useState<string | null>(null);
   const [likedUserIds, setLikedUserIds] = useState<Set<string>>(new Set());
@@ -179,6 +181,44 @@ const Matches = () => {
       toast.error("Failed to load matches");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMillionClubUsers = async (likedIds: Set<string>) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await Axios.get("/api/million-club/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const raw = Array.isArray(res.data) ? res.data : [];
+      const formatted: MatchItem[] = raw
+        .filter((item: any) => item && item._id)
+        .map((item: any) => ({
+          user: {
+            _id: item._id,
+            fullName: item.fullName,
+            gender: item.gender,
+            dateOfBirth: item.dateOfBirth,
+            heightCm: item.heightCm,
+            interests: item.interests || [],
+            education: item.highestEducation
+              ? { name: item.highestEducation.name }
+              : undefined,
+            profession: item.profession
+              ? { name: item.profession.name }
+              : undefined,
+            city: item.city,
+            state: item.state,
+            photos: item.photos || [],
+          },
+          matchScore: 100,
+          liked: likedIds.has(item._id),
+        }));
+
+      setMillionClubMatches(formatted);
+    } catch (err) {
+      console.error("Failed to fetch Million Club users", err);
     }
   };
 
@@ -309,7 +349,9 @@ const Matches = () => {
         await fetchSentInterests();
         await fetchReceivedInterests();
         await fetchAcceptedInterests();
-        await fetchMatches(new Set(likedIdsArray));
+        const likedSet = new Set(likedIdsArray);
+        await fetchMatches(likedSet);
+        await fetchMillionClubUsers(likedSet);
         await checkProfileLimit();
       } catch (err) {
         console.error("Error during matches initialization", err);
@@ -353,6 +395,9 @@ const Matches = () => {
       setMatches((prev) =>
         prev.map((m) => (m.user._id === targetUserId ? { ...m, liked: true } : m))
       );
+      setMillionClubMatches((prev) =>
+        prev.map((m) => (m.user._id === targetUserId ? { ...m, liked: true } : m))
+      );
 
       if (match) {
         setLikedByMe((prev) => {
@@ -379,6 +424,9 @@ const Matches = () => {
       });
 
       setMatches((prev) =>
+        prev.map((m) => (m.user._id === targetUserId ? { ...m, liked: false } : m))
+      );
+      setMillionClubMatches((prev) =>
         prev.map((m) => (m.user._id === targetUserId ? { ...m, liked: false } : m))
       );
 
@@ -640,8 +688,11 @@ const Matches = () => {
                         Upgrade
                       </>
                     ) : (
-                      "View Profile"
-                    )}                  
+                      <>
+                        <Eye className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                        View Profile
+                      </>
+                    )}
                   </Button>
 
                   <AnimatePresence mode="wait">
@@ -724,7 +775,7 @@ const Matches = () => {
             <TabsTrigger value="new">New Matches</TabsTrigger>
             <TabsTrigger value="all">My Matches ({myMatches.length})</TabsTrigger>
             <TabsTrigger value="liked">Liked Profiles</TabsTrigger>
-            <TabsTrigger value="nri">NRI Profiles</TabsTrigger>
+            <TabsTrigger value="millionClub">Million Club Users ({millionClubMatches.length})</TabsTrigger>
           </TabsList>
         </div>
 
@@ -801,29 +852,25 @@ const Matches = () => {
           </div>
         </TabsContent>
 
-        {/* TAB 4: NRI PROFILES */}
-        {/* <TabsContent value="nri" className="mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {nriProfiles.map((profile) => {
-              const match: MatchItem = {
-                user: {
-                  _id: profile.id.toString(),
-                  fullName: profile.name,
-                  dateOfBirth: new Date().getFullYear() - profile.age + "-01-01",
-                  city: profile.city.split(",")[0],
-                  state: profile.city.split(",")[1]?.trim() || "",
-                  interests: profile.interests,
-                  education: { name: profile.education },
-                  profession: { name: profile.profession },
-                  photos: [{ url: profile.image, isPrimary: true }],
-                },
-                matchScore: profile.matchScore,
-                liked: profile.liked,
-              };
-              return <MatchCard key={profile.id} match={match} isNRI={true} />;
-            })}
-          </div>
-        </TabsContent> */}
+        {/* TAB 4: MILLION CLUB USERS */}
+        <TabsContent value="millionClub" className="mt-6">
+          {millionClubMatches.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+              {millionClubMatches.map((match) => (
+                <MatchCard key={match.user._id} match={match} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center min-h-[50vh]">
+              <Card className="glass-card p-12 text-center max-w-lg w-full">
+                <p className="text-muted-foreground text-lg font-medium">No Million Club users found.</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Subscribed Million Club members will appear here.
+                </p>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
     </div>
   );
