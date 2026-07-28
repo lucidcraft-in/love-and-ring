@@ -356,13 +356,18 @@ const BrowseProfiles = () => {
                     )}
                   </div>
 
-                  {/* Desktop Interests (Spacious) */}
-                  <div className="hidden md:flex flex-wrap gap-1.5 max-h-[42px] overflow-y-auto">
-                    {profile.interests.map((interest, idx) => (
-                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-xs px-2 py-0.5">
+                  {/* Desktop Interests (Compact with count) */}
+                  <div className="hidden md:flex flex-wrap gap-1.5 items-center">
+                    {profile.interests.slice(0, 3).map((interest, idx) => (
+                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-xs px-2 py-0.5 font-normal">
                         {interest}
                       </Badge>
                     ))}
+                    {profile.interests.length > 3 && (
+                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 text-muted-foreground font-normal">
+                        +{profile.interests.length - 3}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               )}
