@@ -1,9 +1,22 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, Star, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
+import { Upload, Star, Trash2, RotateCw, ZoomIn, ZoomOut, X, Check } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Axios from "@/axios/axios";
 import { toast } from "sonner";
+import ReactCrop, {
+  type Crop,
+  centerCrop,
+  makeAspectCrop,
+} from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 
 interface Photo {
   _id: string;
@@ -15,39 +28,27 @@ interface Photo {
 const MyPhotos = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  // Crop & Adjustment states
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showCropDialog, setShowCropDialog] = useState(false);
+  const [crop, setCrop] = useState<Crop>();
+  const [zoom, setZoom] = useState([1]);
+  const [rotation, setRotation] = useState(0);
+
+  const imgRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = user._id;
 
-  // Mock photos data
-  // const photos = [
-  //   {
-  //     id: 1,
-  //     url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-  //     isProfile: true,
-  //   },
-  //   {
-  //     id: 2,
-  //     url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-  //     isProfile: false,
-  //   },
-  //   {
-  //     id: 3,
-  //     url: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
-  //     isProfile: false,
-  //   },
-  //   {
-  //     id: 4,
-  //     url: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400",
-  //     isProfile: false,
-  //   },
-  // ];
-
   const fetchPhotos = async () => {
     setLoading(true);
     try {
-      const response = await Axios.get(`/api/users/${userId}/photos`);
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await Axios.get(`/api/users/${userId}/photos`, { headers });
       setPhotos(response.data || []);
       console.log("Photos:", response.data);
     } catch (error) {
@@ -61,16 +62,54 @@ const MyPhotos = () => {
     fetchPhotos();
   }, []);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setSelectedImage(reader.result as string);
+        setShowCropDialog(true);
+        setRotation(0);
+        setZoom([1]);
+      };
+      reader.readAsDataURL(file);
+    }
+    e.target.value = "";
+  };
+
+  const onImageLoad = useCallback(
+    (e: React.SyntheticEvent<HTMLImageElement>) => {
+      const { width, height } = e.currentTarget;
+      const newCrop = centerCrop(
+        makeAspectCrop(
+          {
+            unit: "%",
+            width: 80,
+          },
+          1,
+          width,
+          height,
+        ),
+        width,
+        height,
+      );
+      setCrop(newCrop);
+    },
+    [],
+  );
+
   const handleUpload = async (file: File) => {
     const formData = new FormData();
     formData.append("photo", file);
 
     try {
-      await Axios.post(`/api/users/${userId}/photos`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const token = localStorage.getItem("token");
+      const headers: Record<string, string> = { "Content-Type": "multipart/form-data" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      toast.success("Photo uploaded");
+      await Axios.post(`/api/users/${userId}/photos`, formData, { headers });
+
+      toast.success("Photo uploaded successfully 🎉");
       fetchPhotos();
       window.dispatchEvent(new Event("userProfileUpdated"));
     } catch {
@@ -78,9 +117,77 @@ const MyPhotos = () => {
     }
   };
 
+  const getCroppedImg = async () => {
+    if (!imgRef.current || !crop) return;
+
+    const image = imgRef.current;
+    const canvas = document.createElement("canvas");
+
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+
+    const cropWidth = (crop.width / 100) * image.width;
+    const cropHeight = (crop.height / 100) * image.height;
+
+    canvas.width = cropWidth * scaleX;
+    canvas.height = cropHeight * scaleY;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.imageSmoothingQuality = "high";
+
+    const cropX = (crop.x / 100) * image.width * scaleX;
+    const cropY = (crop.y / 100) * image.height * scaleY;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.scale(zoom[0], zoom[0]);
+
+    ctx.drawImage(
+      image,
+      cropX,
+      cropY,
+      cropWidth * scaleX,
+      cropHeight * scaleY,
+      -canvas.width / 2,
+      -canvas.height / 2,
+      canvas.width,
+      canvas.height,
+    );
+
+    ctx.restore();
+
+    canvas.toBlob(
+      async (blob) => {
+        if (!blob) return;
+
+        const file = new File([blob], "photo.jpg", {
+          type: "image/jpeg",
+        });
+
+        setShowCropDialog(false);
+        setUploading(true);
+        await handleUpload(file);
+        setUploading(false);
+      },
+      "image/jpeg",
+      0.9,
+    );
+  };
+
+  const handleRotate = () => {
+    setRotation((prev) => (prev + 90) % 360);
+  };
+
   const setAsProfile = async (photoId: string) => {
     try {
-      await Axios.patch(`/api/users/${userId}/photos/${photoId}/primary`);
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      await Axios.patch(`/api/users/${userId}/photos/${photoId}/primary`, {}, { headers });
 
       toast.success("Profile photo updated");
       fetchPhotos();
@@ -89,31 +196,23 @@ const MyPhotos = () => {
       toast.error("Failed to set profile photo");
     }
   };
+
   const deletePhoto = async (photoId: string) => {
     try {
-      const photoToDelete = photos.find((p) => p._id === photoId);
-
-      if (photoToDelete?.isPrimary) {
-        toast.error(
-          "Cannot delete primary photo. Set another photo as primary first.",
-        );
+      if (!userId) {
+        toast.error("User not found. Please log in again.");
         return;
       }
 
       const token = localStorage.getItem("token");
-
-      await Axios.delete(`/api/users/${photoId}/photos`, {
-        headers: {
-          Authorization: `Bearer ${token}`, 
-        },
-        data: { photoId }, 
-      });
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      await Axios.delete(`/api/users/${userId}/photos/${photoId}`, { headers });
 
       toast.success("Photo deleted");
       fetchPhotos();
       window.dispatchEvent(new Event("userProfileUpdated"));
-    } catch (error) {
-      toast.error("Failed to delete photo");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to delete photo");
       console.error(error);
     }
   };
@@ -125,20 +224,17 @@ const MyPhotos = () => {
         <Button
           className="bg-gradient-to-r from-primary to-secondary gap-2"
           onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
         >
           <Upload className="w-4 h-4" />
-          Upload Photo
+          {uploading ? "Uploading..." : "Upload Photo"}
         </Button>
         <input
           ref={fileInputRef}
           type="file"
           accept="image/*"
           hidden
-          onChange={(e) => {
-            if (e.target.files?.[0]) {
-              handleUpload(e.target.files[0]);
-            }
-          }}
+          onChange={handleFileChange}
         />
       </div>
 
@@ -201,6 +297,82 @@ const MyPhotos = () => {
           </div>
         </Card>
       </div>
+
+      {/* Photo Adjustment & Crop Dialog */}
+      <Dialog open={showCropDialog} onOpenChange={setShowCropDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Crop & Adjust Photo</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {selectedImage && (
+              <div className="relative max-h-[400px] overflow-hidden flex justify-center">
+                <ReactCrop
+                  crop={crop}
+                  onChange={(_, percentCrop) => setCrop(percentCrop)}
+                  aspect={1}
+                  circularCrop
+                >
+                  <img
+                    ref={imgRef}
+                    src={selectedImage}
+                    alt="Crop preview"
+                    onLoad={onImageLoad}
+                    style={{
+                      maxHeight: "400px",
+                      transform: `rotate(${rotation}deg) scale(${zoom[0]})`,
+                      transition: "transform 0.2s",
+                    }}
+                  />
+                </ReactCrop>
+              </div>
+            )}
+
+            {/* Controls */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <ZoomOut className="w-4 h-4 text-muted-foreground" />
+                <Slider
+                  value={zoom}
+                  onValueChange={setZoom}
+                  min={0.5}
+                  max={3}
+                  step={0.1}
+                  className="flex-1"
+                />
+                <ZoomIn className="w-4 h-4 text-muted-foreground" />
+              </div>
+
+              <div className="flex justify-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleRotate}>
+                  <RotateCw className="w-4 h-4 mr-2" />
+                  Rotate
+                </Button>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowCropDialog(false)}
+              >
+                <X className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+              <Button
+                onClick={getCroppedImg}
+                disabled={uploading}
+                className="bg-gradient-to-r from-primary to-secondary"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                {uploading ? "Uploading..." : "Apply & Upload"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
