@@ -72,6 +72,16 @@ const BrowseProfiles = () => {
   const [viewedProfiles, setViewedProfiles] = useState<string[]>([]);
   const [receivedInterests, setReceivedInterests] = useState<string[]>([]);
   const [acceptedInterests, setAcceptedInterests] = useState<string[]>([]);
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+  const checkMillionStatus = (userObj: any) => {
+    if (!userObj) return false;
+    const status = (userObj.profileStatus || "").toLowerCase();
+    const planName = (userObj.membership?.plan?.name || "").toLowerCase();
+    const isPlanMillion = userObj.membership?.plan?.millionClub === true;
+    return status.includes("million") || planName.includes("million") || isPlanMillion === true || userObj.isMillionClub === true;
+  };
+  const [isCurrentMillionClubUser, setIsCurrentMillionClubUser] = useState<boolean>(() => checkMillionStatus(parsedUser));
 
   const loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const loggedUserId = loggedUser?._id;
@@ -138,6 +148,7 @@ const BrowseProfiles = () => {
       );
 
       setViewedProfiles(formattedViewed);
+      setIsCurrentMillionClubUser(checkMillionStatus(res.data));
 
       if (membership.chatProfilesUsed >= membership.chatProfilesLimit) {
         setProfileLimitReached(true);
@@ -205,6 +216,12 @@ const BrowseProfiles = () => {
   };
 
   const filteredProfiles = profiles.filter((p) => {
+    // If logged-in user is NOT a Million Club member, hide Million Club profiles
+    if (!isCurrentMillionClubUser) {
+      const status = (p.profileStatus || "").toLowerCase();
+      if (status.includes("million")) return false;
+    }
+
     // Search query check
     const matchesSearch = (p.fullName ?? "")
       .toLowerCase()
