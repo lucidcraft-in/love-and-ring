@@ -373,13 +373,18 @@ const Interests = () => {
                     )}
                   </div>
 
-                  {/* Desktop Interests (Spacious) */}
-                  <div className="hidden md:flex flex-wrap gap-1.5 max-h-[42px] overflow-y-auto">
-                    {item.user.interests.map((interest, idx) => (
-                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-xs px-2 py-0.5">
+                  {/* Desktop Interests (Compact with count) */}
+                  <div className="hidden md:flex flex-wrap gap-1.5 items-center">
+                    {item.user.interests.slice(0, 3).map((interest, idx) => (
+                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-xs px-2 py-0.5 font-normal">
                         {interest}
                       </Badge>
                     ))}
+                    {item.user.interests.length > 3 && (
+                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 text-muted-foreground font-normal">
+                        +{item.user.interests.length - 3}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               )}
