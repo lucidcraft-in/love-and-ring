@@ -68,6 +68,16 @@ const Matches = () => {
   const [myMatches, setMyMatches] = useState<MatchItem[]>([]); // Mutual / Accepted matches
   const [millionClubMatches, setMillionClubMatches] = useState<MatchItem[]>([]);
   const [millionClubUserIds, setMillionClubUserIds] = useState<Set<string>>(new Set());
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+  const checkMillionStatus = (userObj: any) => {
+    if (!userObj) return false;
+    const status = (userObj.profileStatus || "").toLowerCase();
+    const planName = (userObj.membership?.plan?.name || "").toLowerCase();
+    const isPlanMillion = userObj.membership?.plan?.millionClub === true;
+    return status.includes("million") || planName.includes("million") || isPlanMillion === true || userObj.isMillionClub === true;
+  };
+  const [isCurrentMillionClubUser, setIsCurrentMillionClubUser] = useState<boolean>(() => checkMillionStatus(parsedUser));
   const [loading, setLoading] = useState(false);
   const [likingProfile, setLikingProfile] = useState<string | null>(null);
   const [likedUserIds, setLikedUserIds] = useState<Set<string>>(new Set());
@@ -345,6 +355,7 @@ const Matches = () => {
       );
 
       setViewedProfiles(formattedViewed);
+      setIsCurrentMillionClubUser(checkMillionStatus(res.data));
 
       if (membership.chatProfilesUsed >= membership.chatProfilesLimit) {
         setProfileLimitReached(true);
@@ -780,6 +791,28 @@ const Matches = () => {
     );
   };
 
+  const isTargetMillionClubUser = (user: MatchUser) => {
+    if (!user) return false;
+    const status = (user.profileStatus || "").toLowerCase();
+    return user.isMillionClub || status.includes("million") || millionClubUserIds.has(String(user._id));
+  };
+
+  const displayedMatches = isCurrentMillionClubUser
+    ? matches
+    : matches.filter((m) => !isTargetMillionClubUser(m.user));
+
+  const displayedMyMatches = isCurrentMillionClubUser
+    ? myMatches
+    : myMatches.filter((m) => !isTargetMillionClubUser(m.user));
+
+  const displayedLikedByMe = isCurrentMillionClubUser
+    ? likedByMe
+    : likedByMe.filter((m) => !isTargetMillionClubUser(m.user));
+
+  const displayedLikedMe = isCurrentMillionClubUser
+    ? likedMe
+    : likedMe.filter((m) => !isTargetMillionClubUser(m.user));
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
@@ -806,17 +839,19 @@ const Matches = () => {
         <div className="sticky top-16 lg:top-0 z-20 bg-[#fafafa]/95 dark:bg-background/95 backdrop-blur-md py-3 px-1 -mx-1 border-b border-border/40 overflow-x-auto scrollbar-hide lg:overflow-visible">
           <TabsList className="w-max lg:w-auto flex-nowrap">
             <TabsTrigger value="new">New Matches</TabsTrigger>
-            <TabsTrigger value="all">My Matches ({myMatches.length})</TabsTrigger>
+            <TabsTrigger value="all">My Matches ({displayedMyMatches.length})</TabsTrigger>
             <TabsTrigger value="liked">Liked Profiles</TabsTrigger>
-            <TabsTrigger value="millionClub">Million Club Users ({millionClubMatches.length})</TabsTrigger>
+            {isCurrentMillionClubUser && (
+              <TabsTrigger value="millionClub">Million Club Users ({millionClubMatches.length})</TabsTrigger>
+            )}
           </TabsList>
         </div>
 
         {/* TAB 1: NEW MATCHES */}
         <TabsContent value="new" className="mt-6">
-          {matches.length > 0 ? (
+          {displayedMatches.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-              {matches.map((match) => (
+              {displayedMatches.map((match) => (
                 <MatchCard key={match.user._id} match={match} />
               ))}
             </div>
@@ -834,9 +869,9 @@ const Matches = () => {
 
         {/* TAB 2: MY MATCHES (Mutually Accepted Connections) */}
         <TabsContent value="all" className="mt-6">
-          {myMatches.length > 0 ? (
+          {displayedMyMatches.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {myMatches.map((match) => (
+              {displayedMyMatches.map((match) => (
                 <MatchCard key={match.user._id} match={match} />
               ))}
             </div>
@@ -856,9 +891,9 @@ const Matches = () => {
         <TabsContent value="liked" className="mt-6 space-y-10">
           <div>
             <h3 className="text-xl font-semibold mb-4">Profiles You’re Interested In ❤️</h3>
-            {likedByMe.length > 0 ? (
+            {displayedLikedByMe.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {likedByMe.map((match) => (
+                {displayedLikedByMe.map((match) => (
                   <MatchCard key={match.user._id} match={match} />
                 ))}
               </div>
@@ -871,9 +906,9 @@ const Matches = () => {
 
           <div>
             <h3 className="text-xl font-semibold mb-4">People Who Showed Interest in You ✨</h3>
-            {likedMe.length > 0 ? (
+            {displayedLikedMe.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {likedMe.map((match) => (
+                {displayedLikedMe.map((match) => (
                   <MatchCard key={match.user._id} match={match} />
                 ))}
               </div>
@@ -886,24 +921,26 @@ const Matches = () => {
         </TabsContent>
 
         {/* TAB 4: MILLION CLUB USERS */}
-        <TabsContent value="millionClub" className="mt-6">
-          {millionClubMatches.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-              {millionClubMatches.map((match) => (
-                <MatchCard key={match.user._id} match={match} />
-              ))}
-            </div>
-          ) : (
-            <div className="flex items-center justify-center min-h-[50vh]">
-              <Card className="glass-card p-12 text-center max-w-lg w-full">
-                <p className="text-muted-foreground text-lg font-medium">No Million Club users found.</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Subscribed Million Club members will appear here.
-                </p>
-              </Card>
-            </div>
-          )}
-        </TabsContent>
+        {isCurrentMillionClubUser && (
+          <TabsContent value="millionClub" className="mt-6">
+            {millionClubMatches.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                {millionClubMatches.map((match) => (
+                  <MatchCard key={match.user._id} match={match} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center min-h-[50vh]">
+                <Card className="glass-card p-12 text-center max-w-lg w-full">
+                  <p className="text-muted-foreground text-lg font-medium">No Million Club users found.</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Subscribed Million Club members will appear here.
+                  </p>
+                </Card>
+              </div>
+            )}
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
