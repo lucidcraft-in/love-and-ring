@@ -553,10 +553,10 @@ const SingleProfile = () => {
               </Button>
 
               {/* Share Button */}
-              <Button className="w-full gap-2" variant="outline">
+              {/* <Button className="w-full gap-2" variant="outline">
                 <Share2 className="w-4 h-4" />
                 Share Profile
-              </Button>
+              </Button> */}
 
               {/* Call History Button */}
               <Button
