@@ -41,6 +41,7 @@ interface User {
   profileId?: string;
   photos?: Photo[];
   membership?: Membership;
+  profileStatus:string
 }
 
 const navigationItems = [
@@ -125,7 +126,11 @@ const ProfileSidebar = ({
         .join("")
         .toUpperCase() || "U",
   };
-  const planName = userData?.membership?.plan?.title || "Free Account";
+  const planName =
+    (typeof userData?.membership?.plan === "object" && userData?.membership?.plan?.title) ||
+    (typeof userData?.membership?.plan === "object" && userData?.membership?.plan?.name) ||
+    userData?.profileStatus ||
+    "Free Account";
   return (
     <>
       {/* Mobile Overlay */}
