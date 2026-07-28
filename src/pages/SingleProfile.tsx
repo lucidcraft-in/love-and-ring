@@ -60,19 +60,20 @@ const SingleProfile = () => {
   const [callHistoryLoading, setCallHistoryLoading] = useState(false);
   const [showCallHistoryModal, setShowCallHistoryModal] = useState(false);
 
-  const formatUTCDateTime = (dateString: string) => {
+  const formatISTDateTime = (dateString: string) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "N/A";
 
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(date.getUTCDate()).padStart(2, "0");
-    const hours = String(date.getUTCHours()).padStart(2, "0");
-    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-    const seconds = String(date.getUTCSeconds()).padStart(2, "0");
-
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} UTC`;
+    return date.toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }) ;
   };
 
   const fetchCallHistory = async () => {
@@ -716,7 +717,7 @@ const SingleProfile = () => {
               Call History
             </DialogTitle>
             <DialogDescription className="text-sm">
-              Past call history with {profile?.fullName || "this user"} (Timestamps in UTC).
+              Past call history with {profile?.fullName || "this user"}.
             </DialogDescription>
           </DialogHeader>
 
@@ -759,7 +760,7 @@ const SingleProfile = () => {
                           <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                             <Clock className="w-3 h-3 text-primary/70" />
                             <span className="font-mono text-xs text-foreground/80">
-                              {formatUTCDateTime(call.createdAt)}
+                              {formatISTDateTime(call.createdAt)}
                             </span>
                           </p>
                         </div>
