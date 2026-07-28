@@ -17,7 +17,9 @@ import {
   Lock,
   Eye,
   EyeOff,
+  ChevronLeft,
 } from "lucide-react";
+import { verifyRegistrationOtpOnly } from "@/services/UserServices";
 
 interface OTPVerificationProps {
   email: string;
@@ -83,7 +85,6 @@ const OTPVerification = ({
   const canCreatePassword = isPasswordValid && passwordsMatch;
 
   const handleVerifyOTP = async () => {
-    // 👈 Expecting 4-digit OTP
     if (otp.length !== 4) {
       setError("Please enter a valid 4-digit OTP");
       return;
@@ -93,11 +94,13 @@ const OTPVerification = ({
     setError("");
 
     try {
+      await verifyRegistrationOtpOnly({ email, otp });
       setIsVerifying(false);
       setIsOTPVerified(true);
     } catch (err: any) {
       setIsVerifying(false);
-      setError(err.message || "Invalid OTP");
+      const msg = err.response?.data?.message || err.message || "Invalid OTP";
+      setError(msg);
     }
   };
 
@@ -363,7 +366,7 @@ const OTPVerification = ({
               )}
             </div>
 
-            <div className="pt-1">
+            <div className="pt-1 flex flex-col gap-2">
               <Button
                 onClick={handleCreatePassword}
                 disabled={!canCreatePassword || isCreatingPassword}
@@ -372,15 +375,39 @@ const OTPVerification = ({
                 {isCreatingPassword ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Creating Account...
+                    Continuing...
                   </>
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    Create Password & Complete Registration
+                    Save Password & Continue
                   </>
                 )}
               </Button>
+
+              <div className="flex items-center justify-between pt-1">
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => {
+                    setIsOTPVerified(false);
+                    setError("");
+                  }}
+                  className="text-xs text-muted-foreground hover:text-foreground gap-1 h-8"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  Back to OTP
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={onBack}
+                  className="text-xs text-muted-foreground hover:text-foreground h-8"
+                >
+                  Change Email / Details
+                </Button>
+              </div>
             </div>
           </motion.div>
         )}
