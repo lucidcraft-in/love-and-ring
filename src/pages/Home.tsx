@@ -61,7 +61,29 @@ const Home = () => {
   const [showMalayalam, setShowMalayalam] = useState(false);
   const [currentTagline, setCurrentTagline] = useState(0);
   const [successStories, setSuccessStories] = useState<any[]>([]);
+  const [cmsBanners, setCmsBanners] = useState<any[]>([]);
   const totalSteps = 5;
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const res = await Axios.get("/api/cms/banners");
+        const active = (res.data || []).filter(
+          (b: any) => b.status === "Active" && b.imageUrl
+        );
+        if (active.length > 0) {
+          setCmsBanners(active);
+        }
+      } catch (err) {
+        console.error("Error fetching banners for Home hero slides:", err);
+      }
+    };
+
+    fetchBanners();
+  }, []);
+
+  const activeHeroSlides =
+    cmsBanners.length > 0 ? cmsBanners.map((b) => b.imageUrl) : heroSlides;
 
   useEffect(() => {
     console.log("HOME AUTH:", isAuthenticated, user);
@@ -69,25 +91,27 @@ const Home = () => {
 
   const isProfileCompleted = Boolean(user?.dateOfBirth || user?.dob);
 
-  // Preload hero images for smooth transitions
+  // Preload hero images
   useEffect(() => {
-    heroSlides.forEach((src) => {
+    activeHeroSlides.forEach((src) => {
       const img = new Image();
       img.src = src;
     });
-  }, []);
+  }, [activeHeroSlides]);
 
-  // Auto-rotate hero background slides with pause on hover
-  // 4 seconds for authenticated users, 7 seconds for public view
+  // Auto-rotate hero background banner slides faster (every 3 seconds)
   useEffect(() => {
     if (isHeroHovered) return;
 
-    const intervalDuration = isAuthenticated ? 4000 : 7000;
+    const totalSlides = activeHeroSlides.length;
+    if (totalSlides <= 1) return;
+
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, intervalDuration);
+      setCurrentSlide((prev) => (prev + 1) % totalSlides);
+    }, 5000);
+
     return () => clearInterval(interval);
-  }, [isHeroHovered, isAuthenticated]);
+  }, [isHeroHovered, activeHeroSlides.length]);
 
   const progress = (currentStep / totalSteps) * 100;
 
@@ -277,10 +301,10 @@ const Home = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTagline((prev) => (prev + 1) % heroTaglines.length);
-    }, 5000);
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [heroTaglines.length]);
 
   return (
     <div className="min-h-screen">
@@ -299,10 +323,10 @@ const Home = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
             className="absolute inset-0"
             style={{
-              backgroundImage: `url(${heroSlides[currentSlide]})`,
+              backgroundImage: `url(${activeHeroSlides[currentSlide % activeHeroSlides.length]})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
