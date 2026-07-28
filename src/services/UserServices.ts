@@ -23,6 +23,19 @@ export const verifyRegistrationOtp = (data: {
   return Axios.post("/api/users/verify-otp", data);
 };
 
+export const verifyRegistrationOtpOnly = (data: {
+  email: string;
+  otp: string;
+}) => {
+  return Axios.post("/api/users/verify-otp-only", data);
+};
+
+export const registerFullUserApi = (formData: FormData) => {
+  return Axios.post("/api/users/register-full", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};
+
 
 export const registerUser = (data: {
   email: string;
