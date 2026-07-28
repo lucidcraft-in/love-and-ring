@@ -506,9 +506,8 @@ const Matches = () => {
               src={photoSrc}
               alt={match.user.fullName}
               isLocked={isLocked}
-              className={`w-full h-full object-cover ${
-                isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""
-              }`}
+              className={`w-full h-full object-cover ${isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""
+                }`}
             />
 
             <div className="absolute top-1 left-1 md:top-2 md:right-2 md:left-auto z-10">
@@ -537,9 +536,8 @@ const Matches = () => {
                   <Button
                     size="icon"
                     variant={match.liked ? "default" : "outline"}
-                    className={`shrink-0 h-6 w-6 md:h-8 md:w-8 ${
-                      match.liked ? "bg-gradient-to-r from-primary to-secondary" : ""
-                    }`}
+                    className={`shrink-0 h-6 w-6 md:h-8 md:w-8 ${match.liked ? "bg-gradient-to-r from-primary to-secondary" : ""
+                      }`}
                     disabled={isLiking}
                     onClick={() => {
                       if (match.liked) {
@@ -596,13 +594,18 @@ const Matches = () => {
                     )}
                   </div>
 
-                  {/* Desktop Interests (Spacious) */}
-                  <div className="hidden md:flex flex-wrap gap-1.5 max-h-[42px] overflow-y-auto">
-                    {match.user.interests.map((interest, idx) => (
-                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-xs px-2 py-0.5">
+                  {/* Desktop Interests (Compact with count) */}
+                  <div className="hidden md:flex flex-wrap gap-1.5 items-center">
+                    {match.user.interests.slice(0, 3).map((interest, idx) => (
+                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-xs px-2 py-0.5 font-normal">
                         {interest}
                       </Badge>
                     ))}
+                    {match.user.interests.length > 3 && (
+                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 text-muted-foreground font-normal">
+                        +{match.user.interests.length - 3}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               )}
@@ -615,7 +618,8 @@ const Matches = () => {
                   className="w-full bg-gradient-to-r from-primary to-secondary text-[10px] md:text-xs h-7 md:h-8 px-2"
                   onClick={() => navigate("/pricing")}
                 >
-                  <Lock className="w-3 h-3 mr-1" /> Upgrade
+                  <Lock className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                  Upgrade
                 </Button>
               ) : (
                 <>
@@ -630,7 +634,14 @@ const Matches = () => {
                       handleViewProfile(match.user._id);
                     }}
                   >
-                    {lockedByLimit ? "Upgrade" : "View Profile"}
+                    {lockedByLimit ? (
+                      <>
+                        <Lock className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
+                        Upgrade
+                      </>
+                    ) : (
+                      "View Profile"
+                    )}                  
                   </Button>
 
                   <AnimatePresence mode="wait">
