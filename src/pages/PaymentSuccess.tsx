@@ -1,14 +1,41 @@
+import { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Axios from "@/axios/axios";
+import { useAuth } from "@/contexts/AuthContext";
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { updateProfile } = useAuth();
 
   const txnid = searchParams.get("txnid") || "N/A";
   const plan = searchParams.get("plan") || "Membership Plan";
+
+  useEffect(() => {
+    const syncUserProfile = async () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        const token = localStorage.getItem("token");
+        if (storedUser && token) {
+          const parsedUser = JSON.parse(storedUser);
+          const response = await Axios.get(`/api/users/${parsedUser._id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.data) {
+            localStorage.setItem("user", JSON.stringify(response.data));
+            updateProfile(response.data);
+            window.dispatchEvent(new Event("userProfileUpdated"));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to sync user profile after payment:", error);
+      }
+    };
+    syncUserProfile();
+  }, []);
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
