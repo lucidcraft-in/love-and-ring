@@ -12,7 +12,14 @@ import {
   Eye,
   Briefcase,
   Lock,
+  Crown,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -292,10 +299,27 @@ const BrowseProfiles = () => {
           <div className="p-2.5 md:p-4 flex flex-col justify-between overflow-hidden">
             <div>
               <div className="flex items-start justify-between gap-1 mb-0.5 md:mb-1">
-                <h3 className="text-xs md:text-base font-bold truncate leading-tight">
-                  {profile.fullName},{" "}
-                  {profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : "--"}
-                </h3>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <h3 className="text-xs md:text-base font-bold truncate leading-tight">
+                    {profile.fullName},{" "}
+                    {profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : "--"}
+                  </h3>
+                  {profile.profileStatus?.toLowerCase().includes("million") && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center justify-center p-1 bg-amber-500/10 rounded-full text-amber-500 hover:bg-amber-500/20 transition-colors cursor-pointer shrink-0">
+                            <Crown className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-none shadow-md font-semibold text-xs flex items-center gap-1 z-50">
+                          <Crown className="w-3.5 h-3.5 fill-white text-white" />
+                          <span>Million Club Member</span>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
 
                 <Button
                   size="icon"
