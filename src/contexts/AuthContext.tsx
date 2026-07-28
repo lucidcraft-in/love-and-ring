@@ -35,15 +35,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
+    const loadUser = () => {
+      const savedUser = localStorage.getItem("user");
 
-    if (savedUser && savedUser !== "undefined") {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        localStorage.removeItem("user");
+      if (savedUser && savedUser !== "undefined") {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch {
+          localStorage.removeItem("user");
+        }
       }
-    }
+    };
+
+    loadUser();
+
+    window.addEventListener("userProfileUpdated", loadUser);
+    return () => {
+      window.removeEventListener("userProfileUpdated", loadUser);
+    };
   }, []);
 
   const login = (userData: UserProfile) => {
