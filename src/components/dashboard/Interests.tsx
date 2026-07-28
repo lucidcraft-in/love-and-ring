@@ -12,6 +12,7 @@ import {
   X,
   Sparkles,
   Lock,
+  Eye,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -319,9 +320,8 @@ const Interests = () => {
               src={getProfilePhoto(item.user.photos, item.user.gender)}
               alt={item.user.fullName}
               isLocked={false}
-              className={`w-full h-full object-cover ${
-                isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""
-              }`}
+              className={`w-full h-full object-cover ${isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""
+                }`}
             />
 
             {/* Match Badge */}
@@ -403,7 +403,12 @@ const Interests = () => {
                   handleViewProfile(item.user._id);
                 }}
               >
-                {locked ? "Upgrade" : "View Profile"}
+                {locked ? "Upgrade" :
+                  <>
+                    <Eye className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                    View Profile
+                  </>
+                }
               </Button>
 
               {type === "received" && (
