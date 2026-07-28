@@ -13,10 +13,17 @@ import {
   Sparkles,
   Lock,
   Eye,
+  Crown,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import OptimizedProfileImage from "./OptimizedProfileImage";
 import Axios from "@/axios/axios";
 import FemaleDummy from "@/assets/UserWomen.png";
@@ -34,6 +41,8 @@ interface InterestUser {
   profession?: { name: string };
   city?: string;
   state?: string;
+  profileStatus?: string;
+  isMillionClub?: boolean;
   photos?: {
     url: string;
     isPrimary: boolean;
@@ -82,6 +91,8 @@ const Interests = () => {
           dateOfBirth: item[userKey].dateOfBirth,
           city: item[userKey].city,
           state: item[userKey].state,
+          profileStatus: item[userKey].profileStatus,
+          isMillionClub: item[userKey].profileStatus?.toLowerCase().includes("million"),
           interests: item[userKey].interests || [],
           education: item[userKey].highestEducation
             ? { name: item[userKey].highestEducation.name }
@@ -117,6 +128,8 @@ const Interests = () => {
               dateOfBirth: otherUser.dateOfBirth,
               city: otherUser.city,
               state: otherUser.state,
+              profileStatus: otherUser.profileStatus,
+              isMillionClub: otherUser.profileStatus?.toLowerCase().includes("million"),
               interests: otherUser.interests || [],
               education: otherUser.highestEducation
                 ? { name: otherUser.highestEducation.name }
@@ -337,9 +350,26 @@ const Interests = () => {
           {/* Content Section */}
           <div className="p-2.5 md:p-4 flex flex-col justify-between overflow-hidden">
             <div>
-              <h3 className="text-xs md:text-base font-bold truncate leading-tight mb-0.5 md:mb-1">
-                {item.user.fullName}, {calculateAge(item.user.dateOfBirth)}
-              </h3>
+              <div className="flex items-center gap-1.5 min-w-0 mb-0.5 md:mb-1">
+                <h3 className="text-xs md:text-base font-bold truncate leading-tight">
+                  {item.user.fullName}, {calculateAge(item.user.dateOfBirth)}
+                </h3>
+                {(item.user.isMillionClub || item.user.profileStatus?.toLowerCase().includes("million")) && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex items-center justify-center p-1 bg-amber-500/10 rounded-full text-amber-500 hover:bg-amber-500/20 transition-colors cursor-pointer shrink-0">
+                          <Crown className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-none shadow-md font-semibold text-xs flex items-center gap-1 z-50">
+                        <Crown className="w-3.5 h-3.5 fill-white text-white" />
+                        <span>Million Club Member</span>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
               <div className="flex flex-col gap-0.5 mt-0.5 md:mt-1 text-[11px] md:text-sm text-muted-foreground">
                 <span className="flex items-center gap-1 truncate">
                   <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
