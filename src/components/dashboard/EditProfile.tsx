@@ -94,7 +94,10 @@ const EditProfile = () => {
         profession: user.profession?._id || "",
         address: user.address || "",
         bio: user.bio || "",
-        membership: user.membership?.plan?.title || "Free Account",
+        membership:
+          (typeof user.membership?.plan === "object" && user.membership?.plan?.title) ||
+          user.profileStatus ||
+          "Free Account",
       });
       setCvData({
         cvUrl: user.cv?.url || "",
