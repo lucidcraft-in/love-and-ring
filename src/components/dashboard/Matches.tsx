@@ -77,7 +77,15 @@ const Matches = () => {
     const isPlanMillion = userObj.membership?.plan?.millionClub === true;
     return status.includes("million") || planName.includes("million") || isPlanMillion === true || userObj.isMillionClub === true;
   };
+  const checkMembershipStatus = (userObj: any) => {
+    if (!userObj || !userObj.membership) return false;
+    const plan = userObj.membership.plan;
+    if (!plan) return false;
+    const planName = typeof plan === "object" ? plan.name || plan.title || "" : String(plan);
+    return !!planName && planName.toLowerCase() !== "free";
+  };
   const [isCurrentMillionClubUser, setIsCurrentMillionClubUser] = useState<boolean>(() => checkMillionStatus(parsedUser));
+  const [hasActiveMembership, setHasActiveMembership] = useState<boolean>(() => checkMembershipStatus(parsedUser));
   const [loading, setLoading] = useState(false);
   const [likingProfile, setLikingProfile] = useState<string | null>(null);
   const [likedUserIds, setLikedUserIds] = useState<Set<string>>(new Set());
@@ -356,6 +364,7 @@ const Matches = () => {
 
       setViewedProfiles(formattedViewed);
       setIsCurrentMillionClubUser(checkMillionStatus(res.data));
+      setHasActiveMembership(checkMembershipStatus(res.data));
 
       if (membership.chatProfilesUsed >= membership.chatProfilesLimit) {
         setProfileLimitReached(true);
@@ -713,7 +722,7 @@ const Matches = () => {
                   <Lock className="w-3 h-3 md:w-3.5 md:h-3.5" />
                   Upgrade
                 </Button>
-              ) : (
+              ) : isAccepted ? (
                 <>
                   <Button
                     className="flex-1 bg-gradient-to-r from-primary to-secondary text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
@@ -733,56 +742,54 @@ const Matches = () => {
                       </>
                     ) : (
                       <>
-                        <Eye className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                        <Eye className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
                         View Profile
                       </>
                     )}
                   </Button>
-
-                  <AnimatePresence mode="wait">
-                    {isAccepted ? (
-                      <Button
-                        disabled
-                        className="flex-1 bg-green-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                      >
-                        <Check className="w-3 h-3 mr-1" /> Matched
-                      </Button>
-                    ) : hasIncomingInterest ? (
-                      <Button
-                        disabled
-                        className="flex-1 bg-blue-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                      >
-                        💌 Received
-                      </Button>
-                    ) : isInterestSent ? (
-                      <Button
-                        variant="outline"
-                        className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                        onClick={() => handleCancelInterest(match.user._id, match.user.fullName)}
-                        disabled={isCanceling}
-                      >
-                        {isCanceling ? (
-                          "Canceling..."
-                        ) : (
-                          <>
-                            <X className="w-3 h-3 mr-1" />
-                            <span className="inline md:hidden">Cancel</span>
-                            <span className="hidden md:inline">Cancel Sent</span>
-                          </>
-                        )}
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        className="flex-1 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                        disabled={isSending}
-                        onClick={() => handleSendInterest(match.user._id, match.user.fullName)}
-                      >
-                        {isSending ? "Sending..." : "Send Interest"}
-                      </Button>
-                    )}
-                  </AnimatePresence>
+                  <Button
+                    disabled
+                    className="flex-1 bg-green-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                  >
+                    <Check className="w-3 h-3 mr-1" /> Matched
+                  </Button>
                 </>
+              ) : (
+                <AnimatePresence mode="wait">
+                  {hasIncomingInterest ? (
+                    <Button
+                      disabled
+                      className="w-full bg-blue-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                    >
+                      💌 Received
+                    </Button>
+                  ) : isInterestSent ? (
+                    <Button
+                      variant="outline"
+                      className="w-full border-amber-500 text-amber-600 hover:bg-amber-50 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                      onClick={() => handleCancelInterest(match.user._id, match.user.fullName)}
+                      disabled={isCanceling}
+                    >
+                      {isCanceling ? (
+                        "Canceling..."
+                      ) : (
+                        <>
+                          <X className="w-3 h-3 mr-1" />
+                          <span>Cancel Sent Interest</span>
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                      disabled={isSending}
+                      onClick={() => handleSendInterest(match.user._id, match.user.fullName)}
+                    >
+                      {isSending ? "Sending..." : "Send Interest"}
+                    </Button>
+                  )}
+                </AnimatePresence>
               )}
             </div>
           </div>
@@ -797,9 +804,14 @@ const Matches = () => {
     return user.isMillionClub || status.includes("million") || millionClubUserIds.has(String(user._id));
   };
 
-  const displayedMatches = isCurrentMillionClubUser
+  const rawMatches = isCurrentMillionClubUser
     ? matches
     : matches.filter((m) => !isTargetMillionClubUser(m.user));
+
+  // Filter out random matches (0% match score) when membership is added
+  const displayedMatches = hasActiveMembership
+    ? rawMatches.filter((m) => m.matchScore > 0)
+    : rawMatches;
 
   const displayedMyMatches = isCurrentMillionClubUser
     ? myMatches
