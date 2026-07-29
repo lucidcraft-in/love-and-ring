@@ -376,9 +376,7 @@ const BrowseProfiles = () => {
     const alreadyViewed = viewedProfiles.some((id) => String(id) === String(profile._id));
     const lockedByLimit = profileLimitReached && !alreadyViewed;
 
-    const canViewHiddenPhoto =
-      acceptedInterests.includes(profile._id) ||
-      receivedInterests.includes(profile._id);
+    const canViewHiddenPhoto = false;
 
     const photoSrc = getProfileImage(profile.photos, profile.gender);
     const isLiking = likingProfile === profile._id;
