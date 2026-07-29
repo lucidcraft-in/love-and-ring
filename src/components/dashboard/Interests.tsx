@@ -433,24 +433,31 @@ const Interests = () => {
 
             {/* Action Buttons */}
             <div className="flex items-center gap-1.5 md:gap-2 mt-2 pt-1 md:pt-1.5 border-t border-border/30">
-              <Button
-                className="flex-1 bg-gradient-to-r from-primary to-secondary text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                onClick={() => {
-                  if (locked) {
-                    toast.error("Profile view limit reached. Upgrade your plan 🔒");
-                    navigate("/pricing");
-                    return;
+              {(type === "accepted" || (type === "sent" && item.status?.toLowerCase() === "accepted")) && (
+                <Button
+                  className="flex-1 bg-gradient-to-r from-primary to-secondary text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                  onClick={() => {
+                    if (locked) {
+                      toast.error("Profile view limit reached. Upgrade your plan 🔒");
+                      navigate("/pricing");
+                      return;
+                    }
+                    handleViewProfile(item.user._id);
+                  }}
+                >
+                  {locked ?
+
+                    <>
+                      <Lock className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                      Upgrade
+                    </> :
+                    <>
+                      <Eye className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
+                      View Profile
+                    </>
                   }
-                  handleViewProfile(item.user._id);
-                }}
-              >
-                {locked ? "Upgrade" :
-                  <>
-                    <Eye className="w-3 h-3 md:w-3.5 md:h-3.5" />
-                    View Profile
-                  </>
-                }
-              </Button>
+                </Button>
+              )}
 
               {type === "received" && (
                 <>
@@ -498,7 +505,7 @@ const Interests = () => {
                   ) : (
                     <Button
                       variant="outline"
-                      className="flex-1 border-destructive text-destructive hover:bg-destructive/10 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                      className="w-full border-destructive text-destructive hover:bg-destructive/10 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
                       onClick={() => handleCancel(item._id, item.user.fullName)}
                       disabled={isActioning}
                     >
@@ -512,7 +519,7 @@ const Interests = () => {
                       ) : (
                         <>
                           <X className="w-3 h-3 mr-1" />
-                          Cancel
+                          Cancel Interest
                         </>
                       )}
                     </Button>
