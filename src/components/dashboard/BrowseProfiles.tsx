@@ -13,6 +13,8 @@ import {
   Briefcase,
   Lock,
   Crown,
+  Check,
+  X,
 } from "lucide-react";
 import {
   Tooltip,
@@ -42,7 +44,7 @@ import MaleDummy from "@/assets/UserMen.png";
 import DummyProfile from "@/assets/DummyProfile.png";
 import { toast } from "sonner";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import OptimizedProfileImage from "@/components/dashboard/OptimizedProfileImage";
 
 interface Profile {
@@ -72,6 +74,11 @@ const BrowseProfiles = () => {
   const [viewedProfiles, setViewedProfiles] = useState<string[]>([]);
   const [receivedInterests, setReceivedInterests] = useState<string[]>([]);
   const [acceptedInterests, setAcceptedInterests] = useState<string[]>([]);
+  const [sentInterests, setSentInterests] = useState<string[]>([]);
+  const [sentInterestMap, setSentInterestMap] = useState<Record<string, string>>({});
+  const [sendingInterest, setSendingInterest] = useState<string | null>(null);
+  const [cancelingInterest, setCancelingInterest] = useState<string | null>(null);
+
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser) : null;
   const checkMillionStatus = (userObj: any) => {
@@ -159,6 +166,7 @@ const BrowseProfiles = () => {
       console.error(err);
     }
   };
+
   const fetchReceivedInterests = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -167,21 +175,52 @@ const BrowseProfiles = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const ids = res.data.map((item: any) => item.fromUser?._id);
+      const ids = (res.data || []).map((item: any) => item.fromUser?._id).filter(Boolean);
       setReceivedInterests(ids);
     } catch (err) {
       console.error(err);
     }
   };
+
+  const fetchSentInterests = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await Axios.get("/api/user/interests/sent", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const map: Record<string, string> = {};
+      const ids: string[] = [];
+
+      (res.data || []).forEach((item: any) => {
+        if (item.toUser?._id) {
+          map[item.toUser._id] = item._id;
+          ids.push(item.toUser._id);
+        }
+      });
+
+      setSentInterestMap(map);
+      setSentInterests(ids);
+    } catch (err) {
+      console.error("Failed to fetch sent interests", err);
+    }
+  };
+
   const fetchAcceptedInterests = async () => {
     try {
       const token = localStorage.getItem("token");
+      const currentUserId = parsedUser?._id;
 
       const res = await Axios.get("/api/user/interests/accepted/interest", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const ids = res.data.map((item: any) => item.fromUser?._id);
+      const ids = (res.data || []).map((item: any) => {
+        return String(item.fromUser?._id) === String(currentUserId)
+          ? item.toUser?._id
+          : item.fromUser?._id;
+      }).filter(Boolean);
+
       setAcceptedInterests(ids);
     } catch (err) {
       console.error(err);
@@ -193,6 +232,7 @@ const BrowseProfiles = () => {
     fetchProfilesILiked();
     checkProfileLimit();
     fetchReceivedInterests();
+    fetchSentInterests();
     fetchAcceptedInterests();
   }, []);
 
@@ -274,6 +314,61 @@ const BrowseProfiles = () => {
     }
   };
 
+  const handleSendInterest = async (targetUserId: string, targetUserName: string) => {
+    if (sentInterests.includes(targetUserId)) return;
+    setSendingInterest(targetUserId);
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await Axios.post(
+        `/api/user/interests/${targetUserId}/send`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const createdInterestId = res.data?._id;
+      setSentInterests((prev) => [...prev, targetUserId]);
+      if (createdInterestId) {
+        setSentInterestMap((prev) => ({ ...prev, [targetUserId]: createdInterestId }));
+      }
+
+      toast.success(`Interest sent to ${targetUserName}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to send interest");
+    } finally {
+      setSendingInterest(null);
+    }
+  };
+
+  const handleCancelInterest = async (targetUserId: string, targetUserName: string) => {
+    const interestId = sentInterestMap[targetUserId];
+    setCancelingInterest(targetUserId);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (interestId) {
+        await Axios.post(
+          `/api/user/interests/${interestId}/cancel`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+
+      setSentInterests((prev) => prev.filter((id) => id !== targetUserId));
+      setSentInterestMap((prev) => {
+        const copy = { ...prev };
+        delete copy[targetUserId];
+        return copy;
+      });
+
+      toast.success(`Cancelled interest to ${targetUserName}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to cancel interest");
+    } finally {
+      setCancelingInterest(null);
+    }
+  };
+
   const ProfileCard = ({ profile }: { profile: Profile }) => {
     const primaryPhoto = profile.photos?.find((p) => p.isPrimary);
     const isPhotoHidden = primaryPhoto?.isHidden;
@@ -288,6 +383,12 @@ const BrowseProfiles = () => {
     const photoSrc = getProfileImage(profile.photos, profile.gender);
     const isLiking = likingProfile === profile._id;
     const isLiked = likedUserIds.has(profile._id);
+
+    const isAccepted = acceptedInterests.includes(profile._id);
+    const isInterestSent = sentInterests.includes(profile._id);
+    const hasIncomingInterest = receivedInterests.includes(profile._id);
+    const isSending = sendingInterest === profile._id;
+    const isCanceling = cancelingInterest === profile._id;
 
     return (
       <Card className="glass-card overflow-hidden hover:shadow-md md:hover:shadow-lg transition-all rounded-xl md:rounded-2xl border border-border/40">
@@ -416,29 +517,75 @@ const BrowseProfiles = () => {
 
             {/* Action Buttons */}
             <div className="flex items-center gap-1.5 md:gap-2 mt-2 pt-1 md:pt-1.5 border-t border-border/30">
-              <Button
-                className="w-full bg-gradient-to-r from-primary to-secondary gap-1.5 text-[10px] md:text-xs h-7 md:h-8 px-2"
-                onClick={() => {
-                  if (lockedByLimit) {
-                    toast.error("Profile view limit reached. Upgrade your plan 🔒");
-                    navigate("/pricing");
-                    return;
-                  }
-                  navigate(`/profile/${profile._id}`);
-                }}
-              >
-                {lockedByLimit ? (
-                  <>
-                    <Lock className="w-3 h-3 md:w-3.5 md:h-3.5" />
-                    Upgrade
-                  </>
-                ) : (
-                  <>
-                    <Eye className="w-3 h-3 md:w-3.5 md:h-3.5" />
-                    View Profile
-                  </>
-                )}
-              </Button>
+              {isAccepted ? (
+                <>
+                  <Button
+                    className="flex-1 bg-gradient-to-r from-primary to-secondary gap-1.5 text-[10px] md:text-xs h-7 md:h-8 px-2"
+                    onClick={() => {
+                      if (lockedByLimit) {
+                        toast.error("Profile view limit reached. Upgrade your plan 🔒");
+                        navigate("/pricing");
+                        return;
+                      }
+                      navigate(`/profile/${profile._id}`);
+                    }}
+                  >
+                    {lockedByLimit ? (
+                      <>
+                        <Lock className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                        Upgrade
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                        View Profile
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    disabled
+                    className="flex-1 bg-green-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                  >
+                    <Check className="w-3 h-3 mr-1" /> Matched
+                  </Button>
+                </>
+              ) : (
+                <AnimatePresence mode="wait">
+                  {hasIncomingInterest ? (
+                    <Button
+                      disabled
+                      className="w-full bg-blue-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                    >
+                      💌 Received
+                    </Button>
+                  ) : isInterestSent ? (
+                    <Button
+                      variant="outline"
+                      className="w-full border-amber-500 text-amber-600 hover:bg-amber-50 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                      onClick={() => handleCancelInterest(profile._id, profile.fullName)}
+                      disabled={isCanceling}
+                    >
+                      {isCanceling ? (
+                        "Canceling..."
+                      ) : (
+                        <>
+                          <X className="w-3 h-3 mr-1" />
+                          <span>Cancel Sent Interest</span>
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                      disabled={isSending}
+                      onClick={() => handleSendInterest(profile._id, profile.fullName)}
+                    >
+                      {isSending ? "Sending..." : "Send Interest"}
+                    </Button>
+                  )}
+                </AnimatePresence>
+              )}
             </div>
           </div>
         </div>
