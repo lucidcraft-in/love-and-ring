@@ -537,8 +537,12 @@ const SingleProfile = () => {
 
   const primaryPhoto = profile?.photos?.find((p: any) => p.isPrimary) || profile?.photos?.[0];
   const isPhotoHidden = primaryPhoto?.isHidden || profile?.isPrivate || profile?.profileStatus === "private";
+  const isCurrentMillionClubUser =
+    currentUserProfile?.profileStatus?.toLowerCase().includes("million") ||
+    currentUserProfile?.membership?.plan?.millionClub === true;
+
   const isOwnProfile = String(currentUserProfile?._id) === String(profile?._id);
-  const canViewHiddenPhoto = isOwnProfile || photoAccessStatus === "APPROVED";
+  const canViewHiddenPhoto = isOwnProfile || photoAccessStatus === "APPROVED" || isCurrentMillionClubUser;
   const isBlurred = isPhotoHidden && !canViewHiddenPhoto;
 
   return (
