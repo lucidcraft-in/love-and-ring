@@ -575,9 +575,7 @@ const Matches = () => {
     const alreadyViewed = viewedProfiles.some((id) => String(id) === String(match.user._id));
     const lockedByLimit = profileLimitReached && !alreadyViewed;
 
-    const canViewHiddenPhoto =
-      acceptedInterests.includes(match.user._id) ||
-      receivedInterests.includes(match.user._id);
+    const canViewHiddenPhoto = false;
 
     const photoSrc = getProfilePhoto(match.user.photos, match.user.gender);
 
