@@ -36,6 +36,7 @@ import RefundPolicy from "./pages/RefundPolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailed from "./pages/PaymentFailed";
+import { PWAInstaller } from "./components/pwa/PWAInstaller";
 
 const queryClient = new QueryClient();
 
@@ -137,6 +138,7 @@ const AppLayout = () => {
       {!isDashboardRoute && !isCallRoute && <Footer />}
       {/* WhatsApp floating button - only on public pages */}
       {isPublicRoute && <WhatsAppButton />}
+      <PWAInstaller />
 
       {incomingCall && (
         <div className="fixed bottom-5 right-5 bg-white shadow-xl rounded-xl p-4 w-80 z-50 border border-primary/20 backdrop-blur-md">
