@@ -333,7 +333,7 @@ const Interests = () => {
     const primaryPhoto = item.user.photos?.find((p) => p.isPrimary);
     const isPhotoHidden = primaryPhoto?.isHidden;
 
-    const canViewHiddenPhoto = type === "received" || type === "accepted";
+    const canViewHiddenPhoto = false;
 
     return (
       <Card className="glass-card overflow-hidden hover:shadow-md md:hover:shadow-lg transition-all rounded-xl md:rounded-2xl border border-border/40">
