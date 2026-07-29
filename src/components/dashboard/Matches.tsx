@@ -266,7 +266,7 @@ const Matches = () => {
       const ids: string[] = [];
 
       (res.data || []).forEach((item: any) => {
-        if (item.toUser?._id) {
+        if (item.toUser?._id && (item.status === "PENDING" || !item.status)) {
           map[item.toUser._id] = item._id;
           ids.push(item.toUser._id);
         }
@@ -286,7 +286,10 @@ const Matches = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const ids = (res.data || []).map((item: any) => item.fromUser?._id).filter(Boolean);
+      const ids = (res.data || [])
+        .filter((item: any) => item.status === "PENDING" || !item.status)
+        .map((item: any) => item.fromUser?._id)
+        .filter(Boolean);
       setReceivedInterests(ids);
     } catch (err) {
       console.error("Failed to fetch received interests", err);
@@ -305,7 +308,15 @@ const Matches = () => {
       });
 
       const acceptedList = res.data || [];
-      const ids = acceptedList.map((item: any) => item.fromUser?._id).filter(Boolean);
+      const ids = acceptedList
+        .map((item: any) => {
+          const otherUser =
+            String(item.fromUser?._id) === String(currentUserId)
+              ? item.toUser
+              : item.fromUser;
+          return otherUser?._id;
+        })
+        .filter(Boolean);
       setAcceptedInterests(ids);
 
       // Format full profiles for "My Matches"
