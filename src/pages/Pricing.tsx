@@ -262,7 +262,7 @@ const Pricing = () => {
                     </p>
 
                     <p className="text-2xl font-bold mt-4">
-                      {plan.millionClub || plan.price === 0 ? (
+                      {plan.price === 0 ? (
                         "Custom / On Request"
                       ) : (
                         <>
@@ -300,6 +300,15 @@ const Pricing = () => {
                       <Button className="w-full bg-green-600 hover:bg-green-600 text-white" disabled>
                         <Check className="w-4 h-4 mr-2" />
                         Active Member
+                      </Button>
+                    ) : plan.price > 0 ? (
+                      <Button
+                        className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
+                        onClick={() => handlePayment(plan)}
+                        disabled={paymentLoading === plan._id}
+                      >
+                        <Crown className="w-4 h-4 mr-2" />
+                        {paymentLoading === plan._id ? "Processing..." : "Purchase Plan"}
                       </Button>
                     ) : (
                       <Button
