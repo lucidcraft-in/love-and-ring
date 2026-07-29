@@ -24,6 +24,9 @@ import {
   Check,
   X,
   Sparkles,
+  Lock,
+  Eye,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Dialog,
@@ -47,6 +50,12 @@ const SingleProfile = () => {
   const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [isMatch, setIsMatch] = useState<boolean>(false);
+
+  // Photo Access Request State
+  const [photoAccessStatus, setPhotoAccessStatus] = useState<"NONE" | "PENDING" | "APPROVED" | "REJECTED">("NONE");
+  const [photoAccessLoading, setPhotoAccessLoading] = useState(false);
+  const [incomingPhotoRequests, setIncomingPhotoRequests] = useState<any[]>([]);
+  const [showPhotoRequestsModal, setShowPhotoRequestsModal] = useState(false);
 
   // Interest State Management
   const [interestStatus, setInterestStatus] = useState<
@@ -244,6 +253,81 @@ const SingleProfile = () => {
 
     if (id) checkInterestStatus();
   }, [id]);
+
+  // 6. Check Photo Access Request Status
+  useEffect(() => {
+    const checkPhotoAccessStatus = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token || !id) return;
+
+        const res = await Axios.get(`/api/users/photo-access/status/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setPhotoAccessStatus(res.data.status || "NONE");
+      } catch (err) {
+        console.error("Failed to check photo access status", err);
+      }
+    };
+
+    if (id) checkPhotoAccessStatus();
+  }, [id]);
+
+  // 7. Fetch Incoming Photo Access Requests for Logged In User
+  const fetchIncomingPhotoRequests = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await Axios.get("/api/users/photo-access/requests", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setIncomingPhotoRequests(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch incoming photo requests", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchIncomingPhotoRequests();
+  }, []);
+
+  const handleRequestPhotoAccess = async () => {
+    setPhotoAccessLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await Axios.post(
+        `/api/users/photo-access/request/${id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setPhotoAccessStatus(res.data.status || "PENDING");
+      toast.success("Photo access request sent to user! 🔒");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to send photo access request");
+    } finally {
+      setPhotoAccessLoading(false);
+    }
+  };
+
+  const handleRespondPhotoRequest = async (requestId: string, status: "APPROVED" | "REJECTED") => {
+    try {
+      const token = localStorage.getItem("token");
+      await Axios.patch(
+        `/api/users/photo-access/respond/${requestId}`,
+        { status },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(`Photo request ${status.toLowerCase()} successfully`);
+      fetchIncomingPhotoRequests();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to respond to photo request");
+    }
+  };
 
   const handleLike = async () => {
     try {
@@ -451,6 +535,12 @@ const SingleProfile = () => {
     return <div className="py-20 text-center">Profile not found</div>;
   }
 
+  const primaryPhoto = profile?.photos?.find((p: any) => p.isPrimary) || profile?.photos?.[0];
+  const isPhotoHidden = primaryPhoto?.isHidden || profile?.isPrivate || profile?.profileStatus === "private";
+  const isOwnProfile = String(currentUserProfile?._id) === String(profile?._id);
+  const canViewHiddenPhoto = isOwnProfile || photoAccessStatus === "APPROVED";
+  const isBlurred = isPhotoHidden && !canViewHiddenPhoto;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 pt-4 pb-20">
       <div className="container mx-auto px-4">
@@ -472,14 +562,61 @@ const SingleProfile = () => {
                   src={getProfileImage(profile.photos)}
                   alt={profile.fullName}
                   className={`w-full h-96 object-cover ${
-                    profile.isPrivate && !isLiked ? "blur-md" : ""
+                    isBlurred ? "blur-xl select-none pointer-events-none" : ""
                   }`}
                 />
+                {isBlurred && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm p-4 text-center text-white">
+                    <Lock className="w-12 h-12 mb-2 text-amber-400" />
+                    <p className="font-bold text-base">Profile Photo Hidden</p>
+                    <p className="text-xs text-slate-200 mt-1 max-w-[220px]">
+                      Send a Photo Access Request to view this user's photo upon approval.
+                    </p>
+                  </div>
+                )}
               </div>
             </Card>
 
             {/* Action Buttons */}
             <Card className="glass-card p-4 space-y-2">
+              {/* Photo Access Request Button */}
+              {isPhotoHidden && !isOwnProfile && (
+                <div>
+                  {photoAccessStatus === "APPROVED" ? (
+                    <Button disabled className="w-full gap-2 bg-emerald-600 text-white cursor-default">
+                      <Eye className="w-4 h-4" />
+                      Photo Access Approved 🔓
+                    </Button>
+                  ) : photoAccessStatus === "PENDING" ? (
+                    <Button disabled className="w-full gap-2 border-amber-500 text-amber-600 bg-amber-50 cursor-default">
+                      <Clock className="w-4 h-4" />
+                      Photo Access Requested (Pending)
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-md"
+                      onClick={handleRequestPhotoAccess}
+                      disabled={photoAccessLoading}
+                    >
+                      <Lock className="w-4 h-4" />
+                      {photoAccessLoading ? "Requesting..." : "Request Photo Access"}
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* View Photo Access Requests (For Owner or if any incoming) */}
+              {(isOwnProfile || incomingPhotoRequests.length > 0) && (
+                <Button
+                  className="w-full gap-2 border-primary/50"
+                  variant="outline"
+                  onClick={() => setShowPhotoRequestsModal(true)}
+                >
+                  <ShieldCheck className="w-4 h-4 text-primary" />
+                  Photo Requests ({incomingPhotoRequests.filter((r: any) => r.status === "PENDING").length})
+                </Button>
+              )}
+
               {/* Interest Buttons (Send / Cancel / Accept) */}
               {interestStatus === "accepted" ? (
                 <Button
@@ -551,12 +688,6 @@ const SingleProfile = () => {
                 <MessageCircle className="w-4 h-4" />
                 Chat
               </Button>
-
-              {/* Share Button */}
-              {/* <Button className="w-full gap-2" variant="outline">
-                <Share2 className="w-4 h-4" />
-                Share Profile
-              </Button> */}
 
               {/* Call History Button */}
               <Button
@@ -775,6 +906,78 @@ const SingleProfile = () => {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Photo Access Requests Modal */}
+      <Dialog open={showPhotoRequestsModal} onOpenChange={setShowPhotoRequestsModal}>
+        <DialogContent className="glass-card max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <ShieldCheck className="w-6 h-6 text-primary" />
+              Photo Access Requests
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              Manage permission requests from users who want to view your hidden photo.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1">
+            {incomingPhotoRequests.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground border border-dashed rounded-xl">
+                <Lock className="w-8 h-8 mx-auto mb-2 opacity-50 text-muted-foreground" />
+                <p className="text-sm font-medium">No photo access requests</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {incomingPhotoRequests.map((req: any) => (
+                  <div
+                    key={req._id}
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-card/50 border border-border/50 hover:bg-card transition shadow-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                        {req.fromUser?.fullName?.[0] || "U"}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{req.fromUser?.fullName || "User"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {req.fromUser?.city || "Location not specified"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {req.status === "PENDING" ? (
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white h-8 px-3 text-xs"
+                          onClick={() => handleRespondPhotoRequest(req._id, "APPROVED")}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 border-red-200 hover:bg-red-50 h-8 px-3 text-xs"
+                          onClick={() => handleRespondPhotoRequest(req._id, "REJECTED")}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    ) : (
+                      <Badge
+                        variant={req.status === "APPROVED" ? "default" : "outline"}
+                        className="capitalize text-xs px-3 py-1"
+                      >
+                        {req.status}
+                      </Badge>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
