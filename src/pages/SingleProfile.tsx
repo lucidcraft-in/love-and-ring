@@ -107,174 +107,6 @@ const SingleProfile = () => {
     if (id) fetchCallHistory();
   }, [id]);
 
-  // 1. Fetch Target Profile
-  useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        const res = await Axios.get(`/api/users/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setProfile(res.data);
-      } catch (err: any) {
-        console.error("Failed to fetch profile", err?.response || err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) fetchProfile();
-  }, [id]);
-
-  // 2. Fetch Live Logged-in User Membership Details
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const storedUser = localStorage.getItem("user");
-        const userId = storedUser
-          ? JSON.parse(storedUser)._id
-          : localStorage.getItem("userId");
-
-        if (!token || !userId) return;
-
-        const res = await Axios.get(`/api/users/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setCurrentUserProfile(res.data);
-        localStorage.setItem("user", JSON.stringify(res.data));
-      } catch (err) {
-        console.error("Failed to fetch logged in user details", err);
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
-
-  // 3. Check Match Status
-  useEffect(() => {
-    const checkMatch = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await Axios.get(`/api/user/matches/isMatch/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setIsMatch(res.data.matched);
-      } catch (error) {
-        console.error("Match check failed", error);
-      }
-    };
-    if (id) checkMatch();
-  }, [id]);
-
-  // 4. Check Liked Status
-  useEffect(() => {
-    const checkIfLiked = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await Axios.get("/api/user/profile-likes/sent", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const likedIds = res.data.map((item: any) => item.likedUser._id);
-        if (likedIds.includes(id)) {
-          setIsLiked(true);
-        }
-      } catch (err) {
-        console.error("Failed to check like status", err);
-      }
-    };
-
-    if (id) checkIfLiked();
-  }, [id]);
-
-  // 5. Check Interest Status (Sent / Received / Accepted)
-  useEffect(() => {
-    const checkInterestStatus = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token || !id) return;
-
-        const headers = { Authorization: `Bearer ${token}` };
-
-        const [sentRes, receivedRes, acceptedRes] = await Promise.all([
-          Axios.get("/api/user/interests/sent", { headers }),
-          Axios.get("/api/user/interests/received", { headers }),
-          Axios.get("/api/user/interests/accepted/interest", { headers }),
-        ]);
-
-        // Check if mutually accepted
-        const isAccepted = (acceptedRes.data || []).some(
-          (item: any) =>
-            item.fromUser?._id === id || item.toUser?._id === id
-        );
-
-        if (isAccepted) {
-          setInterestStatus("accepted");
-          return;
-        }
-
-        // Check if received interest from target user
-        const receivedItem = (receivedRes.data || []).find(
-          (item: any) =>
-            item.fromUser?._id === id &&
-            item.status?.toLowerCase() === "pending"
-        );
-
-        if (receivedItem) {
-          setInterestStatus("received");
-          setInterestId(receivedItem._id);
-          return;
-        }
-
-        // Check if sent interest to target user
-        const sentItem = (sentRes.data || []).find(
-          (item: any) => item.toUser?._id === id
-        );
-
-        if (sentItem) {
-          setInterestStatus("sent");
-          setInterestId(sentItem._id);
-          return;
-        }
-
-        setInterestStatus("none");
-        setInterestId(null);
-      } catch (err) {
-        console.error("Failed to check interest status", err);
-      }
-    };
-
-    if (id) checkInterestStatus();
-  }, [id]);
-
-  // 6. Check Photo Access Request Status
-  useEffect(() => {
-    const checkPhotoAccessStatus = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token || !id) return;
-
-        const res = await Axios.get(`/api/users/photo-access/status/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setPhotoAccessStatus(res.data.status || "NONE");
-      } catch (err) {
-        console.error("Failed to check photo access status", err);
-      }
-    };
-
-    if (id) checkPhotoAccessStatus();
-  }, [id]);
-
-  // 7. Fetch Incoming Photo Access Requests for Logged In User
   const fetchIncomingPhotoRequests = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -290,9 +122,136 @@ const SingleProfile = () => {
     }
   };
 
+  const checkInterestStatus = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token || !id) return;
+
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [sentRes, receivedRes, acceptedRes] = await Promise.all([
+        Axios.get("/api/user/interests/sent", { headers }),
+        Axios.get("/api/user/interests/received", { headers }),
+        Axios.get("/api/user/interests/accepted/interest", { headers }),
+      ]);
+
+      const isAccepted = (acceptedRes.data || []).some(
+        (item: any) =>
+          item.fromUser?._id === id || item.toUser?._id === id
+      );
+
+      if (isAccepted) {
+        setInterestStatus("accepted");
+        return;
+      }
+
+      const receivedItem = (receivedRes.data || []).find(
+        (item: any) =>
+          item.fromUser?._id === id &&
+          item.status?.toLowerCase() === "pending"
+      );
+
+      if (receivedItem) {
+        setInterestStatus("received");
+        setInterestId(receivedItem._id);
+        return;
+      }
+
+      const sentItem = (sentRes.data || []).find(
+        (item: any) => item.toUser?._id === id
+      );
+
+      if (sentItem) {
+        setInterestStatus("sent");
+        setInterestId(sentItem._id);
+        return;
+      }
+
+      setInterestStatus("none");
+      setInterestId(null);
+    } catch (err) {
+      console.error("Failed to check interest status", err);
+    }
+  };
+
   useEffect(() => {
-    fetchIncomingPhotoRequests();
-  }, []);
+    if (!id) return;
+
+    const loadAllProfileData = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        const storedUser = localStorage.getItem("user");
+        const userId = storedUser
+          ? JSON.parse(storedUser)._id
+          : localStorage.getItem("userId");
+
+        if (!token) return;
+
+        const headers = { Authorization: `Bearer ${token}` };
+
+        await Promise.all([
+          Axios.get(`/api/users/${id}`, { headers })
+            .then((res) => setProfile(res.data))
+            .catch((err) => console.error("Profile error", err)),
+
+          userId
+            ? Axios.get(`/api/users/${userId}`, { headers })
+                .then((res) => {
+                  setCurrentUserProfile(res.data);
+                  localStorage.setItem("user", JSON.stringify(res.data));
+                })
+                .catch((err) => console.error("Current user error", err))
+            : Promise.resolve(),
+
+          Axios.get(`/api/user/matches/isMatch/${id}`, { headers })
+            .then((res) => setIsMatch(res.data.matched))
+            .catch((err) => console.error("Match error", err)),
+
+          Axios.get("/api/user/profile-likes/sent", { headers })
+            .then((res) => {
+              const likedIds = res.data.map((item: any) => item.likedUser._id);
+              setIsLiked(likedIds.includes(id));
+            })
+            .catch((err) => console.error("Like check error", err)),
+
+          checkInterestStatus(),
+
+          Axios.get(`/api/users/photo-access/status/${id}`, { headers })
+            .then((res) => setPhotoAccessStatus(res.data.status || "NONE"))
+            .catch((err) => console.error("Photo status error", err)),
+
+          fetchIncomingPhotoRequests(),
+        ]);
+      } catch (err) {
+        console.error("Error loading profile data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAllProfileData();
+
+    const handleInterestChanged = (eventData: any) => {
+      if (
+        !eventData ||
+        eventData.fromUser === id ||
+        eventData.toUser === id
+      ) {
+        checkInterestStatus();
+        Axios.get(`/api/user/matches/isMatch/${id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        })
+          .then((res) => setIsMatch(res.data.matched))
+          .catch((err) => console.error(err));
+      }
+    };
+
+    socket.on("interest-status-changed", handleInterestChanged);
+    return () => {
+      socket.off("interest-status-changed", handleInterestChanged);
+    };
+  }, [id]);
 
   const handleRequestPhotoAccess = async () => {
     setPhotoAccessLoading(true);
