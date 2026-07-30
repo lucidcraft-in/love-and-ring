@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/tooltip";
 import OptimizedProfileImage from "./OptimizedProfileImage";
 import Axios from "@/axios/axios";
+import socket from "@/socket";
 import FemaleDummy from "@/assets/UserWomen.png";
 import MaleDummy from "@/assets/UserMen.png";
 import DummyProfile from "@/assets/DummyProfile.png";
@@ -197,8 +198,16 @@ const Interests = () => {
   };
 
   useEffect(() => {
-    fetchInterests();
-    checkProfileLimit();
+    Promise.all([fetchInterests(), checkProfileLimit()]);
+
+    const handleInterestChanged = () => {
+      fetchInterests();
+    };
+
+    socket.on("interest-status-changed", handleInterestChanged);
+    return () => {
+      socket.off("interest-status-changed", handleInterestChanged);
+    };
   }, []);
 
   const calculateAge = (dob: string) => {
