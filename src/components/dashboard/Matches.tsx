@@ -27,6 +27,7 @@ import {
 import OptimizedProfileImage from "./OptimizedProfileImage";
 import FiltersModal from "./FiltersModal";
 import Axios from "@/axios/axios";
+import socket from "@/socket";
 import FemaleDummy from "@/assets/UserWomen.png";
 import MaleDummy from "@/assets/UserMen.png";
 import DummyProfile from "@/assets/DummyProfile.png";
@@ -390,21 +391,36 @@ const Matches = () => {
   useEffect(() => {
     const init = async () => {
       try {
-        const likedIdsArray = await fetchProfilesILiked();
-        await fetchProfilesWhoLikedMe();
-        await fetchSentInterests();
-        await fetchReceivedInterests();
-        await fetchAcceptedInterests();
+        const [likedIdsArray] = await Promise.all([
+          fetchProfilesILiked(),
+          fetchProfilesWhoLikedMe(),
+          fetchSentInterests(),
+          fetchReceivedInterests(),
+          fetchAcceptedInterests(),
+          checkProfileLimit(),
+        ]);
         const likedSet = new Set(likedIdsArray);
-        await fetchMatches(likedSet);
-        await fetchMillionClubUsers(likedSet);
-        await checkProfileLimit();
+        await Promise.all([
+          fetchMatches(likedSet),
+          fetchMillionClubUsers(likedSet),
+        ]);
       } catch (err) {
         console.error("Error during matches initialization", err);
       }
     };
 
     init();
+
+    const handleInterestChanged = () => {
+      fetchSentInterests();
+      fetchReceivedInterests();
+      fetchAcceptedInterests();
+    };
+
+    socket.on("interest-status-changed", handleInterestChanged);
+    return () => {
+      socket.off("interest-status-changed", handleInterestChanged);
+    };
   }, []);
 
   const calculateAge = (dob: string) => {
