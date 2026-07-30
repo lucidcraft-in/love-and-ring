@@ -822,17 +822,11 @@ const Matches = () => {
     ? rawMatches.filter((m) => m.matchScore > 0)
     : rawMatches;
 
-  const displayedMyMatches = isCurrentMillionClubUser
-    ? myMatches
-    : myMatches.filter((m) => !isTargetMillionClubUser(m.user));
+  const displayedMyMatches = myMatches;
 
-  const displayedLikedByMe = isCurrentMillionClubUser
-    ? likedByMe
-    : likedByMe.filter((m) => !isTargetMillionClubUser(m.user));
+  const displayedLikedByMe = likedByMe;
 
-  const displayedLikedMe = isCurrentMillionClubUser
-    ? likedMe
-    : likedMe.filter((m) => !isTargetMillionClubUser(m.user));
+  const displayedLikedMe = likedMe;
 
   if (loading) {
     return (
