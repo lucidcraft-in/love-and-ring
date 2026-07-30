@@ -102,7 +102,7 @@ const Interests = () => {
           city: item[userKey].city,
           state: item[userKey].state,
           profileStatus: item[userKey].profileStatus,
-          isMillionClub: item[userKey].profileStatus?.toLowerCase().includes("million"),
+          isMillionClub: checkMillionStatus(item[userKey]),
           interests: item[userKey].interests || [],
           education: item[userKey].highestEducation
             ? { name: item[userKey].highestEducation.name }
@@ -139,7 +139,7 @@ const Interests = () => {
               city: otherUser.city,
               state: otherUser.state,
               profileStatus: otherUser.profileStatus,
-              isMillionClub: otherUser.profileStatus?.toLowerCase().includes("million"),
+              isMillionClub: checkMillionStatus(otherUser),
               interests: otherUser.interests || [],
               education: otherUser.highestEducation
                 ? { name: otherUser.highestEducation.name }
@@ -559,23 +559,9 @@ const Interests = () => {
     </div>
   );
 
-  const isTargetMillionClubUser = (user: InterestUser) => {
-    if (!user) return false;
-    const status = (user.profileStatus || "").toLowerCase();
-    return user.isMillionClub || status.includes("million");
-  };
-
-  const displayedReceived = isCurrentMillionClubUser
-    ? received
-    : received.filter((item) => !isTargetMillionClubUser(item.user));
-
-  const displayedSent = isCurrentMillionClubUser
-    ? sent
-    : sent.filter((item) => !isTargetMillionClubUser(item.user));
-
-  const displayedAccepted = isCurrentMillionClubUser
-    ? accepted
-    : accepted.filter((item) => !isTargetMillionClubUser(item.user));
+  const displayedReceived = received;
+  const displayedSent = sent;
+  const displayedAccepted = accepted;
 
   if (loading) {
     return (
