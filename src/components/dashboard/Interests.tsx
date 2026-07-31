@@ -62,9 +62,10 @@ const Interests = () => {
   const [activeTab, setActiveTab] = useState("received");
   const [received, setReceived] = useState<InterestItem[]>([]);
   const [sent, setSent] = useState<InterestItem[]>([]);
+  const [accepted, setAccepted] = useState<InterestItem[]>([]);
+  const [rejected, setRejected] = useState<InterestItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [accepted, setAccepted] = useState<InterestItem[]>([]);
   const [viewLoading, setViewLoading] = useState<string | null>(null);
   const [profileLimitReached, setProfileLimitReached] = useState(false);
   const [viewedProfiles, setViewedProfiles] = useState<string[]>([]);
@@ -88,12 +89,13 @@ const Interests = () => {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [receivedRes, sentRes, acceptedRes] = await Promise.all([
+      const [receivedRes, sentRes, acceptedRes, rejectedRes] = await Promise.all([
         Axios.get("/api/user/interests/received", { headers }),
         Axios.get("/api/user/interests/sent", { headers }),
         Axios.get("/api/user/interests/accepted/interest", { headers }),
+        Axios.get("/api/user/interests/rejected/interest", { headers }),
       ]);
-      console.log("res", receivedRes.data, sentRes.data, acceptedRes.data);
+      console.log("res", receivedRes.data, sentRes.data, acceptedRes.data, rejectedRes.data);
       const mapInterest = (item: any, userKey: string): InterestItem => ({
         _id: item._id,
         user: {
@@ -123,7 +125,11 @@ const Interests = () => {
           .filter((i) => i.status?.toLowerCase() === "pending"),
       );
 
-      setSent((sentRes.data || []).map((i: any) => mapInterest(i, "toUser")));
+      setSent(
+        (sentRes.data || [])
+          .map((i: any) => mapInterest(i, "toUser"))
+          .filter((i) => i.status?.toLowerCase() !== "rejected"),
+      );
       setAccepted(
         (acceptedRes.data || []).map((item: any) => {
           const otherUser =
@@ -152,6 +158,38 @@ const Interests = () => {
             },
             matchScore: item.matchPercentage ?? 0,
             status: item.status || "accepted",
+          };
+        }),
+      );
+
+      setRejected(
+        (rejectedRes.data || []).map((item: any) => {
+          const otherUser =
+            String(item.fromUser._id) === String(userId)
+              ? item.toUser
+              : item.fromUser;
+
+          return {
+            _id: item._id,
+            user: {
+              _id: otherUser._id,
+              fullName: otherUser.fullName,
+              dateOfBirth: otherUser.dateOfBirth,
+              city: otherUser.city,
+              state: otherUser.state,
+              profileStatus: otherUser.profileStatus,
+              isMillionClub: checkMillionStatus(otherUser),
+              interests: otherUser.interests || [],
+              education: otherUser.highestEducation
+                ? { name: otherUser.highestEducation.name }
+                : undefined,
+              profession: otherUser.profession
+                ? { name: otherUser.profession.name }
+                : undefined,
+              photos: otherUser.photos || [],
+            },
+            matchScore: item.matchPercentage ?? 0,
+            status: item.status || "rejected",
           };
         }),
       );
@@ -294,7 +332,13 @@ const Interests = () => {
         },
       );
 
-      setReceived((prev) => prev.filter((i) => i._id !== interestId));
+      setReceived((prev) => {
+        const rejectedItem = prev.find((i) => i._id === interestId);
+        if (rejectedItem) {
+          setRejected((r) => [...r, { ...rejectedItem, status: "rejected" }]);
+        }
+        return prev.filter((i) => i._id !== interestId);
+      });
 
       toast.success(`Rejected interest from ${name}`);
     } catch (err: any) {
@@ -334,7 +378,7 @@ const Interests = () => {
     type,
   }: {
     item: InterestItem;
-    type: "received" | "sent" | "accepted";
+    type: "received" | "sent" | "accepted" | "rejected";
   }) => {
     const isActioning = actionLoading === item._id;
     const alreadyViewed = viewedProfiles.some((id) => String(id) === String(item.user._id));
@@ -545,6 +589,17 @@ const Interests = () => {
                   Accepted
                 </Button>
               )}
+
+              {type === "rejected" && (
+                <Button
+                  disabled
+                  variant="outline"
+                  className="w-full border-destructive/50 text-destructive cursor-default bg-destructive/10 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Rejected
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -571,6 +626,7 @@ const Interests = () => {
   const displayedReceived = received;
   const displayedSent = sent;
   const displayedAccepted = accepted;
+  const displayedRejected = rejected;
 
   if (loading) {
     return (
@@ -592,6 +648,7 @@ const Interests = () => {
             <TabsTrigger value="received">Received Interests</TabsTrigger>
             <TabsTrigger value="accepted">Accepted Interests</TabsTrigger>
             <TabsTrigger value="sent">Requested Interests</TabsTrigger>
+            <TabsTrigger value="rejected">Rejected Interests</TabsTrigger>
           </TabsList>
         </div>
 
@@ -627,6 +684,17 @@ const Interests = () => {
             </div>
           ) : (
             <EmptyState message="No accepted interests yet." />
+          )}
+        </TabsContent>
+        <TabsContent value="rejected" className="mt-6">
+          {displayedRejected.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {displayedRejected.map((item) => (
+                <InterestCard key={item._id} item={item} type="rejected" />
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="No rejected interests." />
           )}
         </TabsContent>
       </Tabs>
