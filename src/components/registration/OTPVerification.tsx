@@ -18,8 +18,10 @@ import {
   Eye,
   EyeOff,
   ChevronLeft,
+  Circle,
 } from "lucide-react";
 import { verifyRegistrationOtpOnly } from "@/services/UserServices";
+import { validatePassword } from "@/utils/validation";
 
 interface OTPVerificationProps {
   email: string;
@@ -73,16 +75,10 @@ const OTPVerification = ({
     }
   }, [resendTimer, isOTPVerified]);
 
-  const validatePassword = (pass: string): boolean => {
-    const hasMinLength = pass.length >= 4;
-    const hasCapitalLetter = /[A-Z]/.test(pass);
-    return hasMinLength && hasCapitalLetter;
-  };
-
-  const isPasswordValid = validatePassword(password);
+  const passwordValidation = validatePassword(password);
   const passwordsMatch =
     password === confirmPassword && confirmPassword.length > 0;
-  const canCreatePassword = isPasswordValid && passwordsMatch;
+  const canCreatePassword = passwordValidation.isValid && passwordsMatch;
 
   const handleVerifyOTP = async () => {
     if (otp.length !== 4) {
@@ -106,9 +102,9 @@ const OTPVerification = ({
 
   const handleCreatePassword = async () => {
     if (!canCreatePassword) {
-      if (!isPasswordValid) {
+      if (!passwordValidation.isValid) {
         setPasswordError(
-          "Password must be at least 4 characters and include at least one capital letter",
+          "Password must be at least 8 characters long, contain an uppercase letter, a number, and a special character.",
         );
       } else if (!passwordsMatch) {
         setPasswordError("Passwords do not match");
@@ -359,8 +355,91 @@ const OTPVerification = ({
                 </div>
               </div>
 
+              {/* Password Requirements Checklist */}
+              <div className="bg-muted/40 border border-border/50 rounded-xl p-3 space-y-2 text-xs">
+                <p className="font-medium text-foreground text-xs">
+                  Password Requirements:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
+                  <div
+                    className={`flex items-center gap-1.5 transition-colors ${
+                      passwordValidation.minLength
+                        ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {passwordValidation.minLength ? (
+                      <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                    ) : (
+                      <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                    )}
+                    <span>At least 8 characters</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-1.5 transition-colors ${
+                      passwordValidation.hasUppercase
+                        ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {passwordValidation.hasUppercase ? (
+                      <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                    ) : (
+                      <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                    )}
+                    <span>One uppercase letter (A-Z)</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-1.5 transition-colors ${
+                      passwordValidation.hasDigit
+                        ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {passwordValidation.hasDigit ? (
+                      <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                    ) : (
+                      <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                    )}
+                    <span>One number (0-9)</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-1.5 transition-colors ${
+                      passwordValidation.hasSpecial
+                        ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {passwordValidation.hasSpecial ? (
+                      <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                    ) : (
+                      <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                    )}
+                    <span>Special character (!@#$%^&*)</span>
+                  </div>
+                  {confirmPassword.length > 0 && (
+                    <div
+                      className={`flex items-center gap-1.5 sm:col-span-2 transition-colors ${
+                        passwordsMatch
+                          ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                          : "text-destructive font-medium"
+                      }`}
+                    >
+                      {passwordsMatch ? (
+                        <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                      ) : (
+                        <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                      )}
+                      <span>
+                        {passwordsMatch ? "Passwords match" : "Passwords do not match"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {passwordError && (
-                <p className="text-destructive text-xs text-center">
+                <p className="text-destructive text-xs text-center font-medium">
                   {passwordError}
                 </p>
               )}
