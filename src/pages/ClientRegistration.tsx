@@ -4,11 +4,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft, ChevronRight, X, AlertCircle, Shield, Users, Lock, CheckCircle, Loader2, Eye, EyeOff } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, AlertCircle, Shield, Users, Lock, CheckCircle, Loader2, Eye, EyeOff, Circle } from "lucide-react";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import Axios from "@/axios/axios";
+import { validatePassword } from "@/utils/validation";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
 import heroSlide3 from "@/assets/hero-slide-3.jpg";
@@ -84,12 +85,21 @@ const ClientRegistration = () => {
     }
   };
 
+  const passwordValidation = validatePassword(formData.password);
+  const passwordsMatch = formData.password === formData.confirmPassword && formData.confirmPassword.length > 0;
+
   const checkStepValidity = (step: number): boolean => {
     const requiredFields = getRequiredFieldsForStep(step);
-    return requiredFields.every((field) => {
+    const basicValid = requiredFields.every((field) => {
       const value = formData[field];
       return value && value.trim() !== "";
     });
+
+    if (step === 2) {
+      return basicValid && passwordValidation.isValid && passwordsMatch;
+    }
+
+    return basicValid;
   };
 
   useEffect(() => {
@@ -113,7 +123,12 @@ const ClientRegistration = () => {
   };
 
   const handleSubmit = async () => {
-    if (formData.password !== formData.confirmPassword) {
+    if (!passwordValidation.isValid) {
+      toast.error("Password does not meet requirements.");
+      return;
+    }
+
+    if (!passwordsMatch) {
       toast.error("Passwords do not match!");
       return;
     }
@@ -326,6 +341,89 @@ const ClientRegistration = () => {
                     )}
                   </button>
                 </div>
+              </div>
+            </div>
+
+            {/* Password Requirements Checklist */}
+            <div className="bg-muted/40 border border-border/50 rounded-xl p-3 space-y-2 text-xs">
+              <p className="font-medium text-foreground text-xs">
+                Password Requirements:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
+                <div
+                  className={`flex items-center gap-1.5 transition-colors ${
+                    passwordValidation.minLength
+                      ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {passwordValidation.minLength ? (
+                    <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                  ) : (
+                    <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                  )}
+                  <span>At least 8 characters</span>
+                </div>
+                <div
+                  className={`flex items-center gap-1.5 transition-colors ${
+                    passwordValidation.hasUppercase
+                      ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {passwordValidation.hasUppercase ? (
+                    <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                  ) : (
+                    <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                  )}
+                  <span>One uppercase letter (A-Z)</span>
+                </div>
+                <div
+                  className={`flex items-center gap-1.5 transition-colors ${
+                    passwordValidation.hasDigit
+                      ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {passwordValidation.hasDigit ? (
+                    <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                  ) : (
+                    <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                  )}
+                  <span>One number (0-9)</span>
+                </div>
+                <div
+                  className={`flex items-center gap-1.5 transition-colors ${
+                    passwordValidation.hasSpecial
+                      ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {passwordValidation.hasSpecial ? (
+                    <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                  ) : (
+                    <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                  )}
+                  <span>Special character (!@#$%^&*)</span>
+                </div>
+                {formData.confirmPassword.length > 0 && (
+                  <div
+                    className={`flex items-center gap-1.5 sm:col-span-2 transition-colors ${
+                      passwordsMatch
+                        ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                        : "text-destructive font-medium"
+                    }`}
+                  >
+                    {passwordsMatch ? (
+                      <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                    ) : (
+                      <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                    )}
+                    <span>
+                      {passwordsMatch ? "Passwords match" : "Passwords do not match"}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
