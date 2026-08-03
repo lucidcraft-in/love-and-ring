@@ -15,7 +15,9 @@ import {
   ArrowLeft,
   EyeOff,
   Eye,
+  Circle,
 } from "lucide-react";
+import { validatePassword } from "@/utils/validation";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
@@ -122,17 +124,18 @@ const ForgotPassword = () => {
     }
   };
 
-  const handleResetPassword = async () => {
-    const passwordRegex = /^(?=.*[A-Z]).{4,}$/;
+  const passwordValidation = validatePassword(newPassword);
+  const passwordsMatch = newPassword === confirmPassword && confirmPassword.length > 0;
 
-    if (!passwordRegex.test(newPassword)) {
+  const handleResetPassword = async () => {
+    if (!passwordValidation.isValid) {
       toast.error(
-        "Password must be at least 4 characters and contain at least one uppercase letter",
+        "Password must be at least 8 characters long, contain an uppercase letter, a digit, and a special character (!@#$%^&*).",
       );
       return;
     }
 
-    if (newPassword !== confirmPassword) {
+    if (!passwordsMatch) {
       toast.error("Passwords do not match");
       return;
     }
@@ -557,10 +560,93 @@ const ForgotPassword = () => {
                       </div>
                     </div>
 
+                    {/* Password Requirements Checklist */}
+                    <div className="bg-muted/40 border border-border/50 rounded-xl p-3 space-y-2 text-xs">
+                      <p className="font-medium text-foreground text-xs">
+                        Password Requirements:
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
+                        <div
+                          className={`flex items-center gap-1.5 transition-colors ${
+                            passwordValidation.minLength
+                              ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {passwordValidation.minLength ? (
+                            <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                          ) : (
+                            <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                          )}
+                          <span>At least 8 characters</span>
+                        </div>
+                        <div
+                          className={`flex items-center gap-1.5 transition-colors ${
+                            passwordValidation.hasUppercase
+                              ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {passwordValidation.hasUppercase ? (
+                            <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                          ) : (
+                            <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                          )}
+                          <span>One uppercase letter (A-Z)</span>
+                        </div>
+                        <div
+                          className={`flex items-center gap-1.5 transition-colors ${
+                            passwordValidation.hasDigit
+                              ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {passwordValidation.hasDigit ? (
+                            <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                          ) : (
+                            <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                          )}
+                          <span>One number (0-9)</span>
+                        </div>
+                        <div
+                          className={`flex items-center gap-1.5 transition-colors ${
+                            passwordValidation.hasSpecial
+                              ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {passwordValidation.hasSpecial ? (
+                            <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                          ) : (
+                            <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                          )}
+                          <span>Special character (!@#$%^&*)</span>
+                        </div>
+                        {confirmPassword.length > 0 && (
+                          <div
+                            className={`flex items-center gap-1.5 sm:col-span-2 transition-colors ${
+                              passwordsMatch
+                                ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                                : "text-destructive font-medium"
+                            }`}
+                          >
+                            {passwordsMatch ? (
+                              <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                            ) : (
+                              <Circle className="w-3.5 h-3.5 shrink-0 opacity-40" />
+                            )}
+                            <span>
+                              {passwordsMatch ? "Passwords match" : "Passwords do not match"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     <Button
                       type="button"
                       className="w-full h-10 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-lg shadow-primary/25 rounded-lg"
-                      disabled={isLoading}
+                      disabled={isLoading || !passwordValidation.isValid || !passwordsMatch}
                       onClick={handleResetPassword}
                     >
                       {isLoading ? "Resetting..." : "Reset Password"}
