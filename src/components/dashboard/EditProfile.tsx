@@ -35,6 +35,7 @@ interface UserProfile {
   profileImage?: string;
   membership?: string;
   profileStatus?: string;
+  hasPlan?: boolean;
 }
 
 interface Option {
@@ -78,6 +79,14 @@ const EditProfile = () => {
       console.log("User", user);
       const primaryPhoto = user.photos?.find((p: any) => p.isPrimary);
 
+      const planTitle =
+        (typeof user.membership?.plan === "object" && user.membership?.plan?.title) ||
+        (user.profileStatus && user.profileStatus.toUpperCase() !== "BASIC"
+          ? user.profileStatus
+          : null);
+
+      const hasPlan = Boolean(user.membership?.plan || planTitle);
+
       setPrimaryPhotoId(primaryPhoto?._id || null);
       setHidePhoto(primaryPhoto?.isHidden || false);
       setProfile({
@@ -94,10 +103,8 @@ const EditProfile = () => {
         profession: user.profession?._id || "",
         address: user.address || "",
         bio: user.bio || "",
-        membership:
-          (typeof user.membership?.plan === "object" && user.membership?.plan?.title) ||
-          user.profileStatus ||
-          "Free Account",
+        membership: planTitle || "Free Account",
+        hasPlan,
       });
       setCvData({
         cvUrl: user.cv?.url || "",
@@ -260,15 +267,19 @@ const EditProfile = () => {
               Current Membership: {currentMembership}
             </h3>
             <p className="text-sm text-muted-foreground">
-              Upgrade to unlock premium features and find your match faster
+              {profile?.hasPlan
+                ? "You have an active membership plan"
+                : "Upgrade to unlock premium features and find your match faster"}
             </p>
           </div>
-          <Button
-            className="bg-gradient-to-r from-primary to-secondary"
-            onClick={() => navigate("/pricing")}
-          >
-            Upgrade Now
-          </Button>
+          {!profile?.hasPlan && (
+            <Button
+              className="bg-gradient-to-r from-primary to-secondary"
+              onClick={() => navigate("/pricing")}
+            >
+              Upgrade Now
+            </Button>
+          )}
         </div>
       </Card>
 
