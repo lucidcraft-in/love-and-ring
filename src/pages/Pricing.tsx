@@ -23,10 +23,6 @@ interface Plan {
   }[];
   isPopular: boolean;
   millionClub?: boolean;
-  duration?: {
-    value: number;
-    unit: string;
-  };
 }
 
 const Pricing = () => {
@@ -262,19 +258,7 @@ const Pricing = () => {
                     </p>
 
                     <p className="text-2xl font-bold mt-4">
-                      {plan.price === 0 ? (
-                        "Custom / On Request"
-                      ) : (
-                        <>
-                          ₹{plan.price}
-                          {plan.duration && (
-                            <span className="text-sm font-normal text-muted-foreground">
-                              {" "}
-                              / {plan.duration.value} {plan.duration.unit}
-                            </span>
-                          )}
-                        </>
-                      )}
+                      {plan.price === 0 ? "Custom / On Request" : `₹${plan.price}`}
                     </p>
                   </div>
 
