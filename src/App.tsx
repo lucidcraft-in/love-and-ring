@@ -38,6 +38,8 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailed from "./pages/PaymentFailed";
 import { PWAInstaller } from "./components/pwa/PWAInstaller";
 
+import DynamicStaticPage from "./pages/DynamicStaticPage";
+
 const queryClient = new QueryClient();
 
 const AppLayout = () => {
@@ -47,7 +49,7 @@ const AppLayout = () => {
 
   // Hero routes have transparent navbar overlay - no padding needed
   const heroRoutes = ["/", "/login", "/register", "/client-terms", "/client-registration", "/about", "/success-stories", "/pricing", "/contact", "/forgot-password", "/privacy-details", "/terms"];
-  const isHeroRoute = heroRoutes.includes(location.pathname);
+  const isHeroRoute = heroRoutes.includes(location.pathname) || location.pathname.startsWith("/pages/");
 
   // Public pages where WhatsApp button should show
   const publicRoutes = ["/", "/about", "/pricing", "/faq", "/contact", "/success-stories"];
@@ -119,6 +121,7 @@ const AppLayout = () => {
           <Route path="/terms" element={<Terms />} />
           <Route path="/community-guidelines" element={<CommunityGuidelines />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
+          <Route path="/pages/:slug" element={<DynamicStaticPage />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-failed" element={<PaymentFailed />} />
           {/* Protected Routes */}
