@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Crown, Send } from "lucide-react";
@@ -27,12 +27,14 @@ interface Plan {
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [showMalayalam, setShowMalayalam] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState<string | null>(null);
   const [requestLoading, setRequestLoading] = useState<string | null>(null);
+  const [isMillionClubHighlighted, setIsMillionClubHighlighted] = useState(false);
 
   /* Handler for Standard Paid Plans (PayU Gateway) */
   const handlePayment = async (plan: Plan) => {
@@ -127,24 +129,58 @@ const Pricing = () => {
   };
 
   useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const token = localStorage.getItem("token");
-
-        const response = await Axios.get("/api/payment/plans", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        setPlans(response.data.data || response.data);
-      } catch (error) {
-        console.error("Failed to fetch plans:", error);
+  const fetchPlans = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
       }
-    };
 
-    fetchPlans();
-  }, []);
+      const response = await Axios.get("/api/payment/plans", { headers });
+      const resData = response.data;
+
+      // Ensure it is always an array regardless of API response wrapper
+      if (Array.isArray(resData)) {
+        setPlans(resData);
+      } else if (Array.isArray(resData?.data)) {
+        setPlans(resData.data);
+      } else if (Array.isArray(resData?.plans)) {
+        setPlans(resData.plans);
+      } else {
+        setPlans([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch plans:", error);
+      setPlans([]);
+    }
+  };
+
+  fetchPlans();
+}, []);
+
+  /* Detect URL hash and scroll/highlight Million Club */
+  useEffect(() => {
+    const hash = location.hash.toLowerCase();
+    if ((hash === "#million-club" || hash === "#premium") && plans.length > 0) {
+      const timer = setTimeout(() => {
+        const element = document.getElementById("million-club-card");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          setIsMillionClubHighlighted(true);
+
+          // Highlight for 4 seconds, then smoothly transition back
+          const highlightTimer = setTimeout(() => {
+            setIsMillionClubHighlighted(false);
+          }, 4000);
+
+          return () => clearTimeout(highlightTimer);
+        }
+      }, 300); // Slight delay to ensure cards have finished rendering
+
+      return () => clearTimeout(timer);
+    }
+  }, [location.hash, plans]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -222,103 +258,140 @@ const Pricing = () => {
       </section>
 
       {/* Pricing Cards - 4 Column Layout */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {plans.map((plan, index) => (
-              <motion.div
-                key={plan._id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+      {/* Pricing Cards - 4 Column Layout */}
+<section className="py-20">
+  <div className="container mx-auto px-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+      {Array.isArray(plans) && plans.length > 0 ? (
+        plans.map((plan, index) => {
+          const isMillion =
+            plan.millionClub ||
+            plan.title?.toLowerCase().includes("million");
+
+          return (
+            <motion.div
+              key={plan._id}
+              id={isMillion ? "million-club-card" : undefined}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="rounded-xl transition-transform duration-500"
+            >
+              <Card
+                className={`p-6 h-full flex flex-col relative transition-all duration-500 ${
+                  isMillion && isMillionClubHighlighted
+                    ? "ring-4 ring-amber-500 shadow-2xl shadow-amber-500/40 scale-[1.03] border-amber-500 animate-pulse"
+                    : ""
+                }`}
               >
-                <Card className="p-6 h-full flex flex-col relative">
-                  {plan.isPopular && (
-                    <span className="absolute top-4 right-4 text-xs px-2 py-1 rounded-full bg-primary text-white">
-                      Popular
-                    </span>
-                  )}
+                {plan.isPopular && (
+                  <span className="absolute top-4 right-4 text-xs px-2 py-1 rounded-full bg-primary text-white">
+                    Popular
+                  </span>
+                )}
 
-                  {plan.millionClub && (
-                    <span className="absolute top-4 right-4 text-xs px-2 py-1 rounded-full bg-amber-500 text-white font-medium">
-                      Million Club
-                    </span>
-                  )}
+                {isMillion && (
+                  <span className="absolute top-4 right-4 text-xs px-2 py-1 rounded-full bg-amber-500 text-white font-medium">
+                    Million Club
+                  </span>
+                )}
 
-                  <div className="mb-6">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                      <Crown className="h-6 w-6 text-primary" />
-                    </div>
-
-                    <h3 className="text-xl font-semibold mb-1">{plan.title}</h3>
-
-                    <p className="text-sm text-muted-foreground min-h-[20px]">
-                      {plan.heading}
-                    </p>
-
-                    <p className="text-2xl font-bold mt-4">
-                      {plan.price === 0 ? "Custom / On Request" : `₹${plan.price}`}
-                    </p>
+                <div className="mb-6">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <Crown
+                      className={`h-6 w-6 ${
+                        isMillion ? "text-amber-500" : "text-primary"
+                      }`}
+                    />
                   </div>
 
-                  <ul className="space-y-3 mb-6 flex-grow">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
-                        <Check
-                          className={`h-4 w-4 mt-1 shrink-0 ${feature.isHighlighted
-                              ? "text-primary"
-                              : "text-muted-foreground"
-                            }`}
-                        />
-                        <span className="text-sm">
-                          {feature.label}: <strong>{feature.value}</strong>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                  <h3 className="text-xl font-semibold mb-1">{plan.title}</h3>
 
-                  {/* Million Club Action Button */}
-                  {plan.millionClub ? (
-                    user?.profileStatus?.toLowerCase().includes("million") ? (
-                      <Button className="w-full bg-green-600 hover:bg-green-600 text-white" disabled>
-                        <Check className="w-4 h-4 mr-2" />
-                        Active Member
-                      </Button>
-                    ) : plan.price > 0 ? (
-                      <Button
-                        className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
-                        onClick={() => handlePayment(plan)}
-                        disabled={paymentLoading === plan._id}
-                      >
-                        <Crown className="w-4 h-4 mr-2" />
-                        {paymentLoading === plan._id ? "Processing..." : "Purchase Plan"}
-                      </Button>
-                    ) : (
-                      <Button
-                        className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
-                        onClick={() => handleMillionClubRequest(plan)}
-                        disabled={requestLoading === plan._id}
-                      >
-                        <Send className="w-4 h-4 mr-2" />
-                        {requestLoading === plan._id ? "Sending..." : "Request Membership"}
-                      </Button>
-                    )
-                  ) : (
+                  <p className="text-sm text-muted-foreground min-h-[20px]">
+                    {plan.heading}
+                  </p>
+
+                  <p className="text-2xl font-bold mt-4">
+                    {plan.price === 0
+                      ? "Custom / On Request"
+                      : `₹${plan.price}`}
+                  </p>
+                </div>
+
+                <ul className="space-y-3 mb-6 flex-grow">
+                  {plan.features?.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <Check
+                        className={`h-4 w-4 mt-1 shrink-0 ${
+                          feature.isHighlighted
+                            ? "text-primary"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                      <span className="text-sm">
+                        {feature.label}: <strong>{feature.value}</strong>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Million Club Action Button */}
+                {isMillion ? (
+                  user?.profileStatus?.toLowerCase().includes("million") ? (
                     <Button
-                      className="w-full bg-gradient-to-r from-primary to-secondary"
+                      className="w-full bg-green-600 hover:bg-green-600 text-white"
+                      disabled
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      Active Member
+                    </Button>
+                  ) : plan.price > 0 ? (
+                    <Button
+                      className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
                       onClick={() => handlePayment(plan)}
                       disabled={paymentLoading === plan._id}
                     >
-                      {paymentLoading === plan._id ? "Processing..." : "Purchase Plan"}
+                      <Crown className="w-4 h-4 mr-2" />
+                      {paymentLoading === plan._id
+                        ? "Processing..."
+                        : "Purchase Plan"}
                     </Button>
-                  )}
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                  ) : (
+                    <Button
+                      className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
+                      onClick={() => handleMillionClubRequest(plan)}
+                      disabled={requestLoading === plan._id}
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      {requestLoading === plan._id
+                        ? "Sending..."
+                        : "Request Membership"}
+                    </Button>
+                  )
+                ) : (
+                  <Button
+                    className="w-full bg-gradient-to-r from-primary to-secondary"
+                    onClick={() => handlePayment(plan)}
+                    disabled={paymentLoading === plan._id}
+                  >
+                    {paymentLoading === plan._id
+                      ? "Processing..."
+                      : "Purchase Plan"}
+                  </Button>
+                )}
+              </Card>
+            </motion.div>
+          );
+        })
+      ) : (
+        <div className="col-span-full text-center py-12 text-muted-foreground">
+          Loading plans...
         </div>
-      </section>
+      )}
+    </div>
+  </div>
+</section>
     </div>
   );
 };
