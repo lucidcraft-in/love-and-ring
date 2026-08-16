@@ -32,8 +32,8 @@ const defaultLinks: Record<string, FooterLinkItem[]> = {
   ],
   Plans: [
     { name: "Pricing", path: "/pricing" },
-    { name: "Free Plan", path: "/pricing#free" },
-    { name: "Premium Plans", path: "/pricing#premium" },
+    // { name: "Free Plan", path: "/pricing#free" },
+    { name: "Premium Plans", path: "/pricing#million-club" },
   ],
 };
 
@@ -77,8 +77,8 @@ const Footer = () => {
             Legal: [],
             Plans: [
               { name: "Pricing", path: "/pricing" },
-              { name: "Free Plan", path: "/pricing#free" },
-              { name: "Premium Plans", path: "/pricing#premium" },
+              // { name: "Free Plan", path: "/pricing#free" },
+              { name: "Premium Plans", path: "/pricing#million-club" },
             ],
           };
 
