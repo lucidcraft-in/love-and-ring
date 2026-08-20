@@ -22,6 +22,7 @@ interface UserProfile {
   fullName: string;
   email: string;
   mobile: string;
+  gender?: string;
   dob?: string;
   height?: string;
   weight?: string;
@@ -87,12 +88,22 @@ const EditProfile = () => {
 
       const hasPlan = Boolean(user.membership?.plan || planTitle);
 
+      const formatGender = (g?: string) => {
+        if (!g) return "";
+        const lower = g.toLowerCase();
+        if (lower === "male") return "Male";
+        if (lower === "female") return "Female";
+        if (lower === "other") return "Other";
+        return g;
+      };
+
       setPrimaryPhotoId(primaryPhoto?._id || null);
       setHidePhoto(primaryPhoto?.isHidden || false);
       setProfile({
         fullName: user.fullName || "",
         email: user.email || "",
         mobile: user.mobile || "",
+        gender: formatGender(user.gender),
         dob: user.dateOfBirth ? user.dateOfBirth.slice(0, 10) : "",
         height: user.heightCm ? String(user.heightCm) : "",
         weight: user.weightKg ? String(user.weightKg) : "",
@@ -176,6 +187,7 @@ const EditProfile = () => {
         {
           fullName: profile.fullName,
           mobile: profile.mobile,
+          gender: profile.gender,
           dateOfBirth: profile.dob,
           heightCm: Number(profile.height),
           weightKg: Number(profile.weight),
@@ -344,6 +356,26 @@ const EditProfile = () => {
                 )
               }
             />
+          </div>
+          <div>
+            <Label htmlFor="gender">Gender</Label>
+            <Select
+              value={profile?.gender || ""}
+              onValueChange={(value) =>
+                setProfile((prev) =>
+                  prev ? { ...prev, gender: value } : prev,
+                )
+              }
+            >
+              <SelectTrigger id="gender">
+                <SelectValue placeholder="Select Gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Female">Female</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="dob">Date of Birth</Label>
