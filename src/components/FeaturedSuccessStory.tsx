@@ -18,6 +18,21 @@ interface FeaturedSuccessStoryProps {
   stories: SuccessStory[];
 }
 
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch (e) {
+    return dateStr;
+  }
+};
+
 const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
   if (!stories || stories.length === 0) {
     return (
@@ -122,7 +137,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
                   {activeStory.names}
                 </h3>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                  {activeStory.date}
+                  {formatDate(activeStory.date)}
                 </p>
               </div>
             </motion.div>
