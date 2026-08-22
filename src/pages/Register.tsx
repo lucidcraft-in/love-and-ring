@@ -53,6 +53,7 @@ export interface RegistrationData {
   bodyType: string;
   city: string;
   profileImage: File | null;
+  alternateMobile?: string;
   primaryEducation: string;
   profession: string;
   physicallyChallenged: boolean;
@@ -94,6 +95,7 @@ const Register = () => {
     password: "",
     countryCode: "+91",
     mobile: "",
+    alternateMobile: "",
     gender: "",
     dob: "",
     language: "",
@@ -434,6 +436,9 @@ const Register = () => {
       );
       submitData.append("mobile", formData.mobile);
       submitData.append("countryCode", formData.countryCode || "+91");
+      if (formData.alternateMobile) {
+        submitData.append("alternateMobile", formData.alternateMobile);
+      }
       submitData.append(
         "gender",
         formData.gender
