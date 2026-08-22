@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { Eye, EyeOff, X, Shield, Users, Lock, CheckCircle, Phone, Mail } from "lucide-react";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
@@ -32,6 +32,7 @@ const features = [
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   // Email mode state
@@ -49,6 +50,20 @@ const Login = () => {
   const [isPhoneLogin, setIsPhoneLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Auto-fill credentials passed from registration time
+  useEffect(() => {
+    if (location.state?.email) {
+      setEmail(location.state.email);
+      if (location.state?.password) {
+        setPassword(location.state.password);
+      }
+      setIsPhoneLogin(false);
+      if (location.state?.fromRegistration) {
+        toast.info("Registration complete! Credentials automatically filled below.");
+      }
+    }
+  }, [location.state]);
 
   useEffect(() => {
     heroSlides.forEach((src) => {
