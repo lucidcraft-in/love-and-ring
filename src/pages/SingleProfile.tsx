@@ -689,7 +689,7 @@ const SingleProfile = () => {
                 <InfoItem
                   icon={GraduationCap}
                   label="Education"
-                  value={profile.highestEducation?.name || "Not specified"}
+                  value={profile.primaryEducation?.name || profile.education?.name || "Not specified"}
                 />
                 <InfoItem
                   icon={Briefcase}
