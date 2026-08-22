@@ -162,7 +162,7 @@ export default function DynamicStaticPage({ forcedSlug, fallbackTitle, fallbackC
             className="bg-card p-6 md:p-10 rounded-2xl border shadow-sm space-y-6"
           >
             <div
-              className="prose max-w-none dark:prose-invert text-foreground/90 leading-relaxed space-y-4 font-sans"
+              className="prose max-w-none dark:prose-invert text-foreground/90 leading-relaxed space-y-4 font-sans cms-content-render"
               dangerouslySetInnerHTML={{ __html: page.content }}
             />
 
