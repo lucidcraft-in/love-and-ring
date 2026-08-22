@@ -37,6 +37,21 @@ interface Story {
   location?: string;
 }
 
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch (e) {
+    return dateStr;
+  }
+};
+
 const SuccessStories = () => {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [stories, setStories] = useState<Story[]>([]);
@@ -218,7 +233,7 @@ const SuccessStories = () => {
                       </div>
                       <div className="pt-4 mt-4 border-t">
                         <p className="text-sm font-semibold text-primary">
-                          {story.date}
+                          {formatDate(story.date)}
                         </p>
                       </div>
                     </div>
@@ -279,7 +294,7 @@ const SuccessStories = () => {
               dangerouslySetInnerHTML={{ __html: selectedStory?.story || "" }}
             />
             <p className="text-sm font-semibold text-primary">
-              {selectedStory?.date}
+              {formatDate(selectedStory?.date)}
             </p>
           </div>
         </DialogContent>
