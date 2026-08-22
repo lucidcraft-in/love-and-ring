@@ -1,5 +1,6 @@
 import Axios from "@/axios/axios";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -8,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Upload, FileText, X } from "lucide-react";
+import { Upload, FileText, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { RegistrationData } from "@/pages/Register";
 import { useEffect, useState, useRef } from "react";
@@ -20,9 +21,11 @@ interface StepFourProps {
 
 const StepFour = ({ formData, updateFormData }: StepFourProps) => {
   const [primaryEducations, setPrimaryEducations] = useState<any[]>([]);
-  const [higherEducations, setHigherEducations] = useState<any[]>([]);
   const [professions, setProfessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isCustomProfession, setIsCustomProfession] = useState(false);
+  const [customProfessionName, setCustomProfessionName] = useState("");
+
   const cvInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_CV_SIZE = 5 * 1024 * 1024; // 5MB
@@ -66,32 +69,6 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
   }, []);
 
   useEffect(() => {
-    const fetchHigherEducation = async () => {
-      if (!formData?.primaryEducation) {
-        setHigherEducations([]);
-        return;
-      }
-
-      try {
-        const { data } = await Axios.get(
-          `/api/master/higherEducations?primaryEducation=${formData.primaryEducation}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          },
-        );
-
-        setHigherEducations(data.data);
-      } catch (error) {
-        console.error("Error fetching higher education:", error);
-      }
-    };
-
-    fetchHigherEducation();
-  }, [formData?.primaryEducation]);
-
-  useEffect(() => {
     const fetchProfessions = async () => {
       try {
         setLoading(true);
@@ -101,7 +78,17 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
           },
         });
 
-        setProfessions(data.data);
+        const professionList = data.data || [];
+        setProfessions(professionList);
+
+        // Check if current formData profession is custom (not in fetched list IDs)
+        if (formData?.profession) {
+          const matched = professionList.some((item: any) => item._id === formData.profession);
+          if (!matched && formData.profession !== "OTHER") {
+            setIsCustomProfession(true);
+            setCustomProfessionName(formData.profession);
+          }
+        }
       } catch (error) {
         console.error("Error fetching professions:", error);
       } finally {
@@ -112,28 +99,41 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
     fetchProfessions();
   }, []);
 
+  const handleProfessionSelectChange = (value: string) => {
+    if (value === "OTHER") {
+      setIsCustomProfession(true);
+      handleChange("profession", customProfessionName);
+    } else {
+      setIsCustomProfession(false);
+      handleChange("profession", value);
+    }
+  };
+
+  const handleCustomProfessionTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setCustomProfessionName(val);
+    handleChange("profession", val);
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold mb-2">Educational Details</h2>
         <p className="text-muted-foreground">
-          Tell us about your education and profession
+          Tell us about your qualification level and profession
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Primary Education */}
-        <div className="space-y-2">
+        {/* Qualification Level */}
+        <div className="space-y-2 md:col-span-2">
           <Label>Qualification Level *</Label>
           <Select
             value={formData?.primaryEducation}
-            onValueChange={(v) => {
-              handleChange("primaryEducation", v);
-              handleChange("highestEducation", "");
-            }}
+            onValueChange={(v) => handleChange("primaryEducation", v)}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select primary education" />
+              <SelectValue placeholder="Select qualification level" />
             </SelectTrigger>
 
             <SelectContent>
@@ -146,40 +146,12 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
           </Select>
         </div>
 
-        {/* Education */}
-        <div className="space-y-2">
-          <Label>Highest Education *</Label>
-          <Select
-            value={formData?.highestEducation}
-            onValueChange={(v) => handleChange("highestEducation", v)}
-            disabled={!formData?.primaryEducation}
-          >
-            <SelectTrigger>
-              <SelectValue
-                placeholder={
-                  formData?.primaryEducation
-                    ? "Select highest education"
-                    : "Select primary education first"
-                }
-              />
-            </SelectTrigger>
-
-            <SelectContent>
-              {higherEducations.map((item) => (
-                <SelectItem key={item._id} value={item._id}>
-                  {item.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* Profession */}
         <div className="space-y-2 md:col-span-2">
           <Label>Profession *</Label>
           <Select
-            value={formData?.profession}
-            onValueChange={(v) => handleChange("profession", v)}
+            value={isCustomProfession ? "OTHER" : (formData?.profession || "")}
+            onValueChange={handleProfessionSelectChange}
             disabled={loading}
           >
             <SelectTrigger>
@@ -196,8 +168,23 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
                   {item.name}
                 </SelectItem>
               ))}
+              <SelectItem value="OTHER" className="text-primary font-medium">
+                + Add Custom Profession
+              </SelectItem>
             </SelectContent>
           </Select>
+
+          {isCustomProfession && (
+            <div className="pt-2 animate-fade-in">
+              <Label className="text-xs text-muted-foreground mb-1 block">Specify Custom Profession *</Label>
+              <Input
+                placeholder="Type your profession name..."
+                value={customProfessionName}
+                onChange={handleCustomProfessionTextChange}
+                className="h-10 text-sm"
+              />
+            </div>
+          )}
         </div>
 
         {/* CV Upload */}
@@ -247,8 +234,7 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
                 <div>
                   <p className="font-medium">Upload your CV</p>
                   <p className="text-sm text-muted-foreground">
-                    Click to upload or drag and drop (PDF, DOC, DOCX,TXT – Max
-                    5MB)
+                    Click to upload or drag and drop (PDF, DOC, DOCX, TXT – Max 5MB)
                   </p>
                 </div>
               </div>
