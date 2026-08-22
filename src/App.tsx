@@ -47,6 +47,11 @@ const AppLayout = () => {
   const navigate = useNavigate();
   const [incomingCall, setIncomingCall] = useState<any>(null);
 
+  // Scroll to top on route navigation
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname, location.search]);
+
   // Hero routes have transparent navbar overlay - no padding needed
   const heroRoutes = ["/", "/login", "/register", "/client-terms", "/client-registration", "/about", "/success-stories", "/pricing", "/contact", "/forgot-password", "/privacy-details", "/terms"];
   const isHeroRoute = heroRoutes.includes(location.pathname) || location.pathname.startsWith("/pages/");
