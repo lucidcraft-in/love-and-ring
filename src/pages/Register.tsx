@@ -136,6 +136,50 @@ const Register = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Pre-fill existing profile data for logged-in users
+  useEffect(() => {
+    const savedUserStr = localStorage.getItem("user");
+    if (savedUserStr && savedUserStr !== "undefined") {
+      try {
+        const u = JSON.parse(savedUserStr);
+        if (u && u._id) {
+          setUserId(u._id);
+          setIsOTPVerified(true);
+          setFormData((prev) => ({
+            ...prev,
+            accountFor: u.accountFor ? u.accountFor.toLowerCase() : prev.accountFor,
+            fullName: u.fullName || u.name || prev.fullName,
+            email: u.email || prev.email,
+            countryCode: u.countryCode || "+91",
+            mobile: u.mobile || u.phone || prev.mobile,
+            gender: u.gender ? u.gender.toLowerCase() : prev.gender,
+            dob: u.dob || (u.dateOfBirth ? new Date(u.dateOfBirth).toISOString().split('T')[0] : prev.dob),
+            language: u.language || u.preferredLanguage || prev.language,
+            religion: typeof u.religion === 'object' ? u.religion?._id : (u.religion || prev.religion),
+            caste: typeof u.caste === 'object' ? u.caste?._id : (u.caste || prev.caste),
+            motherTongue: typeof u.motherTongue === 'object' ? u.motherTongue?._id : (u.motherTongue || prev.motherTongue),
+            height: u.height ? String(u.height) : u.heightCm ? String(u.heightCm) : prev.height,
+            weight: u.weight ? String(u.weight) : u.weightKg ? String(u.weightKg) : prev.weight,
+            maritalStatus: u.maritalStatus || prev.maritalStatus,
+            bodyType: u.bodyType || prev.bodyType,
+            city: typeof u.city === 'object' ? u.city?._id : (u.city || prev.city),
+            primaryEducation: typeof u.primaryEducation === 'object' ? u.primaryEducation?._id : (u.primaryEducation || u.education || prev.primaryEducation),
+            highestEducation: typeof u.highestEducation === 'object' ? u.highestEducation?._id : (u.highestEducation || prev.highestEducation),
+            profession: typeof u.profession === 'object' ? u.profession?._id : (u.profession || prev.profession),
+            physicallyChallenged: u.physicallyChallenged ?? prev.physicallyChallenged,
+            liveWithFamily: u.livingWithFamily ?? u.liveWithFamily ?? prev.liveWithFamily,
+            interests: Array.isArray(u.interests) ? u.interests : prev.interests,
+            traits: Array.isArray(u.traits || u.personalityTraits) ? (u.traits || u.personalityTraits) : prev.traits,
+            diets: Array.isArray(u.diets || u.dietPreference) ? (u.diets || u.dietPreference) : prev.diets,
+            income: u.income || prev.income,
+          }));
+        }
+      } catch (err) {
+        console.error("Error pre-filling profile data:", err);
+      }
+    }
+  }, []);
+
   /* 👈 FIX: Pass email, mobile, and countryCode when requesting OTP */
   const handleSendOtp = async () => {
     if (!formData.email || !formData.mobile) {
@@ -278,7 +322,9 @@ const Register = () => {
 
       const submitData = new FormData();
       submitData.append("email", formData.email);
-      submitData.append("password", formData.password);
+      if (formData.password) {
+        submitData.append("password", formData.password);
+      }
       submitData.append("fullName", formData.fullName);
       submitData.append(
         "accountFor",
@@ -332,10 +378,34 @@ const Register = () => {
         submitData.append("cv", formData.cv);
       }
 
-      await registerFullUserApi(submitData);
+      submitData.append("profileStatus", "COMPLETED");
 
-      toast.success("Profile created successfully!");
-      navigate("/login");
+      if (userId) {
+        const token = localStorage.getItem("token");
+        const res = await Axios.put(`/api/users/${userId}`, submitData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const updatedUser = res.data;
+        if (updatedUser) {
+          const currentSaved = JSON.parse(localStorage.getItem("user") || "{}");
+          const mergedUser = {
+            ...currentSaved,
+            ...updatedUser,
+            profileStatus: "COMPLETED",
+          };
+          localStorage.setItem("user", JSON.stringify(mergedUser));
+          window.dispatchEvent(new Event("userProfileUpdated"));
+        }
+        toast.success("Profile updated successfully!");
+        navigate("/dashboard");
+      } else {
+        await registerFullUserApi(submitData);
+        toast.success("Profile created successfully!");
+        navigate("/login");
+      }
     } catch (err: any) {
       const message =
         err.response?.data?.message || "Failed to complete registration";
@@ -354,6 +424,7 @@ const Register = () => {
             formData={formData}
             updateFormData={updateFormData}
             otpSent={otpSent}
+            isOTPVerified={isOTPVerified || !!userId}
           />
         );
       case 2:
@@ -647,13 +718,13 @@ const Register = () => {
                       onClick={
                         isLastStep
                           ? handleSubmit
-                          : currentStep === 1
+                          : currentStep === 1 && !isOTPVerified && !userId
                             ? handleSendOtp
                             : nextStep
                       }
                       disabled={
                         !canProceed ||
-                        (currentStep === 1 && sendingOtp) ||
+                        (currentStep === 1 && !isOTPVerified && !userId && sendingOtp) ||
                         (isLastStep && submitting)
                       }
                       className={`gap-1.5 rounded-lg px-6 h-9 text-sm ${
@@ -662,7 +733,7 @@ const Register = () => {
                           : "opacity-40 cursor-not-allowed"
                       }`}
                     >
-                      {currentStep === 1 && sendingOtp ? (
+                      {currentStep === 1 && !isOTPVerified && !userId && sendingOtp ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Sending...
@@ -674,7 +745,7 @@ const Register = () => {
                         </>
                       ) : isLastStep ? (
                         "Submit"
-                      ) : currentStep === 1 ? (
+                      ) : currentStep === 1 && !isOTPVerified && !userId ? (
                         "Get OTP"
                       ) : (
                         "Continue"
