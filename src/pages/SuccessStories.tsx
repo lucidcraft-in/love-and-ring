@@ -203,10 +203,11 @@ const SuccessStories = () => {
                     </div>
                     <div className="p-6 flex flex-col flex-1">
                       <div className="flex-1">
-                        <p className="text-muted-foreground italic leading-relaxed line-clamp-4">
-                          "{story.story}"
-                        </p>
-                        {story.story.length > 150 && (
+                        <div
+                          className="text-muted-foreground italic leading-relaxed line-clamp-4 prose dark:prose-invert text-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: story.story }}
+                        />
+                        {story.story.length > 120 && (
                           <button
                             onClick={() => setSelectedStory(story)}
                             className="text-primary text-sm font-medium hover:underline mt-2 transition-colors"
@@ -273,9 +274,10 @@ const SuccessStories = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-muted-foreground italic leading-relaxed">
-              "{selectedStory?.story}"
-            </p>
+            <div
+              className="text-muted-foreground italic leading-relaxed prose dark:prose-invert text-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: selectedStory?.story || "" }}
+            />
             <p className="text-sm font-semibold text-primary">
               {selectedStory?.date}
             </p>
