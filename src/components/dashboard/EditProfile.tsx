@@ -17,6 +17,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface UserProfile {
   fullName: string;
@@ -48,6 +49,8 @@ const EditProfile = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [religions, setReligions] = useState<Option[]>([]);
   const [castes, setCastes] = useState<Option[]>([]);
   const [primaryEducations, setPrimaryEducations] = useState<Option[]>([]);
@@ -179,6 +182,8 @@ const EditProfile = () => {
   }, [profile?.religion]);
 
   const handleSave = async () => {
+    if (!profile) return;
+    setSaveLoading(true);
     try {
       const token = localStorage.getItem("token");
 
@@ -211,8 +216,12 @@ const EditProfile = () => {
         duration: 3000,
       });
       window.dispatchEvent(new Event("userProfileUpdated"));
+      setShowConfirm(false);
     } catch (err) {
       console.error("Update failed", err);
+      toast.error("Failed to update profile");
+    } finally {
+      setSaveLoading(false);
     }
   };
 
@@ -294,28 +303,6 @@ const EditProfile = () => {
           )}
         </div>
       </Card>
-
-      {/* Profile Image */}
-      {/* <Card className="glass-card p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Upload className="w-5 h-5" />
-          Profile Image
-        </h3>
-        <div className="flex items-center gap-6">
-          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-            <span className="text-4xl">👤</span>
-          </div>
-          <div>
-            <Button variant="outline" className="mb-2">
-              <Upload className="w-4 h-4 mr-2" />
-              Upload New Photo
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              Recommended: Square image, at least 400x400px
-            </p>
-          </div>
-        </div>
-      </Card> */}
 
       {/* Basic Details */}
       <Card className="glass-card p-6">
@@ -579,11 +566,21 @@ const EditProfile = () => {
         <Button variant="outline">Cancel</Button>
         <Button
           className="bg-gradient-to-r from-primary to-secondary"
-          onClick={handleSave}
+          onClick={() => setShowConfirm(true)}
         >
           Save Changes
         </Button>
       </div>
+
+      <ConfirmDialog
+        open={showConfirm}
+        onOpenChange={setShowConfirm}
+        title="Confirm Profile Changes"
+        description="Are you sure you want to update your profile information?"
+        confirmText="Save Changes"
+        loading={saveLoading}
+        onConfirm={handleSave}
+      />
     </div>
   );
 };
