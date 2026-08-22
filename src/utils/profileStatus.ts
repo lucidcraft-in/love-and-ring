@@ -105,12 +105,10 @@ const getFieldValue = (
   if (
     field === "education" ||
     field === "course" ||
-    field === "primaryEducation" ||
-    field === "highestEducation"
+    field === "primaryEducation"
   ) {
     return (
       profile.primaryEducation ||
-      profile.highestEducation ||
       profile.course ||
       profile.education
     );
@@ -180,7 +178,7 @@ interface StepRequirement {
 
 const STEP_REQUIREMENTS: StepRequirement[] = [
   { step: 1, fields: ["accountFor", "fullName", "gender"] },
-  { step: 2, fields: ["religion", "caste", "motherTongue"] },
+  { step: 2, fields: ["religion", "motherTongue"] },
   { step: 3, fields: ["maritalStatus"] },
   { step: 4, fields: ["primaryEducation", "profession"] },
   { step: 5, fields: ["interests", "traits", "diets"] },
