@@ -102,9 +102,10 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
               transition={{ duration: 0.4 }}
               className="space-y-3 lg:space-y-4"
             >
-              <p className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-normal italic">
-                "{activeStory.fullStory}"
-              </p>
+              <div
+                className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-normal italic prose dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: activeStory.fullStory }}
+              />
 
               {/* Read More Link */}
               <Link
