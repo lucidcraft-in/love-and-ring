@@ -117,8 +117,8 @@ const Matches = () => {
             city: item.likedUser.city,
             state: item.likedUser.state,
             interests: item.likedUser.interests || [],
-            education: item.likedUser.highestEducation
-              ? { name: item.likedUser.highestEducation.name }
+            education: (item.likedUser.primaryEducation || item.likedUser.highestEducation || item.likedUser.education)
+              ? { name: (item.likedUser.primaryEducation || item.likedUser.highestEducation || item.likedUser.education).name }
               : undefined,
             profession: item.likedUser.profession
               ? { name: item.likedUser.profession.name }
@@ -156,8 +156,8 @@ const Matches = () => {
             city: item.likedBy.city,
             state: item.likedBy.state,
             interests: item.likedBy.interests || [],
-            education: item.likedBy.highestEducation
-              ? { name: item.likedBy.highestEducation.name }
+            education: (item.likedBy.primaryEducation || item.likedBy.highestEducation || item.likedBy.education)
+              ? { name: (item.likedBy.primaryEducation || item.likedBy.highestEducation || item.likedBy.education).name }
               : undefined,
             profession: item.likedBy.profession ? { name: item.likedBy.profession.name } : undefined,
             photos: item.likedBy.photos || [],
@@ -190,8 +190,8 @@ const Matches = () => {
             dateOfBirth: item.user.dateOfBirth,
             heightCm: item.user.heightCm,
             interests: item.user.interests || [],
-            education: item.user.highestEducation
-              ? { name: item.user.highestEducation.name }
+            education: (item.user.primaryEducation || item.user.highestEducation || item.user.education)
+              ? { name: (item.user.primaryEducation || item.user.highestEducation || item.user.education).name }
               : undefined,
             profession: item.user.profession
               ? { name: item.user.profession.name }
@@ -233,8 +233,8 @@ const Matches = () => {
             dateOfBirth: item.dateOfBirth,
             heightCm: item.heightCm,
             interests: item.interests || [],
-            education: item.highestEducation
-              ? { name: item.highestEducation.name }
+            education: (item.primaryEducation || item.highestEducation || item.education)
+              ? { name: (item.primaryEducation || item.highestEducation || item.education).name }
               : undefined,
             profession: item.profession
               ? { name: item.profession.name }
@@ -335,8 +335,8 @@ const Matches = () => {
             city: otherUser?.city,
             state: otherUser?.state,
             interests: otherUser?.interests || [],
-            education: otherUser?.highestEducation
-              ? { name: otherUser.highestEducation.name }
+            education: (otherUser?.primaryEducation || otherUser?.highestEducation || otherUser?.education)
+              ? { name: (otherUser.primaryEducation || otherUser.highestEducation || otherUser.education).name }
               : undefined,
             profession: otherUser?.profession
               ? { name: otherUser.profession.name }
@@ -435,8 +435,9 @@ const Matches = () => {
 
   const getProfilePhoto = (photos?: any[], gender?: string) => {
     if (!photos || photos.length === 0) {
-      if (gender === "female") return FemaleDummy;
-      if (gender === "male") return MaleDummy;
+      const g = (gender || "").toLowerCase();
+      if (g === "female" || g === "lesbian") return FemaleDummy;
+      if (g === "male" || g === "gay") return MaleDummy;
       return DummyProfile;
     }
     return photos.find((p) => p.isPrimary)?.url || photos[0]?.url || DummyProfile;
