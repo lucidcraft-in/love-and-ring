@@ -17,6 +17,7 @@ interface StepOneProps {
   formData?: RegistrationData;
   updateFormData?: (field: keyof RegistrationData, value: string) => void;
   otpSent?: boolean;
+  isOTPVerified?: boolean;
 }
 
 const StepOne = ({
@@ -24,6 +25,7 @@ const StepOne = ({
   formData,
   updateFormData,
   otpSent,
+  isOTPVerified,
 }: StepOneProps) => {
   const handleChange = (field: keyof RegistrationData, value: string) => {
     if (updateFormData) {
@@ -112,12 +114,14 @@ const StepOne = ({
             placeholder="Enter your email address"
             value={formData?.email || ""}
             onChange={(e) => handleChange("email", e.target.value)}
-            disabled={otpSent}
+            disabled={otpSent || isOTPVerified}
             className={`h-10 rounded-lg text-sm ${errors.email ? "border-destructive" : "border-border/50"}`}
           />
-          <p className="text-[11px] text-muted-foreground">
-            An OTP will be sent to your email address for verification
-          </p>
+          {!isOTPVerified && (
+            <p className="text-[11px] text-muted-foreground">
+              An OTP will be sent to your email address for verification
+            </p>
+          )}
           {errors.email && (
             <p className="text-xs text-destructive">{errors.email}</p>
           )}
