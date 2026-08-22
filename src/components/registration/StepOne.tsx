@@ -183,6 +183,8 @@ const StepOne = ({
             <SelectContent className="bg-background border-border">
               <SelectItem value="male">Male (Groom)</SelectItem>
               <SelectItem value="female">Female (Bride)</SelectItem>
+              <SelectItem value="gay">Gay</SelectItem>
+              <SelectItem value="lesbian">Lesbian</SelectItem>
             </SelectContent>
           </Select>
           {errors.gender && (
