@@ -63,8 +63,9 @@ const ChatsPage = () => {
       if (user.photos[0]?.url) return user.photos[0].url;
     }
     if (user.avatar) return user.avatar;
-    if (user.gender === "female") return FemaleDummy;
-    if (user.gender === "male") return MaleDummy;
+    const g = (user.gender || "").toLowerCase();
+    if (g === "female" || g === "lesbian") return FemaleDummy;
+    if (g === "male" || g === "gay") return MaleDummy;
     return DummyProfile;
   };
 
