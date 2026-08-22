@@ -54,8 +54,9 @@ const EditProfile = () => {
   const [religions, setReligions] = useState<Option[]>([]);
   const [castes, setCastes] = useState<Option[]>([]);
   const [primaryEducations, setPrimaryEducations] = useState<Option[]>([]);
-  const [higherEducations, setHigherEducations] = useState<Option[]>([]);
   const [professions, setProfessions] = useState<Option[]>([]);
+  const [isCustomProfession, setIsCustomProfession] = useState(false);
+  const [customProfessionText, setCustomProfessionText] = useState("");
   const [hidePhoto, setHidePhoto] = useState(false);
   const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(null);
 
@@ -96,7 +97,8 @@ const EditProfile = () => {
         const lower = g.toLowerCase();
         if (lower === "male") return "Male";
         if (lower === "female") return "Female";
-        if (lower === "other") return "Other";
+        if (lower === "gay") return "Gay";
+        if (lower === "lesbian") return "Lesbian";
         return g;
       };
 
@@ -112,9 +114,8 @@ const EditProfile = () => {
         weight: user.weightKg ? String(user.weightKg) : "",
         religion: user.religion?._id || user.religion || "",
         caste: user.caste?._id || user.caste || "",
-        education: user.highestEducation?._id || "",
-        primaryEducation: user.primaryEducation?._id || "",
-        profession: user.profession?._id || "",
+        primaryEducation: user.primaryEducation?._id || user.primaryEducation || "",
+        profession: user.profession?._id || user.profession || "",
         address: user.address || "",
         bio: user.bio || "",
         membership: planTitle || "Free Account",
@@ -154,7 +155,6 @@ const EditProfile = () => {
 
       setReligions(religionRes.data.data);
       setPrimaryEducations(primaryEduRes.data.data);
-      setHigherEducations(higherEduRes.data.data);
       setProfessions(professionRes.data.data);
     } catch (err: any) {
       console.error("Failed to load master data", err?.response || err);
@@ -198,7 +198,6 @@ const EditProfile = () => {
           weightKg: Number(profile.weight),
           religion: profile.religion,
           caste: profile.caste,
-          highestEducation: profile.education,
           primaryEducation: profile.primaryEducation,
           profession: profile.profession,
           address: profile.address,
@@ -259,8 +258,7 @@ const EditProfile = () => {
     loading ||
     !profile ||
     primaryEducations.length === 0 ||
-    higherEducations.length === 0 ||
-    professions.length === 0 ||
+        professions.length === 0 ||
     religions.length === 0
   ) {
     return (
@@ -360,7 +358,8 @@ const EditProfile = () => {
               <SelectContent>
                 <SelectItem value="Male">Male</SelectItem>
                 <SelectItem value="Female">Female</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
+                <SelectItem value="Gay">Gay</SelectItem>
+                <SelectItem value="Lesbian">Lesbian</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -488,7 +487,7 @@ const EditProfile = () => {
       <Card className="glass-card p-6">
         <h3 className="text-lg font-semibold mb-4">Educational Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Primary Education */}
+          {/* Qualification Level */}
           <div>
             <Label>Qualification Level</Label>
             <Select
@@ -498,7 +497,7 @@ const EditProfile = () => {
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select Primary Education" />
+                <SelectValue placeholder="Select Qualification Level" />
               </SelectTrigger>
               <SelectContent>
                 {primaryEducations.map((e) => (
@@ -509,33 +508,21 @@ const EditProfile = () => {
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label htmlFor="education">Highest Education</Label>
-            <Select
-              value={profile.education || ""}
-              onValueChange={(value) =>
-                setProfile((p) => (p ? { ...p, education: value } : p))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Education" />
-              </SelectTrigger>
-              <SelectContent>
-                {higherEducations.map((e) => (
-                  <SelectItem key={e._id} value={e._id}>
-                    {e.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+
+          {/* Profession */}
           <div>
             <Label htmlFor="profession">Profession</Label>
             <Select
-              value={profile.profession || ""}
-              onValueChange={(value) =>
-                setProfile((p) => (p ? { ...p, profession: value } : p))
-              }
+              value={isCustomProfession ? "OTHER" : (profile.profession || "")}
+              onValueChange={(value) => {
+                if (value === "OTHER") {
+                  setIsCustomProfession(true);
+                  setProfile((p) => (p ? { ...p, profession: customProfessionText } : p));
+                } else {
+                  setIsCustomProfession(false);
+                  setProfile((p) => (p ? { ...p, profession: value } : p));
+                }
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Profession" />
@@ -546,8 +533,27 @@ const EditProfile = () => {
                     {p.name}
                   </SelectItem>
                 ))}
+                <SelectItem value="OTHER" className="text-primary font-medium">
+                  + Add Custom Profession
+                </SelectItem>
               </SelectContent>
             </Select>
+
+            {isCustomProfession && (
+              <div className="mt-2 animate-fade-in">
+                <Label className="text-xs text-muted-foreground mb-1 block">Specify Custom Profession</Label>
+                <Input
+                  placeholder="Enter custom profession..."
+                  value={customProfessionText}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setCustomProfessionText(val);
+                    setProfile((p) => (p ? { ...p, profession: val } : p));
+                  }}
+                  className="h-10 text-sm"
+                />
+              </div>
+            )}
           </div>
         </div>
       </Card>
