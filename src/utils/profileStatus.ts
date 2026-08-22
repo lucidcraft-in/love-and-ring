@@ -9,12 +9,21 @@ export interface UserProfile {
   accountFor?: string;
   fullName?: string;
   gender?: string;
+  mobile?: string;
+  countryCode?: string;
+
+  // Step 2
+  religion?: any;
+  caste?: any;
+  motherTongue?: any;
 
   // Step 2 / 3
   dateOfBirth?: string;
   preferredLanguage?: string;
   maritalStatus?: string;
   physicallyChallenged?: boolean;
+  bodyType?: string;
+  city?: any;
 
   // Step 3
   heightCm?: number;
@@ -22,8 +31,10 @@ export interface UserProfile {
 
   // Step 4
   course?: string;
-  profession?: string;
-  income?: number;
+  primaryEducation?: any;
+  highestEducation?: any;
+  profession?: any;
+  income?: any;
 
   // Step 5
   interests?: string[];
@@ -76,18 +87,47 @@ const getFieldValue = (
   profile: UserProfile,
   field: keyof UserProfile
 ): unknown => {
-  if (profile[field] !== undefined) return profile[field];
-
-  for (const [regField, profileField] of Object.entries(
-    PROFILE_FIELD_MAPPINGS
-  )) {
-    if (
-      profileField === field &&
-      profile[regField as keyof UserProfile] !== undefined
-    ) {
-      return profile[regField as keyof UserProfile];
-    }
+  if (
+    profile[field] !== undefined &&
+    profile[field] !== null &&
+    profile[field] !== ""
+  ) {
+    return profile[field];
   }
+
+  // Check alias / mapped fields in both directions
+  if (field === "traits" || field === "personalityTraits") {
+    return profile.traits || profile.personalityTraits;
+  }
+  if (field === "diets" || field === "dietPreference") {
+    return profile.diets || profile.dietPreference;
+  }
+  if (
+    field === "education" ||
+    field === "course" ||
+    field === "primaryEducation" ||
+    field === "highestEducation"
+  ) {
+    return (
+      profile.primaryEducation ||
+      profile.highestEducation ||
+      profile.course ||
+      profile.education
+    );
+  }
+  if (field === "height" || field === "heightCm") {
+    return profile.height || profile.heightCm;
+  }
+  if (field === "weight" || field === "weightKg") {
+    return profile.weight || profile.weightKg;
+  }
+  if (field === "dob" || field === "dateOfBirth") {
+    return profile.dob || profile.dateOfBirth;
+  }
+  if (field === "language" || field === "preferredLanguage") {
+    return profile.language || profile.preferredLanguage;
+  }
+
   return undefined;
 };
 
@@ -97,21 +137,24 @@ export const getProfileStatus = (
   profile: UserProfile | null
 ): ProfileStatus => {
   if (!profile) return "BASIC";
+  if (profile.profileStatus === "COMPLETED") return "COMPLETED";
 
   const basicFilled = REQUIRED_FIELDS.every((field) =>
     isFieldFilled(getFieldValue(profile, field))
   );
 
   const arraysFilled =
-    isFieldFilled(profile.interests) &&
-    isFieldFilled(profile.personalityTraits || profile.traits) &&
-    isFieldFilled(profile.dietPreference || profile.diets);
+    isFieldFilled(getFieldValue(profile, "interests")) &&
+    isFieldFilled(getFieldValue(profile, "personalityTraits")) &&
+    isFieldFilled(getFieldValue(profile, "dietPreference"));
 
-  const dobFilled = isFieldFilled(profile.dateOfBirth || profile.dob);
-  const heightFilled = isFieldFilled(profile.heightCm || profile.height);
-  const weightFilled = isFieldFilled(profile.weightKg || profile.weight);
-  const maritalFilled = isFieldFilled(profile.maritalStatus);
-  const educationFilled = isFieldFilled(profile.course || profile.education);
+  const dobFilled = isFieldFilled(getFieldValue(profile, "dateOfBirth"));
+  const heightFilled = isFieldFilled(getFieldValue(profile, "heightCm"));
+  const weightFilled = isFieldFilled(getFieldValue(profile, "weightKg"));
+  const maritalFilled = isFieldFilled(getFieldValue(profile, "maritalStatus"));
+  const educationFilled = isFieldFilled(
+    getFieldValue(profile, "primaryEducation")
+  );
 
   if (
     basicFilled &&
@@ -137,33 +180,24 @@ interface StepRequirement {
 
 const STEP_REQUIREMENTS: StepRequirement[] = [
   { step: 1, fields: ["accountFor", "fullName", "gender"] },
-  { step: 2, fields: [] },
+  { step: 2, fields: ["religion", "caste", "motherTongue"] },
   { step: 3, fields: ["maritalStatus"] },
-  { step: 4, fields: [] },
+  { step: 4, fields: ["primaryEducation", "profession"] },
   { step: 5, fields: ["interests", "traits", "diets"] },
 ];
 
 export const getNextIncompleteStep = (
   profile: UserProfile | null
 ): number => {
-  if (!profile) return 2;
+  if (!profile) return 1;
+  if (profile.profileStatus === "COMPLETED") return 0;
 
   for (const { step, fields } of STEP_REQUIREMENTS) {
-    if (step === 1) continue;
-
     const complete = fields.every((field) =>
       isFieldFilled(getFieldValue(profile, field))
     );
 
     if (!complete && fields.length > 0) return step;
-  }
-
-  if (
-    !isFieldFilled(profile.interests) ||
-    !isFieldFilled(profile.personalityTraits || profile.traits) ||
-    !isFieldFilled(profile.dietPreference || profile.diets)
-  ) {
-    return 5;
   }
 
   return 0;
