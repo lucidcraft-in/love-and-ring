@@ -124,7 +124,7 @@ const Footer = () => {
 
   const socialLinks = [
     { icon: Facebook, href: "https://www.facebook.com/share/17jBoT87vC/?mibextid=wwXIfr" },
-    { icon: Instagram, href: "https://www.instagram.com/ringloveand" },
+    { icon: Instagram, href: "https://www.instagram.com/_loveandring_?igsi=anE0em51OXphajIz" },
   ];
 
   return (
@@ -187,7 +187,7 @@ const Footer = () => {
           <p className="font-medium text-foreground">Love & Ring Ltd.</p>
 
           <p>
-            Thekkumattathil House, Marika P O, Koothattukulam, Ernakulam,
+            Door Number. 66/127, Marika P O, Koothattukulam, Ernakulam,
             Kerala, India – 686662
           </p>
 
