@@ -18,11 +18,20 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface UserProfile {
   fullName: string;
   email: string;
   mobile: string;
+  alternateMobile?: string;
   gender?: string;
   dob?: string;
   height?: string;
@@ -60,6 +69,14 @@ const EditProfile = () => {
   const [hidePhoto, setHidePhoto] = useState(false);
   const [primaryPhotoId, setPrimaryPhotoId] = useState<string | null>(null);
 
+  // Email update modal states
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [emailOtp, setEmailOtp] = useState("");
+  const [emailStep, setEmailStep] = useState<"INPUT" | "OTP">("INPUT");
+  const [sendingEmailOtp, setSendingEmailOtp] = useState(false);
+  const [verifyingEmailOtp, setVerifyingEmailOtp] = useState(false);
+
   const currentMembership = profile?.membership || "Free";
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = user._id;
@@ -68,6 +85,74 @@ const EditProfile = () => {
     cvFileName?: string;
     cvUploadedAt?: string;
   }>({});
+
+  const handleSendEmailOtp = async () => {
+    if (!newEmail || !newEmail.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    if (newEmail.trim().toLowerCase() === profile?.email?.trim().toLowerCase()) {
+      toast.error("New email must be different from current email");
+      return;
+    }
+
+    setSendingEmailOtp(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await Axios.post(
+        `/api/users/${userId}/send-email-otp`,
+        { newEmail: newEmail.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(res.data.message || "OTP sent to your new email");
+      setEmailStep("OTP");
+    } catch (err: any) {
+      console.error("Failed to send email update OTP", err);
+      toast.error(err.response?.data?.message || "Failed to send OTP to new email");
+    } finally {
+      setSendingEmailOtp(false);
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    if (!emailOtp || emailOtp.trim().length < 4) {
+      toast.error("Please enter the 4-digit OTP");
+      return;
+    }
+
+    setVerifyingEmailOtp(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await Axios.post(
+        `/api/users/${userId}/verify-email-otp`,
+        { newEmail: newEmail.trim(), otp: emailOtp.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success("Email address updated successfully!");
+
+      setProfile((prev) => (prev ? { ...prev, email: res.data.email || newEmail.trim() } : prev));
+
+      try {
+        const cachedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        if (cachedUser) {
+          cachedUser.email = res.data.email || newEmail.trim();
+          localStorage.setItem("user", JSON.stringify(cachedUser));
+        }
+      } catch (e) {
+        console.error("Error updating local storage user:", e);
+      }
+
+      window.dispatchEvent(new Event("userProfileUpdated"));
+      setShowEmailModal(false);
+    } catch (err: any) {
+      console.error("Failed to verify email OTP", err);
+      toast.error(err.response?.data?.message || "Invalid OTP. Verification failed.");
+    } finally {
+      setVerifyingEmailOtp(false);
+    }
+  };
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -108,6 +193,7 @@ const EditProfile = () => {
         fullName: user.fullName || "",
         email: user.email || "",
         mobile: user.mobile || "",
+        alternateMobile: user.alternateMobile || "",
         gender: formatGender(user.gender),
         dob: user.dateOfBirth ? user.dateOfBirth.slice(0, 10) : "",
         height: user.heightCm ? String(user.heightCm) : "",
@@ -166,16 +252,26 @@ const EditProfile = () => {
   }, []);
 
   useEffect(() => {
-    if (!profile?.religion) return;
+    if (!profile?.religion) {
+      setCastes([]);
+      return;
+    }
 
     const token = localStorage.getItem("token");
 
-    Axios.get(`/api/master/castes?religionId=${profile.religion}`, {
+    Axios.get(`/api/master/castes?religionId=${profile.religion}&religion=${profile.religion}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((res) => setCastes(res.data.data))
+      .then((res) => {
+        const rawCastes = res.data?.data || [];
+        const filtered = rawCastes.filter((c: any) => {
+          const cReligionId = typeof c.religion === "object" ? c.religion?._id : c.religion;
+          return cReligionId === profile.religion;
+        });
+        setCastes(filtered);
+      })
       .catch((err) =>
         console.error("Failed to load castes", err?.response || err),
       );
@@ -192,6 +288,7 @@ const EditProfile = () => {
         {
           fullName: profile.fullName,
           mobile: profile.mobile,
+          alternateMobile: profile.alternateMobile,
           gender: profile.gender,
           dateOfBirth: profile.dob,
           heightCm: Number(profile.height),
@@ -322,12 +419,27 @@ const EditProfile = () => {
             />
           </div>
           <div>
-            <Label htmlFor="email">Email</Label>
+            <div className="flex justify-between items-center mb-1">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
+              <button
+                type="button"
+                onClick={() => {
+                  setNewEmail(profile?.email || "");
+                  setEmailStep("INPUT");
+                  setEmailOtp("");
+                  setShowEmailModal(true);
+                }}
+                className="text-xs font-semibold text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer hover:underline"
+              >
+                <Edit className="w-3.5 h-3.5" /> Edit Email
+              </button>
+            </div>
             <Input
               id="email"
               type="email"
               value={profile?.email || ""}
               disabled
+              className="bg-gray-50 text-gray-700 border-gray-200"
             />
           </div>
           <div>
@@ -338,6 +450,19 @@ const EditProfile = () => {
               onChange={(e) =>
                 setProfile((prev) =>
                   prev ? { ...prev, mobile: e.target.value } : prev,
+                )
+              }
+            />
+          </div>
+          <div>
+            <Label htmlFor="alternateMobile">Alternative Mobile Number <span className="text-muted-foreground text-xs font-normal">(Optional)</span></Label>
+            <Input
+              id="alternateMobile"
+              placeholder="Enter alternative mobile number"
+              value={profile?.alternateMobile || ""}
+              onChange={(e) =>
+                setProfile((prev) =>
+                  prev ? { ...prev, alternateMobile: e.target.value } : prev,
                 )
               }
             />
@@ -452,11 +577,17 @@ const EditProfile = () => {
                 <SelectValue placeholder="Select Caste" />
               </SelectTrigger>
               <SelectContent>
-                {castes.map((c) => (
-                  <SelectItem key={c._id} value={c._id}>
-                    {c.name}
+                {castes.length === 0 ? (
+                  <SelectItem value="no-castes" disabled>
+                    No castes available
                   </SelectItem>
-                ))}
+                ) : (
+                  castes.map((c) => (
+                    <SelectItem key={c._id} value={c._id}>
+                      {c.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -587,6 +718,102 @@ const EditProfile = () => {
         loading={saveLoading}
         onConfirm={handleSave}
       />
+
+      {/* Email Change OTP Dialog */}
+      <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900">
+              Update Email Address
+            </DialogTitle>
+            <DialogDescription className="text-sm text-gray-500">
+              {emailStep === "INPUT"
+                ? "Enter your new email address to receive an OTP verification code."
+                : `We sent a 4-digit code to ${newEmail}. Please enter it below.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {emailStep === "INPUT" ? (
+            <div className="space-y-4 py-2">
+              <div>
+                <Label htmlFor="modal-new-email" className="text-sm font-medium text-gray-700">
+                  New Email Address
+                </Label>
+                <Input
+                  id="modal-new-email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <DialogFooter className="pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowEmailModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  disabled={sendingEmailOtp || !newEmail.trim()}
+                  onClick={handleSendEmailOtp}
+                  className="bg-gradient-to-r from-primary to-secondary"
+                >
+                  {sendingEmailOtp ? "Sending OTP..." : "Send OTP"}
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4 py-2">
+              <div>
+                <Label htmlFor="modal-otp" className="text-sm font-medium text-gray-700">
+                  Verification OTP
+                </Label>
+                <Input
+                  id="modal-otp"
+                  type="text"
+                  maxLength={6}
+                  placeholder="Enter OTP"
+                  value={emailOtp}
+                  onChange={(e) => setEmailOtp(e.target.value)}
+                  className="mt-1 text-center font-mono text-lg tracking-widest"
+                />
+              </div>
+              <div className="flex justify-between items-center text-xs text-gray-500">
+                <span>Didn't receive code?</span>
+                <button
+                  type="button"
+                  disabled={sendingEmailOtp}
+                  onClick={handleSendEmailOtp}
+                  className="text-rose-600 font-semibold hover:underline cursor-pointer disabled:opacity-50"
+                >
+                  {sendingEmailOtp ? "Resending..." : "Resend OTP"}
+                </button>
+              </div>
+              <DialogFooter className="pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEmailStep("INPUT")}
+                >
+                  Back
+                </Button>
+                <Button
+                  type="button"
+                  disabled={verifyingEmailOtp || !emailOtp.trim()}
+                  onClick={handleVerifyEmailOtp}
+                  className="bg-gradient-to-r from-primary to-secondary"
+                >
+                  {verifyingEmailOtp ? "Verifying..." : "Verify & Update Email"}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
