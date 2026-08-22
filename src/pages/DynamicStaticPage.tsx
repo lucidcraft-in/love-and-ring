@@ -51,6 +51,8 @@ export default function DynamicStaticPage({ forcedSlug, fallbackTitle, fallbackC
   useEffect(() => {
     if (!slug) return;
 
+    window.scrollTo(0, 0);
+
     let isMounted = true;
     setLoading(true);
     setError(false);
