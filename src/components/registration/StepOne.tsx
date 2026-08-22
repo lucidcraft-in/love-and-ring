@@ -163,6 +163,31 @@ const StepOne = ({
           )}
         </div>
 
+        {/* Alternative Mobile Number (Optional) */}
+        <div className="space-y-1.5">
+          <Label
+            htmlFor="alternateMobile"
+            className="flex items-center gap-1.5 text-xs font-medium"
+          >
+            <Phone className="w-3.5 h-3.5 text-muted-foreground" />
+            Alternative Mobile Number <span className="text-muted-foreground font-normal text-[11px]">(Optional)</span>
+          </Label>
+
+          <PhoneInput
+            country={"in"}
+            value={formData?.alternateMobile || ""}
+            onChange={(value) => {
+              if (!updateFormData) return;
+              updateFormData("alternateMobile", value);
+            }}
+            inputClass="!w-full !h-10 !rounded-lg !text-sm !border-border/50"
+            containerClass="!w-full"
+            buttonClass="!rounded-l-lg !border-border/50"
+            dropdownClass="!bg-background"
+            placeholder="Alternative mobile number"
+          />
+        </div>
+
         {/* Row 3: Gender (Dropdown) */}
         <div className="space-y-1.5">
           <Label
