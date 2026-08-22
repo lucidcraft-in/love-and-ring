@@ -206,7 +206,7 @@ const EditProfile = () => {
         },
       );
 
-      toast.success("Profile updated successfully 🎉", {
+      toast.success("Profile updated successfully", {
         description: "Your changes have been saved.",
         duration: 3000,
       });
