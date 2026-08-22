@@ -52,7 +52,7 @@ interface Profile {
   fullName: string;
   gender?: string;
   dateOfBirth?: string;
-  highestEducation?: { name: string };
+  primaryEducation?: { name: string };
   education?: { name: string };
   photos?: { url: string; isPrimary: boolean; isHidden?: boolean }[];
   profileStatus?: string;
@@ -248,11 +248,22 @@ const BrowseProfiles = () => {
 
   const getProfileImage = (photos?: any[], gender?: string) => {
     if (!photos || photos.length === 0) {
-      return gender === "female" ? FemaleDummy : MaleDummy;
+      const g = (gender || "").toLowerCase();
+      return (g === "female" || g === "lesbian") ? FemaleDummy : MaleDummy;
     }
 
     const primary = photos.find((p) => p.isPrimary);
     return primary?.url || photos[0]?.url || DummyProfile;
+  };
+
+  const getTargetGenders = (g?: string) => {
+    if (!g) return [];
+    const lower = g.toLowerCase();
+    if (lower === "gay") return ["male", "gay"];
+    if (lower === "lesbian") return ["female", "lesbian"];
+    if (lower === "male") return ["female", "lesbian"];
+    if (lower === "female") return ["male", "gay"];
+    return [];
   };
 
   const filteredProfiles = profiles.filter((p) => {
@@ -260,6 +271,13 @@ const BrowseProfiles = () => {
     if (!isCurrentMillionClubUser) {
       const status = (p.profileStatus || "").toLowerCase();
       if (status.includes("million")) return false;
+    }
+
+    // Gender filter check based on user preferences
+    const targetGenders = getTargetGenders(loggedUser?.gender);
+    if (targetGenders.length > 0 && p.gender) {
+      const profileGender = p.gender.toLowerCase();
+      if (!targetGenders.includes(profileGender)) return false;
     }
 
     // Search query check
@@ -470,7 +488,7 @@ const BrowseProfiles = () => {
                 </span>
                 <span className="hidden md:flex items-center gap-1 truncate">
                   <GraduationCap className="w-3.5 h-3.5 shrink-0 text-primary/80" />
-                  {profile.education?.name || profile.highestEducation?.name || "—"}
+                  {profile.primaryEducation?.name || profile.education?.name || "—"}
                 </span>
                 <span className="flex items-center gap-1 truncate">
                   <Briefcase className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
