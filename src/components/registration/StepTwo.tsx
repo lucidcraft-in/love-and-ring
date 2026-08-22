@@ -149,7 +149,7 @@ const StepTwo = ({ formData, updateFormData }: StepTwoProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="caste">Caste *</Label>
+          <Label htmlFor="caste">Caste</Label>
           <Select
             value={formData?.caste}
             onValueChange={(value) => handleChange("caste", value)}
