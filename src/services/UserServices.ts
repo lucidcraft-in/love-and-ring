@@ -4,12 +4,14 @@ import type { RegistrationData } from "@/pages/Register";
 export const sendRegistrationOtp = async (
   email: string,
   mobile?: string,
-  countryCode?: string
+  countryCode?: string,
+  alternateMobile?: string
 ) => {
   const response = await Axios.post("/api/users/send-otp", {
     email,
     mobile,
     countryCode,
+    alternateMobile,
   });
   return response.data;
 };
