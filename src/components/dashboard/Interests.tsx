@@ -107,8 +107,8 @@ const Interests = () => {
           profileStatus: item[userKey].profileStatus,
           isMillionClub: checkMillionStatus(item[userKey]),
           interests: item[userKey].interests || [],
-          education: item[userKey].highestEducation
-            ? { name: item[userKey].highestEducation.name }
+          education: (item[userKey].primaryEducation || item[userKey].highestEducation || item[userKey].education)
+            ? { name: (item[userKey].primaryEducation || item[userKey].highestEducation || item[userKey].education).name }
             : undefined,
           profession: item[userKey].profession
             ? { name: item[userKey].profession.name }
@@ -148,8 +148,8 @@ const Interests = () => {
               profileStatus: otherUser.profileStatus,
               isMillionClub: checkMillionStatus(otherUser),
               interests: otherUser.interests || [],
-              education: otherUser.highestEducation
-                ? { name: otherUser.highestEducation.name }
+              education: (otherUser?.primaryEducation || otherUser?.highestEducation || otherUser?.education)
+                ? { name: (otherUser.primaryEducation || otherUser.highestEducation || otherUser.education).name }
                 : undefined,
               profession: otherUser.profession
                 ? { name: otherUser.profession.name }
@@ -180,8 +180,8 @@ const Interests = () => {
               profileStatus: otherUser.profileStatus,
               isMillionClub: checkMillionStatus(otherUser),
               interests: otherUser.interests || [],
-              education: otherUser.highestEducation
-                ? { name: otherUser.highestEducation.name }
+              education: (otherUser?.primaryEducation || otherUser?.highestEducation || otherUser?.education)
+                ? { name: (otherUser.primaryEducation || otherUser.highestEducation || otherUser.education).name }
                 : undefined,
               profession: otherUser.profession
                 ? { name: otherUser.profession.name }
@@ -259,8 +259,9 @@ const Interests = () => {
 
   const getProfilePhoto = (photos?: any[], gender?: string) => {
     if (!photos || photos.length === 0) {
-      if (gender === "female") return FemaleDummy;
-      if (gender === "male") return MaleDummy;
+      const g = (gender || "").toLowerCase();
+      if (g === "female" || g === "lesbian") return FemaleDummy;
+      if (g === "male" || g === "gay") return MaleDummy;
       return DummyProfile;
     }
     return photos.find((p: any) => p.isPrimary)?.url || photos[0].url || DummyProfile;
