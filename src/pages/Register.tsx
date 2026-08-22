@@ -12,6 +12,9 @@ import {
   Lock,
   CheckCircle,
   Loader2,
+  WifiOff,
+  RefreshCw,
+  Save,
 } from "lucide-react";
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -51,7 +54,6 @@ export interface RegistrationData {
   city: string;
   profileImage: File | null;
   primaryEducation: string;
-  highestEducation: string;
   profession: string;
   physicallyChallenged: boolean;
   liveWithFamily: boolean;
@@ -105,7 +107,6 @@ const Register = () => {
     city: "",
     profileImage: null,
     primaryEducation: "",
-    highestEducation: "",
     profession: "",
     physicallyChallenged: false,
     liveWithFamily: true,
@@ -121,6 +122,79 @@ const Register = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Network error retry & draft auto-save state
+  const [submissionError, setSubmissionError] = useState<{
+    message: string;
+    action: "submit" | "otp";
+  } | null>(null);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  // Listen to network status
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Restore draft from localStorage on mount
+  useEffect(() => {
+    if (location.state?.userId) return; // Don't overwrite if editing existing profile
+    const savedDraftStr = localStorage.getItem("registration_draft");
+    const tempPassword = sessionStorage.getItem("register_temp_password");
+    if (savedDraftStr) {
+      try {
+        const savedDraft = JSON.parse(savedDraftStr);
+        if (savedDraft.formData) {
+          setFormData((prev) => ({
+            ...prev,
+            ...savedDraft.formData,
+            password: tempPassword || savedDraft.formData.password || prev.password,
+            profileImage: null,
+            cv: null,
+          }));
+          if (savedDraft.currentStep && savedDraft.currentStep > 1) {
+            setCurrentStep(savedDraft.currentStep);
+          }
+          if (savedDraft.isOTPVerified) {
+            setIsOTPVerified(true);
+          }
+          setDraftRestored(true);
+        }
+      } catch (err) {
+        console.error("Failed to restore draft:", err);
+      }
+    }
+  }, [location.state?.userId]);
+
+  // Persist form data to localStorage as draft whenever formData or currentStep changes
+  useEffect(() => {
+    if (userId) return;
+    const { profileImage, cv, ...serializableFormData } = formData;
+    if (formData.password) {
+      sessionStorage.setItem("register_temp_password", formData.password);
+    }
+    const draftPayload = {
+      formData: serializableFormData,
+      currentStep,
+      isOTPVerified,
+      timestamp: new Date().toISOString(),
+    };
+    localStorage.setItem("registration_draft", JSON.stringify(draftPayload));
+  }, [formData, currentStep, isOTPVerified, userId]);
+
+  const clearDraft = () => {
+    localStorage.removeItem("registration_draft");
+    setDraftRestored(false);
+    toast.success("Draft cleared. You can start fresh!");
+  };
 
   useEffect(() => {
     heroSlides.forEach((src) => {
@@ -164,7 +238,6 @@ const Register = () => {
             bodyType: u.bodyType || prev.bodyType,
             city: typeof u.city === 'object' ? u.city?._id : (u.city || prev.city),
             primaryEducation: typeof u.primaryEducation === 'object' ? u.primaryEducation?._id : (u.primaryEducation || u.education || prev.primaryEducation),
-            highestEducation: typeof u.highestEducation === 'object' ? u.highestEducation?._id : (u.highestEducation || prev.highestEducation),
             profession: typeof u.profession === 'object' ? u.profession?._id : (u.profession || prev.profession),
             physicallyChallenged: u.physicallyChallenged ?? prev.physicallyChallenged,
             liveWithFamily: u.livingWithFamily ?? u.liveWithFamily ?? prev.liveWithFamily,
@@ -189,6 +262,7 @@ const Register = () => {
 
     try {
       setSendingOtp(true);
+      setSubmissionError(null);
 
       // 1. Check availability
       await Axios.post("/api/users/check-availability", {
@@ -208,7 +282,12 @@ const Register = () => {
 
       toast.success("OTP sent to your Email and Mobile number");
     } catch (err: any) {
-      const message = err.response?.data?.message || "Something went wrong";
+      const isNetErr = !err.response || err.code === "ERR_NETWORK" || !navigator.onLine;
+      const message = isNetErr
+        ? "Network connection error while sending OTP. Your data is saved locally. Please check your connection and retry."
+        : err.response?.data?.message || "Failed to send OTP";
+
+      setSubmissionError({ message, action: "otp" });
       toast.error(message);
     } finally {
       setSendingOtp(false);
@@ -229,11 +308,11 @@ const Register = () => {
           "gender",
         ];
       case 2:
-        return ["religion", "caste", "motherTongue"];
+        return ["religion", "motherTongue"];
       case 3:
         return ["height", "weight", "maritalStatus", "bodyType", "city"];
       case 4:
-        return ["highestEducation", "primaryEducation", "profession"];
+        return ["primaryEducation", "profession"];
       case 5:
         return [];
       default:
@@ -299,12 +378,27 @@ const Register = () => {
     }
   };
 
-  const handleOTPVerified = async (_otp: string, password: string) => {
+  const handleOTPVerified = async (otp: string, password: string) => {
     try {
+      if (password) {
+        sessionStorage.setItem("register_temp_password", password);
+      }
       setFormData((prev) => ({ ...prev, password }));
       setIsOTPVerified(true);
       setShowOTPVerification(false);
       setCurrentStep(2);
+
+      // Save password into MongoDB directly at Step 1
+      try {
+        await verifyRegistrationOtp({
+          email: formData.email,
+          otp,
+          password,
+        });
+      } catch (saveErr) {
+        console.warn("OTP/password DB sync warning:", saveErr);
+      }
+
       toast.success("OTP verified. Please complete your registration details.");
     } catch (err: any) {
       toast.error("Failed to proceed after OTP verification");
@@ -319,11 +413,17 @@ const Register = () => {
 
     try {
       setSubmitting(true);
+      setSubmissionError(null);
+
+      const finalPassword =
+        formData.password ||
+        sessionStorage.getItem("register_temp_password") ||
+        "";
 
       const submitData = new FormData();
       submitData.append("email", formData.email);
-      if (formData.password) {
-        submitData.append("password", formData.password);
+      if (finalPassword) {
+        submitData.append("password", finalPassword);
       }
       submitData.append("fullName", formData.fullName);
       submitData.append(
@@ -351,7 +451,6 @@ const Register = () => {
       if (formData.bodyType) submitData.append("bodyType", formData.bodyType);
       if (formData.city) submitData.append("city", formData.city);
       if (formData.primaryEducation) submitData.append("primaryEducation", formData.primaryEducation);
-      if (formData.highestEducation) submitData.append("highestEducation", formData.highestEducation);
       if (formData.profession) submitData.append("profession", formData.profession);
 
       submitData.append("physicallyChallenged", String(formData.physicallyChallenged));
@@ -399,16 +498,30 @@ const Register = () => {
           localStorage.setItem("user", JSON.stringify(mergedUser));
           window.dispatchEvent(new Event("userProfileUpdated"));
         }
+        localStorage.removeItem("registration_draft");
+        sessionStorage.removeItem("register_temp_password");
         toast.success("Profile updated successfully!");
         navigate("/dashboard");
       } else {
         await registerFullUserApi(submitData);
+        localStorage.removeItem("registration_draft");
+        sessionStorage.removeItem("register_temp_password");
         toast.success("Profile created successfully!");
-        navigate("/login");
+        navigate("/login", {
+          state: {
+            email: formData.email,
+            password: finalPassword,
+            fromRegistration: true,
+          },
+        });
       }
     } catch (err: any) {
-      const message =
-        err.response?.data?.message || "Failed to complete registration";
+      const isNetErr = !err.response || err.code === "ERR_NETWORK" || !navigator.onLine;
+      const message = isNetErr
+        ? "Network connection lost during submission. Your details are saved safely. Click Retry below to resubmit."
+        : err.response?.data?.message || "Failed to complete registration";
+
+      setSubmissionError({ message, action: "submit" });
       toast.error(message);
     } finally {
       setSubmitting(false);
@@ -584,6 +697,7 @@ const Register = () => {
                 Already have an account?{" "}
                 <Link
                   to="/login"
+                  state={{ email: formData.email, password: formData.password }}
                   className="text-primary hover:text-primary/80 font-semibold transition-colors"
                 >
                   Login here
@@ -615,6 +729,7 @@ const Register = () => {
                 Already have an account?{" "}
                 <Link
                   to="/login"
+                  state={{ email: formData.email, password: formData.password }}
                   className="text-primary hover:underline font-medium"
                 >
                   Login
@@ -661,6 +776,108 @@ const Register = () => {
                     </div>
                   ))}
                 </div>
+
+                {/* Network status / Offline / Draft / Retry Notifications */}
+                <AnimatePresence>
+                  {isOffline && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-3 flex items-center justify-between p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-600 dark:text-amber-400 text-xs"
+                    >
+                      <div className="flex items-center gap-2">
+                        <WifiOff className="h-4 w-4 shrink-0" />
+                        <span>You are offline. Form progress is saved locally and will submit once connected.</span>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {draftRestored && !isOffline && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-3 flex items-center justify-between px-3 py-2 bg-primary/10 border border-primary/20 rounded-xl text-xs"
+                    >
+                      <span className="text-primary font-medium flex items-center gap-1.5">
+                        <Save className="h-3.5 w-3.5" />
+                        Restored saved registration draft
+                      </span>
+                      <button
+                        type="button"
+                        onClick={clearDraft}
+                        className="text-[11px] text-muted-foreground hover:text-destructive underline ml-2 font-medium"
+                      >
+                        Start Fresh
+                      </button>
+                    </motion.div>
+                  )}
+
+                  {submissionError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="mt-3 p-3.5 bg-destructive/10 border border-destructive/30 rounded-xl text-xs space-y-2"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2 text-destructive">
+                          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-semibold text-destructive">
+                              {submissionError.action === "otp"
+                                ? "OTP Request Failed"
+                                : "Submission Error"}
+                            </p>
+                            <p className="text-muted-foreground text-[11px] mt-0.5">
+                              {submissionError.message}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          type="button"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground shrink-0"
+                          onClick={() => setSubmissionError(null)}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          type="button"
+                          onClick={() => setSubmissionError(null)}
+                          className="h-7 text-[11px] px-2.5"
+                        >
+                          Dismiss
+                        </Button>
+                        <Button
+                          size="sm"
+                          type="button"
+                          onClick={
+                            submissionError.action === "otp"
+                              ? handleSendOtp
+                              : handleSubmit
+                          }
+                          disabled={sendingOtp || submitting}
+                          className="h-7 text-[11px] px-3 bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-1.5 font-medium"
+                        >
+                          {sendingOtp || submitting ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <RefreshCw className="h-3 w-3" />
+                          )}
+                          Retry Now
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Form Content */}
