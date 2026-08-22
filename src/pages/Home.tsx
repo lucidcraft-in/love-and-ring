@@ -43,6 +43,7 @@ import FeaturedSuccessStory from "@/components/FeaturedSuccessStory";
 import ClientRegistrationCTA from "@/components/ClientRegistrationCTA";
 import { loginUserApi } from "@/services/AuthServices";
 import Axios from "@/axios/axios";
+import { getNextIncompleteStep } from "@/utils/profileStatus";
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
@@ -89,7 +90,8 @@ const Home = () => {
     console.log("HOME AUTH:", isAuthenticated, user);
   }, [isAuthenticated, user]);
 
-  const isProfileCompleted = Boolean(user?.dateOfBirth || user?.dob);
+  const isProfileCompleted =
+    user?.profileStatus === "COMPLETED" || getNextIncompleteStep(user) === 0;
 
   // Preload hero images
   useEffect(() => {
@@ -838,7 +840,7 @@ const Home = () => {
                     onClick={() =>
                       navigate("/register", {
                         state: {
-                          step: 2,
+                          step: nextIncompleteStep || 1,
                           userId: user._id,
                         },
                       })
