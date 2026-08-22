@@ -7,6 +7,7 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import Axios from "@/axios/axios";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 /* ================= TYPES ================= */
 interface Religion {
@@ -21,6 +22,9 @@ interface Education {
 
 /* ================= COMPONENT ================= */
 const PartnerPreference = () => {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+
   /* ---------- Sliders ---------- */
   const [ageRange, setAgeRange] = useState<number[]>([25, 35]);
   const [heightRange, setHeightRange] = useState<number[]>([150, 180]);
@@ -162,6 +166,7 @@ const PartnerPreference = () => {
 
   /* ================= SAVE API ================= */
   const handleSavePreferences = async () => {
+    setSaveLoading(true);
     try {
       const token = localStorage.getItem("token");
 
@@ -190,7 +195,8 @@ const PartnerPreference = () => {
         },
       });
 
-      toast.success("Partner preferences saved successfully ✅");
+      toast.success("Partner preferences saved successfully");
+      setShowConfirm(false);
     } catch (error: any) {
       console.error(error);
 
@@ -201,6 +207,8 @@ const PartnerPreference = () => {
           error?.response?.data?.message || "Failed to save preferences",
         );
       }
+    } finally {
+      setSaveLoading(false);
     }
   };
 
@@ -212,7 +220,7 @@ const PartnerPreference = () => {
         <h2 className="text-2xl font-bold">Partner Preference</h2>
         <Button
           className="bg-gradient-to-r from-primary to-secondary"
-          onClick={handleSavePreferences}
+          onClick={() => setShowConfirm(true)}
         >
           Save Preferences
         </Button>
@@ -353,6 +361,16 @@ const PartnerPreference = () => {
           </div>
         </Card>
       </div>
+
+      <ConfirmDialog
+        open={showConfirm}
+        onOpenChange={setShowConfirm}
+        title="Confirm Partner Preferences"
+        description="Are you sure you want to update your partner preferences?"
+        confirmText="Save Preferences"
+        loading={saveLoading}
+        onConfirm={handleSavePreferences}
+      />
     </div>
   );
 };
