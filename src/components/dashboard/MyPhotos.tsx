@@ -17,6 +17,7 @@ import ReactCrop, {
   makeAspectCrop,
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface Photo {
   _id: string;
@@ -29,6 +30,11 @@ const MyPhotos = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  // Photo Delete Confirmation State
+  const [photoToDelete, setPhotoToDelete] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Crop & Adjustment states
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -197,7 +203,14 @@ const MyPhotos = () => {
     }
   };
 
-  const deletePhoto = async (photoId: string) => {
+  const handleDeleteClick = (photoId: string) => {
+    setPhotoToDelete(photoId);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!photoToDelete) return;
+    setDeleteLoading(true);
     try {
       if (!userId) {
         toast.error("User not found. Please log in again.");
@@ -206,14 +219,18 @@ const MyPhotos = () => {
 
       const token = localStorage.getItem("token");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      await Axios.delete(`/api/users/${userId}/photos/${photoId}`, { headers });
+      await Axios.delete(`/api/users/${userId}/photos/${photoToDelete}`, { headers });
 
       toast.success("Photo deleted");
       fetchPhotos();
       window.dispatchEvent(new Event("userProfileUpdated"));
+      setShowDeleteConfirm(false);
+      setPhotoToDelete(null);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to delete photo");
       console.error(error);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -276,7 +293,7 @@ const MyPhotos = () => {
                   size="sm"
                   variant="destructive"
                   className="gap-1"
-                  onClick={() => deletePhoto(photo._id)}
+                  onClick={() => handleDeleteClick(photo._id)}
                 >
                   <Trash2 className="w-3 h-3" />
                   Delete
@@ -373,8 +390,20 @@ const MyPhotos = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Delete Photo?"
+        description="Are you sure you want to delete this photo from your profile? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        loading={deleteLoading}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 };
 
 export default MyPhotos;
+
