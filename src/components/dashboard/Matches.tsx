@@ -14,6 +14,7 @@ import {
   Sparkles,
   Eye,
   Crown,
+  Ruler,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -38,8 +39,13 @@ interface MatchUser {
   gender?: string;
   dateOfBirth: string;
   heightCm?: number;
-  interests: string[];
+  weightKg?: number;
+  maritalStatus?: string;
+  religion?: { name: string } | string;
+  caste?: { name: string } | string;
+  interests?: string[];
   education?: { name: string };
+  primaryEducation?: { name: string };
   profession?: { name: string };
   city?: string;
   state?: string;
@@ -51,6 +57,20 @@ interface MatchUser {
     isHidden?: boolean;
   }[];
 }
+
+const formatReligionCaste = (religion?: any, caste?: any) => {
+  const relName = typeof religion === "object" ? religion?.name : religion;
+  const casteName = typeof caste === "object" ? caste?.name : caste;
+  if (relName && casteName) return `${relName}, ${casteName}`;
+  return relName || casteName || "";
+};
+
+const formatHeightWeight = (heightCm?: number, weightKg?: number) => {
+  const parts: string[] = [];
+  if (heightCm) parts.push(`${heightCm} cm`);
+  if (weightKg) parts.push(`${weightKg} kg`);
+  return parts.join(" • ");
+};
 
 interface MatchItem {
   user: MatchUser;
@@ -114,6 +134,11 @@ const Matches = () => {
             _id: item.likedUser._id,
             fullName: item.likedUser.fullName,
             dateOfBirth: item.likedUser.dateOfBirth,
+            heightCm: item.likedUser.heightCm,
+            weightKg: item.likedUser.weightKg,
+            maritalStatus: item.likedUser.maritalStatus,
+            religion: item.likedUser.religion,
+            caste: item.likedUser.caste,
             city: item.likedUser.city,
             state: item.likedUser.state,
             interests: item.likedUser.interests || [],
@@ -153,6 +178,11 @@ const Matches = () => {
             _id: item.likedBy._id,
             fullName: item.likedBy.fullName,
             dateOfBirth: item.likedBy.dateOfBirth,
+            heightCm: item.likedBy.heightCm,
+            weightKg: item.likedBy.weightKg,
+            maritalStatus: item.likedBy.maritalStatus,
+            religion: item.likedBy.religion,
+            caste: item.likedBy.caste,
             city: item.likedBy.city,
             state: item.likedBy.state,
             interests: item.likedBy.interests || [],
@@ -189,6 +219,10 @@ const Matches = () => {
             fullName: item.user.fullName,
             dateOfBirth: item.user.dateOfBirth,
             heightCm: item.user.heightCm,
+            weightKg: item.user.weightKg,
+            maritalStatus: item.user.maritalStatus,
+            religion: item.user.religion,
+            caste: item.user.caste,
             interests: item.user.interests || [],
             education: (item.user.primaryEducation || item.user.highestEducation || item.user.education)
               ? { name: (item.user.primaryEducation || item.user.highestEducation || item.user.education).name }
@@ -232,6 +266,10 @@ const Matches = () => {
             gender: item.gender,
             dateOfBirth: item.dateOfBirth,
             heightCm: item.heightCm,
+            weightKg: item.weightKg,
+            maritalStatus: item.maritalStatus,
+            religion: item.religion,
+            caste: item.caste,
             interests: item.interests || [],
             education: (item.primaryEducation || item.highestEducation || item.education)
               ? { name: (item.primaryEducation || item.highestEducation || item.education).name }
@@ -332,6 +370,11 @@ const Matches = () => {
             _id: otherUser?._id,
             fullName: otherUser?.fullName || "User",
             dateOfBirth: otherUser?.dateOfBirth,
+            heightCm: otherUser?.heightCm,
+            weightKg: otherUser?.weightKg,
+            maritalStatus: otherUser?.maritalStatus,
+            religion: otherUser?.religion,
+            caste: otherUser?.caste,
             city: otherUser?.city,
             state: otherUser?.state,
             interests: otherUser?.interests || [],
@@ -597,10 +640,11 @@ const Matches = () => {
     const isLiking = likingProfile === match.user._id;
     const hasIncomingInterest = receivedInterests.includes(match.user._id);
     const isAccepted = acceptedInterests.includes(match.user._id);
+    const alreadyViewed = viewedProfiles.some((id) => String(id) === String(match.user._id));
+    const canViewProfile = isAccepted || alreadyViewed;
     const isMillionClub = match.user.isMillionClub || match.user.profileStatus?.toLowerCase().includes("million") || millionClubUserIds.has(String(match.user._id)) || activeTab === "millionClub";
     const primaryPhoto = match.user.photos?.find((p) => p.isPrimary);
     const isPhotoHidden = primaryPhoto?.isHidden;
-    const alreadyViewed = viewedProfiles.some((id) => String(id) === String(match.user._id));
     const lockedByLimit = profileLimitReached && !alreadyViewed;
 
     const canViewHiddenPhoto = false;
@@ -610,14 +654,32 @@ const Matches = () => {
     return (
       <Card className="glass-card overflow-hidden hover:shadow-md md:hover:shadow-lg transition-all rounded-xl md:rounded-2xl border border-border/40">
         <div className="grid grid-cols-[90px_1fr] md:grid-cols-[160px_1fr] min-h-[145px] md:h-[240px]">
-          {/* Image Section */}
-          <div className="relative overflow-hidden bg-muted rounded-l-xl md:rounded-l-2xl">
+          {/* Image Section - Clickable to View Profile */}
+          <div
+            className={`relative overflow-hidden bg-muted rounded-l-xl md:rounded-l-2xl ${
+              canViewProfile ? "cursor-pointer group" : ""
+            }`}
+            onClick={() => {
+              if (!canViewProfile) return;
+              if (isLocked) {
+                navigate("/pricing");
+                return;
+              }
+              if (lockedByLimit) {
+                toast.error("Profile view limit reached. Upgrade your plan 🔒");
+                navigate("/pricing");
+                return;
+              }
+              handleViewProfile(match.user._id);
+            }}
+          >
             <OptimizedProfileImage
               src={photoSrc}
               alt={match.user.fullName}
               isLocked={isLocked}
-              className={`w-full h-full object-cover ${isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""
-                }`}
+              className={`w-full h-full object-cover ${
+                canViewProfile ? "transition-transform duration-300 group-hover:scale-105" : ""
+              } ${isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""}`}
             />
 
             <div className="absolute top-1 left-1 md:top-2 md:right-2 md:left-auto z-10">
@@ -625,6 +687,15 @@ const Matches = () => {
                 {match.matchScore}% Match
               </Badge>
             </div>
+
+            {canViewProfile && !isLocked && (
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10 pointer-events-none">
+                <div className="bg-white/90 text-foreground text-[10px] md:text-xs px-2 py-1 rounded-full shadow font-medium flex items-center gap-1">
+                  <Eye className="w-3 h-3 text-primary" />
+                  <span>View Profile</span>
+                </div>
+              </div>
+            )}
 
             {isLocked && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
@@ -640,7 +711,24 @@ const Matches = () => {
             <div>
               <div className="flex items-start justify-between gap-1 mb-0.5 md:mb-1">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <h3 className="text-xs md:text-base font-bold truncate leading-tight">
+                  <h3
+                    className={`text-xs md:text-base font-bold truncate leading-tight ${
+                      canViewProfile ? "cursor-pointer hover:text-primary transition-colors" : ""
+                    }`}
+                    onClick={() => {
+                      if (!canViewProfile) return;
+                      if (isLocked) {
+                        navigate("/pricing");
+                        return;
+                      }
+                      if (lockedByLimit) {
+                        toast.error("Profile view limit reached. Upgrade your plan 🔒");
+                        navigate("/pricing");
+                        return;
+                      }
+                      handleViewProfile(match.user._id);
+                    }}
+                  >
                     {match.user.fullName}, {calculateAge(match.user.dateOfBirth)}
                   </h3>
                   {isMillionClub && (
@@ -688,54 +776,43 @@ const Matches = () => {
                 )}
               </div>
 
-              <div className="flex flex-col gap-0.5 mt-0.5 md:mt-1 text-[11px] md:text-sm text-muted-foreground">
+              <div className="flex flex-col gap-0.5 md:gap-1 mt-0.5 md:mt-1 text-[11px] md:text-xs text-muted-foreground">
+                {match.user.maritalStatus && (
+                  <span className="flex items-center gap-1 font-medium text-foreground/90 truncate">
+                    <Heart className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
+                    {match.user.maritalStatus}
+                  </span>
+                )}
+
+                {(match.user.heightCm || match.user.weightKg) && (
+                  <span className="flex items-center gap-1 truncate">
+                    <Ruler className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
+                    {formatHeightWeight(match.user.heightCm, match.user.weightKg)}
+                  </span>
+                )}
+
+                {(match.user.religion || match.user.caste) && (
+                  <span className="flex items-center gap-1 truncate">
+                    <Sparkles className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
+                    {formatReligionCaste(match.user.religion, match.user.caste)}
+                  </span>
+                )}
+
                 <span className="flex items-center gap-1 truncate">
                   <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
                   {match.user.city || "N/A"}{match.user.state ? `, ${match.user.state}` : ""}
                 </span>
+
                 <span className="hidden md:flex items-center gap-1 truncate">
                   <GraduationCap className="w-3.5 h-3.5 shrink-0 text-primary/80" />
-                  {match.user.education?.name || "—"}
+                  {match.user.education?.name || match.user.primaryEducation?.name || "—"}
                 </span>
+
                 <span className="flex items-center gap-1 truncate">
                   <Briefcase className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
                   {match.user.profession?.name || "—"}
                 </span>
               </div>
-
-              {match.user.interests && match.user.interests.length > 0 && (
-                <div className="mt-1 md:mt-2">
-                  <p className="hidden md:block text-xs font-semibold mb-1 text-foreground/80">Interests:</p>
-
-                  {/* Mobile Interests (Compact) */}
-                  <div className="flex md:hidden flex-wrap gap-1">
-                    {match.user.interests.slice(0, 2).map((interest, idx) => (
-                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-[9px] px-1.5 py-0 font-normal">
-                        {interest}
-                      </Badge>
-                    ))}
-                    {match.user.interests.length > 2 && (
-                      <Badge variant="outline" className="text-[9px] px-1 py-0 text-muted-foreground">
-                        +{match.user.interests.length - 2}
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Desktop Interests (Compact with count) */}
-                  <div className="hidden md:flex flex-wrap gap-1.5 items-center">
-                    {match.user.interests.slice(0, 3).map((interest, idx) => (
-                      <Badge key={`${interest}-${idx}`} variant="secondary" className="text-xs px-2 py-0.5 font-normal">
-                        {interest}
-                      </Badge>
-                    ))}
-                    {match.user.interests.length > 3 && (
-                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 text-muted-foreground font-normal">
-                        +{match.user.interests.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Action Buttons */}
@@ -779,6 +856,58 @@ const Matches = () => {
                   >
                     <Check className="w-3 h-3 mr-1" /> Matched
                   </Button>
+                </>
+              ) : canViewProfile ? (
+                <>
+                  <Button
+                    className="flex-1 bg-gradient-to-r from-primary to-secondary text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                    onClick={() => {
+                      if (lockedByLimit) {
+                        toast.error("Profile view limit reached. Upgrade your plan 🔒");
+                        navigate("/pricing");
+                        return;
+                      }
+                      handleViewProfile(match.user._id);
+                    }}
+                  >
+                    {lockedByLimit ? (
+                      <>
+                        <Lock className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
+                        Upgrade
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
+                        View Profile
+                      </>
+                    )}
+                  </Button>
+                  {hasIncomingInterest ? (
+                    <Button
+                      disabled
+                      className="flex-1 bg-blue-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                    >
+                      💌 Received
+                    </Button>
+                  ) : isInterestSent ? (
+                    <Button
+                      variant="outline"
+                      className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                      onClick={() => handleCancelInterest(match.user._id, match.user.fullName)}
+                      disabled={isCanceling}
+                    >
+                      {isCanceling ? "Canceling..." : "Cancel Interest"}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                      disabled={isSending}
+                      onClick={() => handleSendInterest(match.user._id, match.user.fullName)}
+                    >
+                      {isSending ? "Sending..." : "Send Interest"}
+                    </Button>
+                  )}
                 </>
               ) : (
                 <AnimatePresence mode="wait">
