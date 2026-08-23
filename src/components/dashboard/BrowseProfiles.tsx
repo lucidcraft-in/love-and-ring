@@ -87,7 +87,14 @@ const formatHeightWeight = (heightCm?: number, weightKg?: number) => {
 const BrowseProfiles = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>(() => {
+    try {
+      const cached = sessionStorage.getItem("cached_browse_profiles");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
   const [loading, setLoading] = useState(false);
   const [likedUserIds, setLikedUserIds] = useState<Set<string>>(new Set());
   const [likingProfile, setLikingProfile] = useState<string | null>(null);
@@ -124,7 +131,9 @@ const BrowseProfiles = () => {
   const loggedUserId = loggedUser?._id;
 
   const fetchProfiles = async () => {
-    setLoading(true);
+    if (profiles.length === 0) {
+      setLoading(true);
+    }
     try {
       const token = localStorage.getItem("token");
 
@@ -144,6 +153,9 @@ const BrowseProfiles = () => {
       );
 
       setProfiles(filtered);
+      try {
+        sessionStorage.setItem("cached_browse_profiles", JSON.stringify(filtered));
+      } catch {}
       console.log("Profiles:", response.data);
     } catch (error: any) {
       console.error("Error fetching profiles:", error?.response || error);
