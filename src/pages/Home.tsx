@@ -15,7 +15,11 @@ import {
   Eye,
   EyeOff,
   Headset,
+  Globe,
+  MessageSquare,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
@@ -41,7 +45,9 @@ import HomeStoryCarousel from "@/components/HomeStoryCarousel";
 import HowItWorks from "@/components/HowItWorks";
 import FeaturedSuccessStory from "@/components/FeaturedSuccessStory";
 import ClientRegistrationCTA from "@/components/ClientRegistrationCTA";
+import HomeServicesSection from "@/components/HomeServicesSection";
 import { loginUserApi } from "@/services/AuthServices";
+
 import Axios from "@/axios/axios";
 import { getNextIncompleteStep } from "@/utils/profileStatus";
 
@@ -254,36 +260,28 @@ const Home = () => {
 
   const features = [
     {
-      icon: Shield,
-      title: "Secure & Trusted",
+      icon: MessageSquare,
+      badge: "Secure Private Platform",
+      title: "Digital Connection & Private Communication",
       description:
-        "Your data is protected with industry-leading security measures, ensuring complete trust and reliability.",
-    },
-    {
-      icon: Users,
-      title: "Authentic Profiles",
-      description:
-        "Every profile is manually verified through a strict authentication process to ensure complete authenticity.",
-    },
-    {
-      icon: Lock,
-      title: "Your Privacy",
-      description:
-        "Ensuring absolute privacy with full control over who can view your profile and contact details, tailored to your needs.",
-    },
-    {
-      icon: CheckCircle,
-      title: "Advanced Matching",
-      description:
-        "Smart algorithm capabilities focusing on compatibility and exclusivity to help you find your perfect match.",
+        "At Love & Ring Matrimony, we are connecting individuals and supporting them in finding their soulmate. Through our trusted platform with built-in digital communication options, individuals and their families can seamlessly communicate in a secure and private environment. Once registered, individuals can communicate through both chats and video calls, provided mutual consent is in place.",
     },
     {
       icon: Headset,
-      title: "Personalised Support",
+      badge: "Personalised Guidance",
+      title: "Superbly Friendly 'Client Specialists'",
       description:
-        "Every profile receives consultant-led personalised support, ensuring meaningful matches without relying solely on algorithm-based outcomes.",
+        "Our superbly friendly 'Client Specialists' will facilitate and support you in every aspect of your journey in finding your partner. Based on your membership package, we will tune and customise a service that will perfectly align with your need.",
+    },
+    {
+      icon: Globe,
+      badge: "Worldwide Keralite Network",
+      title: "Global Reach & Diverse Community",
+      description:
+        "Love & Ring Matrimony's digital reach spans across all major continents where KERALITES are concentrated. Our database holds a diverse range of Professionals, Entrepreneurs, Mature Business Owners, Industrialists, Creative Artists and Writers from various communities, social backgrounds and regions. Our 'Client Specialists' are based at Europe, Australia, Americas, GCC countries and India. Having deep understanding of cultural, social, communal and geographical sensitivities, our specialists will guide you in the right path.",
     },
   ];
+
 
   const heroTaglines = [
     "A Place for Global Malayalees to Find their Perfect Match",
@@ -879,19 +877,18 @@ const Home = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-10 sm:mb-16"
+            className="text-center mb-10 sm:mb-16 max-w-3xl mx-auto"
           >
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
-              Why Choose Love & Ring?
+              Why Choose Love &amp; Ring?
             </h2>
-            <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-              We provide a secure, trusted platform to help you find your
-              perfect life partner
+            <p className="text-base sm:text-xl text-muted-foreground">
+              Built on trust, privacy, global reach, and dedicated guidance to help you find your perfect life partner.
             </p>
           </motion.div>
 
           <div className="flex justify-center w-full">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 w-full max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 w-full max-w-6xl mx-auto">
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
@@ -901,14 +898,25 @@ const Home = () => {
                   transition={{ delay: index * 0.1 }}
                   className="flex"
                 >
-                  <Card className="p-5 sm:p-6 w-full glass-card hover:shadow-lg transition-all flex flex-col">
-                    <feature.icon className="h-10 w-10 sm:h-12 sm:w-12 text-primary mb-3 sm:mb-4" />
-                    <h3 className="text-lg sm:text-xl font-semibold mb-2">
-                      {feature.title}
-                    </h3>
-                    <p className="text-sm sm:text-base text-muted-foreground flex-1">
-                      {feature.description}
-                    </p>
+                  <Card className="p-6 sm:p-7 w-full border border-border/70 hover:border-primary/50 bg-card hover:shadow-xl transition-all duration-300 flex flex-col justify-between rounded-2xl group">
+                    <div>
+                      <div className="flex items-center justify-between mb-5">
+                        <div className="p-3.5 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                          <feature.icon className="h-7 w-7" />
+                        </div>
+                        <Badge variant="outline" className="text-[11px] font-semibold text-primary border-primary/30 bg-primary/5">
+                          {feature.badge}
+                        </Badge>
+                      </div>
+
+                      <h3 className="text-lg sm:text-xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors leading-tight">
+                        {feature.title}
+                      </h3>
+
+                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                        {feature.description}
+                      </p>
+                    </div>
                   </Card>
                 </motion.div>
               ))}
@@ -916,6 +924,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+
 
       {/* Success Stories Preview */}
       <section className="py-12 sm:py-16 md:py-20 bg-muted/20">
@@ -952,8 +961,12 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Wedding Services Preview Tiles */}
+      <HomeServicesSection />
+
       {/* Client Registration CTA */}
       <ClientRegistrationCTA />
+
 
       {/* About Preview Section */}
       <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
