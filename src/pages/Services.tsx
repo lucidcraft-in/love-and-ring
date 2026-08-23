@@ -22,6 +22,9 @@ import {
   ChevronRight,
   Filter,
   Grid,
+  CalendarCheck,
+  Wine,
+  Mic,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,6 +103,27 @@ const categoryTiles = [
     icon: Car,
   },
   {
+    id: "Event Management",
+    label: "Event Management",
+    subtitle: "Full-Service Event Planning & Production",
+    description: "Flawless ceremony planning, vendor coordination, budget management & complete wedding execution.",
+    icon: CalendarCheck,
+  },
+  {
+    id: "Cocktail Launch",
+    label: "Cocktail Launch",
+    subtitle: "Bar Setups, Mixology & Reception Drinks",
+    description: "Premium cocktail counters, professional mixologists, mocktails & custom beverage bars for pre-wedding events.",
+    icon: Wine,
+  },
+  {
+    id: "Anchors & Hostesses",
+    label: "Anchors & Hostesses",
+    subtitle: "Professional Anchors, Emcees & Event Hostesses",
+    description: "Engaging event hosts, celebrity emcees, bilingual anchors & professional hospitality hostesses for weddings.",
+    icon: Mic,
+  },
+  {
     id: "Other Services",
     label: "Other Services",
     subtitle: "Planners, Invitations & Keepsakes",
@@ -127,6 +151,9 @@ const isCategoryMatch = (serviceCategory?: string, targetCategory?: string | nul
     "dj & music": ["dj", "music", "band", "sound", "dance", "choreograph"],
     "bridal wear": ["wear", "saree", "lehenga", "suit", "attire", "dress"],
     "transportation": ["transport", "car", "bus", "travel", "coach", "vehicle"],
+    "event management": ["event", "manage", "plan", "coordinat", "organiz", "production"],
+    "cocktail launch": ["cocktail", "launch", "bar", "drink", "beverage", "lounge", "wine", "mixolog"],
+    "anchors & hostesses": ["anchor", "host", "emcee", "mc", "hostess", "compere", "presenter"],
     "other services": ["other", "planner", "invitation", "gift"],
   };
 
