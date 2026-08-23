@@ -103,7 +103,7 @@ const Login = () => {
       localStorage.setItem("userId", user._id);
       login(user);
       toast.success("Logged in successfully");
-      navigate("/");
+      navigate("/dashboard");
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Login failed");
       console.error("Login error:", error);
@@ -144,7 +144,7 @@ const Login = () => {
       localStorage.setItem("userId", user._id);
       login(user);
       toast.success("Logged in successfully");
-      navigate("/");
+      navigate("/dashboard");
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Verification failed");
     } finally {
