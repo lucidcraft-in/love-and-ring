@@ -38,6 +38,7 @@ import {
 import { toast } from "sonner";
 import Axios from "@/axios/axios";
 import socket from "@/socket";
+import OptimizedProfileImage from "@/components/dashboard/OptimizedProfileImage";
 
 const SingleProfile = () => {
   const { id } = useParams();
@@ -521,12 +522,11 @@ const SingleProfile = () => {
           <div className="lg:col-span-1 space-y-4">
             <Card className="glass-card overflow-hidden">
               <div className="relative">
-                <img
+                <OptimizedProfileImage
                   src={getProfileImage(profile.photos)}
                   alt={profile.fullName}
-                  className={`w-full h-96 object-cover ${
-                    isBlurred ? "blur-xl select-none pointer-events-none" : ""
-                  }`}
+                  className="w-full h-96"
+                  isLocked={isBlurred}
                 />
                 {isBlurred && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm p-4 text-center text-white">

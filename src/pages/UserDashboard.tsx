@@ -44,7 +44,7 @@ const UserDashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "summary":
-        return <Summary />;
+        return <Summary onNavigate={handleNavigate} />;
       case "edit-profile":
         return <EditProfile />;
       case "my-photos":
@@ -75,7 +75,7 @@ const UserDashboard = () => {
 
         {/* Right: Scrollable Main Content */}
         <main className="flex-1 lg:overflow-y-auto lg:h-screen">
-          <div className="min-h-[120vh] flex flex-col">
+          <div className="min-h-screen lg:min-h-0 flex flex-col">
             <div className="flex-1 p-6 lg:p-8">
               {/* Mobile/Tablet Menu Toggle - Under navbar */}
               <div className="lg:hidden mb-4">

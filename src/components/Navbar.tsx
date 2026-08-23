@@ -20,25 +20,53 @@ const Navbar = () => {
 
   // Detect scroll position for hero-aware navbar
   useEffect(() => {
+    if (!isHeroRoute) {
+      setIsScrolled(true);
+      return;
+    }
+
+    let heroSection = document.getElementById("hero-section");
+    let targetLimit = heroSection
+      ? heroSection.offsetTop + heroSection.offsetHeight - 80
+      : 100;
+
+    const updateLayoutValues = () => {
+      heroSection = document.getElementById("hero-section");
+      targetLimit = heroSection
+        ? heroSection.offsetTop + heroSection.offsetHeight - 80
+        : 100;
+    };
+
+    let ticking = false;
+
     const handleScroll = () => {
-      if (isHeroRoute) {
-        const heroSection = document.getElementById("hero-section");
-        if (heroSection) {
-          const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
-          setIsScrolled(window.scrollY > heroBottom - 80);
-        } else {
-          // If no hero section found, consider scrolled after 100px
-          setIsScrolled(window.scrollY > 100);
-        }
-      } else {
-        // Non-hero routes are always "scrolled" (solid background)
-        setIsScrolled(true);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY || window.pageYOffset;
+          setIsScrolled((prev) => {
+            const next = currentScrollY > targetLimit;
+            return prev !== next ? next : prev;
+          });
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
-    handleScroll();
+    // Initialize layout values and scroll state
+    updateLayoutValues();
+    const initialScrollY = window.scrollY || window.pageYOffset;
+    setIsScrolled(initialScrollY > targetLimit);
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("resize", updateLayoutValues, { passive: true });
+    window.addEventListener("load", updateLayoutValues, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", updateLayoutValues);
+      window.removeEventListener("load", updateLayoutValues);
+    };
   }, [isHeroRoute, location.pathname]);
 
   const navLinks = [

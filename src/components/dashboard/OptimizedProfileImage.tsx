@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import DummyProfile from "@/assets/DummyProfile.png";
+import ProtectedProfileImage from "./ProtectedProfileImage";
 
 interface OptimizedProfileImageProps {
   src: string;
@@ -47,7 +48,7 @@ const OptimizedProfileImage = ({
 
       {/* Actual image - only load when in viewport */}
       {isInView && (
-        <img
+        <ProtectedProfileImage
           src={src}
           alt={alt}
           loading="lazy"
@@ -58,9 +59,9 @@ const OptimizedProfileImage = ({
           }}
           className={cn(
             "w-full h-full object-cover object-center transition-opacity duration-500",
-            isLoaded ? "opacity-100" : "opacity-0",
-            isLocked ? "blur-lg" : ""
+            isLoaded ? "opacity-100" : "opacity-0"
           )}
+          isLocked={isLocked}
         />
       )}
     </div>

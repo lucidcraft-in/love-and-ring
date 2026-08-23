@@ -18,6 +18,7 @@ import ReactCrop, {
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import ProtectedProfileImage from "./ProtectedProfileImage";
 
 interface Photo {
   _id: string;
@@ -262,10 +263,11 @@ const MyPhotos = () => {
             className="glass-card overflow-hidden group relative"
           >
             <div className="aspect-square relative">
-              <img
+              <ProtectedProfileImage
                 src={photo.url}
                 alt={`Photo ${photo._id}`}
                 className="w-full h-full object-cover"
+                showWatermark={false}
               />
               {photo.isPrimary && (
                 <div className="absolute top-2 left-2">

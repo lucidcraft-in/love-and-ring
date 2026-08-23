@@ -238,7 +238,7 @@ const ProfileSidebar = ({
       {/* Mobile Sidebar - Starts below navbar */}
       <aside
         className={cn(
-          "lg:hidden fixed left-0 top-16 h-[calc(100vh-4rem)] w-[280px] bg-card border-r border-border z-40",
+          "lg:hidden fixed left-0 top-16 h-[calc(100dvh-4rem)] w-[280px] bg-card border-r border-border z-40",
           "flex flex-col overflow-hidden transition-transform duration-300 ease-in-out",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
