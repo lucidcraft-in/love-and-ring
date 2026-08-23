@@ -6,10 +6,19 @@ import MyPhotos from "./MyPhotos";
 import PartnerPreference from "./PartnerPreference";
 
 const ProfileDashboard = () => {
-  const [activeSection, setActiveSection] = useState("summary");
+  const [activeSection, setActiveSection] = useState(() => {
+    return localStorage.getItem("activeProfileDashboardTab") || "summary";
+  });
 
   return (
-    <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
+    <Tabs
+      value={activeSection}
+      onValueChange={(val) => {
+        setActiveSection(val);
+        localStorage.setItem("activeProfileDashboardTab", val);
+      }}
+      className="w-full"
+    >
       <TabsList className="w-full flex flex-wrap justify-start gap-2 bg-transparent h-auto mb-6">
         <TabsTrigger value="summary" className="rounded-lg">Summary</TabsTrigger>
         <TabsTrigger value="edit" className="rounded-lg">Edit Profile</TabsTrigger>
