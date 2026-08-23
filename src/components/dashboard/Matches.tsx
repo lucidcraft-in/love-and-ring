@@ -128,7 +128,7 @@ const Matches = () => {
       });
 
       const formatted: MatchItem[] = (res.data || [])
-        .filter((item: any) => item && item.likedUser)
+        .filter((item: any) => item && item.likedUser && item.likedUser.isActive !== false && item.likedUser.approvalStatus !== "INACTIVE")
         .map((item: any) => ({
           user: {
             _id: item.likedUser._id,
@@ -172,7 +172,7 @@ const Matches = () => {
       });
 
       const formatted: MatchItem[] = (res.data || [])
-        .filter((item: any) => item && item.likedBy)
+        .filter((item: any) => item && item.likedBy && item.likedBy.isActive !== false && item.likedBy.approvalStatus !== "INACTIVE")
         .map((item: any) => ({
           user: {
             _id: item.likedBy._id,
@@ -212,7 +212,7 @@ const Matches = () => {
 
       const raw = Array.isArray(res.data?.data) ? res.data.data : [];
       const normalized: MatchItem[] = raw
-        .filter((item: any) => item && item.user)
+        .filter((item: any) => item && item.user && item.user.isActive !== false && item.user.approvalStatus !== "INACTIVE")
         .map((item: any) => ({
           user: {
             _id: item.user._id,
@@ -258,7 +258,7 @@ const Matches = () => {
 
       const raw = Array.isArray(res.data) ? res.data : [];
       const formatted: MatchItem[] = raw
-        .filter((item: any) => item && item._id)
+        .filter((item: any) => item && item._id && item.isActive !== false && item.approvalStatus !== "INACTIVE")
         .map((item: any) => ({
           user: {
             _id: item._id,

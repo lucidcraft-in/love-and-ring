@@ -337,22 +337,22 @@ const Services = () => {
 
       {/* Service Enquiry Modal Dialog */}
       <Dialog open={enquiryOpen} onOpenChange={setEnquiryOpen}>
-        <DialogContent className="max-w-lg rounded-2xl overflow-hidden p-0 border border-border shadow-2xl">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-lg rounded-2xl overflow-hidden p-0 border border-border shadow-2xl max-h-[90vh] flex flex-col">
           {/* Light Purple Modal Header matching user app style */}
-          <div className="bg-gradient-to-r from-primary via-primary/90 to-secondary p-6 text-white relative">
+          <div className="bg-gradient-to-r from-primary via-primary/90 to-secondary p-4 sm:p-6 text-white relative shrink-0">
             <div className="flex items-center gap-2 text-white/80 text-xs font-semibold uppercase tracking-wider mb-1">
               <Sparkles className="w-4 h-4 text-white" />
               Service Inquiry
             </div>
-            <DialogTitle className="text-2xl font-bold text-white">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-white pr-6">
               {selectedService?.title}
             </DialogTitle>
-            <DialogDescription className="text-white/90 text-sm mt-1">
+            <DialogDescription className="text-white/90 text-xs sm:text-sm mt-1">
               Submit an enquiry to request pricing, availability, or custom packages.
             </DialogDescription>
           </div>
 
-          <div className="p-6 space-y-4 bg-card">
+          <div className="p-4 sm:p-6 space-y-4 bg-card overflow-y-auto max-h-[calc(90vh-100px)]">
             {ticketSuccess ? (
               <div className="text-center py-6 space-y-4">
                 <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/30 text-primary flex items-center justify-center mx-auto">

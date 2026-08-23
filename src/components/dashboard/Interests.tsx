@@ -124,117 +124,132 @@ const Interests = () => {
         Axios.get("/api/user/interests/rejected/interest", { headers }),
       ]);
       console.log("res", receivedRes.data, sentRes.data, acceptedRes.data, rejectedRes.data);
-      const mapInterest = (item: any, userKey: string): InterestItem => ({
-        _id: item._id,
-        user: {
-          _id: item[userKey]._id,
-          fullName: item[userKey].fullName,
-          dateOfBirth: item[userKey].dateOfBirth,
-          heightCm: item[userKey].heightCm,
-          weightKg: item[userKey].weightKg,
-          maritalStatus: item[userKey].maritalStatus,
-          religion: item[userKey].religion,
-          caste: item[userKey].caste,
-          city: item[userKey].city,
-          state: item[userKey].state,
-          profileStatus: item[userKey].profileStatus,
-          isMillionClub: checkMillionStatus(item[userKey]),
-          interests: item[userKey].interests || [],
-          education: (item[userKey].primaryEducation || item[userKey].highestEducation || item[userKey].education)
-            ? { name: (item[userKey].primaryEducation || item[userKey].highestEducation || item[userKey].education).name }
-            : undefined,
-          profession: item[userKey].profession
-            ? { name: item[userKey].profession.name }
-            : undefined,
-          photos: item[userKey].photos || [],
-        },
-        matchScore: item.matchPercentage ?? 0,
-        status: item.status || "pending",
-      });
+      const mapInterest = (item: any, userKey: string): InterestItem | null => {
+        const u = item?.[userKey];
+        if (!u || u.isActive === false || u.approvalStatus === "INACTIVE") return null;
+        return {
+          _id: item._id,
+          user: {
+            _id: u._id,
+            fullName: u.fullName,
+            dateOfBirth: u.dateOfBirth,
+            heightCm: u.heightCm,
+            weightKg: u.weightKg,
+            maritalStatus: u.maritalStatus,
+            religion: u.religion,
+            caste: u.caste,
+            city: u.city,
+            state: u.state,
+            profileStatus: u.profileStatus,
+            isMillionClub: checkMillionStatus(u),
+            interests: u.interests || [],
+            education: (u.primaryEducation || u.highestEducation || u.education)
+              ? { name: (u.primaryEducation || u.highestEducation || u.education).name }
+              : undefined,
+            profession: u.profession
+              ? { name: u.profession.name }
+              : undefined,
+            photos: u.photos || [],
+          },
+          matchScore: item.matchPercentage ?? 0,
+          status: item.status || "pending",
+        };
+      };
 
       setReceived(
         (receivedRes.data || [])
           .map((i: any) => mapInterest(i, "fromUser"))
-          .filter((i) => i.status?.toLowerCase() === "pending"),
+          .filter((i: InterestItem | null): i is InterestItem => i !== null && i.status?.toLowerCase() === "pending"),
       );
 
       setSent(
         (sentRes.data || [])
           .map((i: any) => mapInterest(i, "toUser"))
-          .filter((i) => i.status?.toLowerCase() !== "rejected"),
+          .filter((i: InterestItem | null): i is InterestItem => i !== null && i.status?.toLowerCase() !== "rejected"),
       );
-      setAccepted(
-        (acceptedRes.data || []).map((item: any) => {
-          const otherUser =
-            String(item.fromUser._id) === String(userId)
-              ? item.toUser
-              : item.fromUser;
 
-          return {
-            _id: item._id,
-            user: {
-              _id: otherUser._id,
-              fullName: otherUser.fullName,
-              dateOfBirth: otherUser.dateOfBirth,
-              heightCm: otherUser.heightCm,
-              weightKg: otherUser.weightKg,
-              maritalStatus: otherUser.maritalStatus,
-              religion: otherUser.religion,
-              caste: otherUser.caste,
-              city: otherUser.city,
-              state: otherUser.state,
-              profileStatus: otherUser.profileStatus,
-              isMillionClub: checkMillionStatus(otherUser),
-              interests: otherUser.interests || [],
-              education: (otherUser?.primaryEducation || otherUser?.highestEducation || otherUser?.education)
-                ? { name: (otherUser.primaryEducation || otherUser.highestEducation || otherUser.education).name }
-                : undefined,
-              profession: otherUser.profession
-                ? { name: otherUser.profession.name }
-                : undefined,
-              photos: otherUser.photos || [],
-            },
-            matchScore: item.matchPercentage ?? 0,
-            status: item.status || "accepted",
-          };
-        }),
+      setAccepted(
+        (acceptedRes.data || [])
+          .filter((item: any) => {
+            const otherUser = String(item.fromUser?._id) === String(userId) ? item.toUser : item.fromUser;
+            return otherUser && otherUser.isActive !== false && otherUser.approvalStatus !== "INACTIVE";
+          })
+          .map((item: any) => {
+            const otherUser =
+              String(item.fromUser._id) === String(userId)
+                ? item.toUser
+                : item.fromUser;
+
+            return {
+              _id: item._id,
+              user: {
+                _id: otherUser._id,
+                fullName: otherUser.fullName,
+                dateOfBirth: otherUser.dateOfBirth,
+                heightCm: otherUser.heightCm,
+                weightKg: otherUser.weightKg,
+                maritalStatus: otherUser.maritalStatus,
+                religion: otherUser.religion,
+                caste: otherUser.caste,
+                city: otherUser.city,
+                state: otherUser.state,
+                profileStatus: otherUser.profileStatus,
+                isMillionClub: checkMillionStatus(otherUser),
+                interests: otherUser.interests || [],
+                education: (otherUser?.primaryEducation || otherUser?.highestEducation || otherUser?.education)
+                  ? { name: (otherUser.primaryEducation || otherUser.highestEducation || otherUser.education).name }
+                  : undefined,
+                profession: otherUser.profession
+                  ? { name: otherUser.profession.name }
+                  : undefined,
+                photos: otherUser.photos || [],
+              },
+              matchScore: item.matchPercentage ?? 0,
+              status: item.status || "accepted",
+            };
+          }),
       );
 
       setRejected(
-        (rejectedRes.data || []).map((item: any) => {
-          const otherUser =
-            String(item.fromUser._id) === String(userId)
-              ? item.toUser
-              : item.fromUser;
+        (rejectedRes.data || [])
+          .filter((item: any) => {
+            const otherUser = String(item.fromUser?._id) === String(userId) ? item.toUser : item.fromUser;
+            return otherUser && otherUser.isActive !== false && otherUser.approvalStatus !== "INACTIVE";
+          })
+          .map((item: any) => {
+            const otherUser =
+              String(item.fromUser._id) === String(userId)
+                ? item.toUser
+                : item.fromUser;
 
-          return {
-            _id: item._id,
-            user: {
-              _id: otherUser._id,
-              fullName: otherUser.fullName,
-              dateOfBirth: otherUser.dateOfBirth,
-              heightCm: otherUser.heightCm,
-              weightKg: otherUser.weightKg,
-              maritalStatus: otherUser.maritalStatus,
-              religion: otherUser.religion,
-              caste: otherUser.caste,
-              city: otherUser.city,
-              state: otherUser.state,
-              profileStatus: otherUser.profileStatus,
-              isMillionClub: checkMillionStatus(otherUser),
-              interests: otherUser.interests || [],
-              education: (otherUser?.primaryEducation || otherUser?.highestEducation || otherUser?.education)
-                ? { name: (otherUser.primaryEducation || otherUser.highestEducation || otherUser.education).name }
-                : undefined,
-              profession: otherUser.profession
-                ? { name: otherUser.profession.name }
-                : undefined,
-              photos: otherUser.photos || [],
-            },
-            matchScore: item.matchPercentage ?? 0,
-            status: item.status || "rejected",
-          };
-        }),
+            return {
+              _id: item._id,
+              user: {
+                _id: otherUser._id,
+                fullName: otherUser.fullName,
+                dateOfBirth: otherUser.dateOfBirth,
+                heightCm: otherUser.heightCm,
+                weightKg: otherUser.weightKg,
+                maritalStatus: otherUser.maritalStatus,
+                religion: otherUser.religion,
+                caste: otherUser.caste,
+                city: otherUser.city,
+                state: otherUser.state,
+                profileStatus: otherUser.profileStatus,
+                isMillionClub: checkMillionStatus(otherUser),
+                interests: otherUser.interests || [],
+                education: (otherUser?.primaryEducation || otherUser?.highestEducation || otherUser?.education)
+                  ? { name: (otherUser.primaryEducation || otherUser.highestEducation || otherUser.education).name }
+                  : undefined,
+                profession: otherUser.profession
+                  ? { name: otherUser.profession.name }
+                  : undefined,
+                photos: otherUser.photos || [],
+              },
+              matchScore: item.matchPercentage ?? 0,
+              status: item.status || "rejected",
+            };
+          }),
       );
     } catch (err) {
       console.error("Failed to fetch interests", err);

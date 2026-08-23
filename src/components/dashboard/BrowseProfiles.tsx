@@ -66,6 +66,8 @@ interface Profile {
   profileStatus?: string;
   city?: string;
   state?: string;
+  isActive?: boolean;
+  approvalStatus?: string;
 }
 
 const formatReligionCaste = (religion?: any, caste?: any) => {
@@ -135,7 +137,10 @@ const BrowseProfiles = () => {
       const allProfiles = response.data || [];
 
       const filtered = allProfiles.filter(
-        (profile: Profile) => profile._id !== loggedUserId,
+        (profile: Profile) =>
+          profile._id !== loggedUserId &&
+          profile.isActive !== false &&
+          profile.approvalStatus !== "INACTIVE"
       );
 
       setProfiles(filtered);
