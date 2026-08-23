@@ -148,7 +148,7 @@ const ClientRegistration = () => {
       });
 
       toast.success("Registration submitted successfully! Awaiting admin approval.");
-      navigate("/");
+      navigate("/dashboard");
     } catch (err: any) {
       const msg = err?.response?.data?.message || "Failed to submit consultant registration";
       toast.error(msg);
