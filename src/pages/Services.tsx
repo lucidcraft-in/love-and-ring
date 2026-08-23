@@ -18,6 +18,7 @@ import {
   X,
   Heart,
   Filter,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -279,6 +280,11 @@ const Services = () => {
                       </Badge>
                     </div>
 
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-amber-400/30 text-amber-300 text-xs font-bold shadow-md">
+                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      <span>{Number(service.rating ?? 5.0).toFixed(1)}</span>
+                    </div>
+
                     {service.location && (
                       <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-white/90 text-xs font-medium backdrop-blur-sm bg-black/50 px-3 py-1 rounded-full border border-white/10">
                         <MapPin className="w-3.5 h-3.5 text-rose-300" />
@@ -289,15 +295,23 @@ const Services = () => {
 
                   {/* Body Details */}
                   <div className="p-5 space-y-3">
-                    <h3 className="text-xl font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
-                      {service.title}
-                    </h3>
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-xl font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
+                        {service.title}
+                      </h3>
+                    </div>
 
-                    {service.priceRange && (
-                      <div className="inline-block px-3 py-1 rounded-lg bg-primary/10 text-primary font-semibold text-xs border border-primary/20">
-                        {service.priceRange}
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {service.priceRange && (
+                        <div className="inline-block px-3 py-1 rounded-lg bg-primary/10 text-primary font-semibold text-xs border border-primary/20">
+                          {service.priceRange}
+                        </div>
+                      )}
+                      {/* <div className="flex items-center gap-1 text-xs font-semibold text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
+                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                        <span>{Number(service.rating ?? 5.0).toFixed(1)} Rating</span>
+                      </div> */}
+                    </div>
 
                     <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
                       {service.description}
