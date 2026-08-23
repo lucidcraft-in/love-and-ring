@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Shield,
   Users,
@@ -18,8 +19,6 @@ import {
   Globe,
   MessageSquare,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-
 import FloatingBrandLogo from "@/components/FloatingBrandLogo";
 import { Link, useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
@@ -27,27 +26,17 @@ import { toast } from "sonner";
 import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
 import heroSlide3 from "@/assets/hero-slide-3.jpg";
-import homeAthiraVisish1 from "@/assets/home-athira-visish-1.png";
-import homeAthiraVisish2 from "@/assets/home-athira-visish-2.png";
-import homeAthiraVisish3 from "@/assets/home-athira-visish-3.png";
-import homeAbinaBasil1 from "@/assets/home-abina-basil-1.png";
-import homeAbinaBasil2 from "@/assets/home-abina-basil-2.png";
-import homeMolexRoshin1 from "@/assets/home-molex-roshin-1.png";
-import homeMolexRoshin2 from "@/assets/home-molex-roshin-2.png";
-import homeMolexRoshin3 from "@/assets/home-molex-roshin-3.png";
 import { useAuth } from "@/contexts/AuthContext";
 import StepOne from "@/components/registration/StepOne";
 import StepTwo from "@/components/registration/StepTwo";
 import StepThree from "@/components/registration/StepThree";
 import StepFour from "@/components/registration/StepFour";
 import StepFive from "@/components/registration/StepFive";
-import HomeStoryCarousel from "@/components/HomeStoryCarousel";
 import HowItWorks from "@/components/HowItWorks";
 import FeaturedSuccessStory from "@/components/FeaturedSuccessStory";
 import ClientRegistrationCTA from "@/components/ClientRegistrationCTA";
 import HomeServicesSection from "@/components/HomeServicesSection";
 import { loginUserApi } from "@/services/AuthServices";
-
 import Axios from "@/axios/axios";
 import { getNextIncompleteStep } from "@/utils/profileStatus";
 
@@ -65,7 +54,6 @@ const Home = () => {
   const [signInData, setSignInData] = useState({ email: "", password: "" });
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
-  const [showMalayalam, setShowMalayalam] = useState(false);
   const [currentTagline, setCurrentTagline] = useState(0);
   const [successStories, setSuccessStories] = useState<any[]>([]);
   const [cmsBanners, setCmsBanners] = useState<any[]>([]);
@@ -92,10 +80,6 @@ const Home = () => {
   const activeHeroSlides =
     cmsBanners.length > 0 ? cmsBanners.map((b) => b.imageUrl) : heroSlides;
 
-  useEffect(() => {
-    console.log("HOME AUTH:", isAuthenticated, user);
-  }, [isAuthenticated, user]);
-
   const isProfileCompleted =
     user?.profileStatus === "COMPLETED" || getNextIncompleteStep(user) === 0;
 
@@ -107,7 +91,7 @@ const Home = () => {
     });
   }, [activeHeroSlides]);
 
-  // Auto-rotate hero background banner slides faster (every 3 seconds)
+  // Auto-rotate hero background banner slides
   useEffect(() => {
     if (isHeroHovered) return;
 
@@ -192,6 +176,7 @@ const Home = () => {
     setStepErrors({});
     setSignInData({ email: "", password: "" });
   };
+
   useEffect(() => {
     const fetchPrimaryStories = async () => {
       try {
@@ -202,7 +187,6 @@ const Home = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log("API RESPONSE:", res.data);
         const filtered = (res.data || [])
           .filter((item: any) => item.isPrimary === true)
           .map((item: any) => ({
@@ -216,7 +200,6 @@ const Home = () => {
             date: new Date(item.createdAt).toLocaleDateString(),
             fullStory: item.story,
           }));
-        console.log("FILTERED STORIES:", filtered);
 
         setSuccessStories(filtered);
       } catch (err) {
@@ -226,6 +209,7 @@ const Home = () => {
 
     fetchPrimaryStories();
   }, []);
+
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -258,7 +242,42 @@ const Home = () => {
     },
   ];
 
+  // Restored 5-Item Features Section
   const features = [
+    {
+      icon: Shield,
+      title: "Secure & Trusted",
+      description:
+        "Your data is protected with industry-leading security measures, ensuring complete trust and reliability.",
+    },
+    {
+      icon: Users,
+      title: "Authentic Profiles",
+      description:
+        "Every profile is manually verified through a strict authentication process to ensure complete authenticity.",
+    },
+    {
+      icon: Lock,
+      title: "Your Privacy",
+      description:
+        "Ensuring absolute privacy with full control over who can view your profile and contact details, tailored to your needs.",
+    },
+    {
+      icon: CheckCircle,
+      title: "Advanced Matching",
+      description:
+        "Smart algorithm capabilities focusing on compatibility and exclusivity to help you find your perfect match.",
+    },
+    {
+      icon: Headset,
+      title: "Personalised Support",
+      description:
+        "Every profile receives consultant-led personalised support, ensuring meaningful matches without relying solely on algorithm-based outcomes.",
+    },
+  ];
+
+  // Highlights / Platform Highlights
+  const highlightFeatures = [
     {
       icon: MessageSquare,
       badge: "Secure Private Platform",
@@ -278,10 +297,9 @@ const Home = () => {
       badge: "Worldwide Keralite Network",
       title: "Global Reach & Diverse Community",
       description:
-        "Love & Ring Matrimony's digital reach spans across all major continents where KERALITES are concentrated. Our database holds a diverse range of Professionals, Entrepreneurs, Mature Business Owners, Industrialists, Creative Artists and Writers from various communities, social backgrounds and regions. Our 'Client Specialists' are based at Europe, Australia, Americas, GCC countries and India. Having deep understanding of cultural, social, communal and geographical sensitivities, our specialists will guide you in the right path.",
+        "Love & Ring Matrimony's digital reach spans across all major continents where KERALITES are concentrated. Our database holds a diverse range of Professionals, Entrepreneurs, Mature Business Owners, Industrialists, Creative Artists and Writers from various communities, social backgrounds and regions.",
     },
   ];
-
 
   const heroTaglines = [
     "A Place for Global Malayalees to Find their Perfect Match",
@@ -308,7 +326,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section - starts from absolute top of viewport, behind navbar */}
+      {/* Hero Section */}
       <section
         id="hero-section"
         className="relative min-h-screen flex items-center justify-center overflow-hidden"
@@ -316,7 +334,7 @@ const Home = () => {
         onMouseEnter={() => setIsHeroHovered(true)}
         onMouseLeave={() => setIsHeroHovered(false)}
       >
-        {/* Background Image Carousel - sharp, no blur */}
+        {/* Background Image Carousel */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
@@ -333,7 +351,7 @@ const Home = () => {
           />
         </AnimatePresence>
 
-        {/* Dark Gradient Overlay for text readability - no blur */}
+        {/* Dark Gradient Overlay */}
         <div
           className="absolute inset-0"
           style={{
@@ -342,7 +360,7 @@ const Home = () => {
           }}
         />
 
-        {/* Hero Content - centered with padding for navbar space */}
+        {/* Hero Content */}
         <div className="container mx-auto relative z-10 px-4 pt-16">
           <AnimatePresence mode="wait">
             {formMode === "hero" && !isAuthenticated ? (
@@ -369,11 +387,6 @@ const Home = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.6 }}
-                      // className={`inline ${
-                      //   heroTaglines[currentTagline].includes("നിങ്ങൾ")
-                      //     ? "gradient-text-light"
-                      //     : "gradient-text-light"
-                      // }`}
                       style={
                         heroTaglines[currentTagline].includes("നിങ്ങൾ")
                           ? {
@@ -442,10 +455,9 @@ const Home = () => {
                 transition={{ duration: 0.5 }}
                 className="absolute inset-0 flex flex-col lg:flex-row"
               >
-                {/* Dark Overlay for Readability */}
+                {/* Dark Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 z-0" />
 
-                {/* Desktop/Tablet Close Button - Top Right of Screen */}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -455,7 +467,7 @@ const Home = () => {
                   <X className="h-5 w-5" />
                 </Button>
 
-                {/* Left Section - Marketing Content */}
+                {/* Left Section */}
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -463,7 +475,6 @@ const Home = () => {
                   className="hidden lg:flex lg:w-[45%] text-white p-12 xl:p-16 flex-col justify-center relative z-10"
                 >
                   <div className="relative z-10 max-w-lg">
-                    {/* Main Heading */}
                     <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-6">
                       Welcome Back
                       <br />
@@ -472,14 +483,12 @@ const Home = () => {
                       </span>
                     </h1>
 
-                    {/* Supporting Text */}
                     <p className="text-lg text-white/80 leading-relaxed mb-10">
                       Your perfect match is waiting. Sign in to continue your
                       journey and discover meaningful connections tailored to
                       your preferences.
                     </p>
 
-                    {/* Feature Highlights */}
                     <div className="grid grid-cols-2 gap-4 mb-10">
                       {loginFeatures.map((feature, index) => (
                         <motion.div
@@ -504,7 +513,6 @@ const Home = () => {
                       ))}
                     </div>
 
-                    {/* Register Link */}
                     <div className="pt-6 border-t border-white/10">
                       <p className="text-white/70">
                         Don't have an account?{" "}
@@ -527,7 +535,6 @@ const Home = () => {
                     transition={{ duration: 0.5, delay: 0.3 }}
                     className="w-full max-w-xl"
                   >
-                    {/* Mobile Header */}
                     <div className="lg:hidden text-center mb-6">
                       <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
                         Welcome <span className="text-primary">Back</span>
@@ -543,7 +550,6 @@ const Home = () => {
                       </p>
                     </div>
 
-                    {/* Mobile Close Button */}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -553,9 +559,7 @@ const Home = () => {
                       <X className="h-5 w-5" />
                     </Button>
 
-                    {/* Form Card */}
                     <Card className="relative p-5 sm:p-6 lg:p-7 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
-                      {/* Form Header */}
                       <div className="mb-5">
                         <h2 className="text-xl font-semibold text-foreground mb-1">
                           Sign In
@@ -565,7 +569,6 @@ const Home = () => {
                         </p>
                       </div>
 
-                      {/* Form */}
                       <form onSubmit={handleSignIn} className="space-y-4">
                         <div className="space-y-1.5">
                           <Label htmlFor="email" className="text-sm">
@@ -636,7 +639,6 @@ const Home = () => {
                         </Button>
                       </form>
 
-                      {/* Divider */}
                       <div className="relative my-5">
                         <div className="absolute inset-0 flex items-center">
                           <div className="w-full border-t border-border/50" />
@@ -648,7 +650,6 @@ const Home = () => {
                         </div>
                       </div>
 
-                      {/* Social Login */}
                       <Button
                         variant="outline"
                         className="w-full h-10 rounded-lg"
@@ -675,7 +676,6 @@ const Home = () => {
                         Continue with Google
                       </Button>
 
-                      {/* Register Link - Mobile/Tablet visible inside card */}
                       <p className="text-center mt-5 text-sm text-muted-foreground lg:hidden">
                         Don't have an account?{" "}
                         <Link
@@ -687,7 +687,6 @@ const Home = () => {
                       </p>
                     </Card>
 
-                    {/* Help Text */}
                     <div className="text-center mt-4 text-xs text-white/60">
                       <p>
                         Need help? Contact us at{" "}
@@ -708,7 +707,6 @@ const Home = () => {
                 transition={{ duration: 0.8 }}
                 className="max-w-4xl mx-auto relative p-4 sm:p-6"
               >
-                {/* Close Button */}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -718,7 +716,6 @@ const Home = () => {
                   <X className="h-5 w-5" />
                 </Button>
 
-                {/* Header */}
                 <div className="text-center mb-6 sm:mb-8">
                   <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4">
                     Create Your <span className="gradient-text">Profile</span>
@@ -729,7 +726,6 @@ const Home = () => {
                   </p>
                 </div>
 
-                {/* Progress Bar */}
                 <div className="mb-6 sm:mb-8">
                   <Progress value={progress} className="h-2 sm:h-3" />
                   <div className="hidden sm:flex justify-between mt-2 text-xs sm:text-sm text-muted-foreground">
@@ -753,7 +749,6 @@ const Home = () => {
                   </div>
                 </div>
 
-                {/* Form Card */}
                 <Card className="p-4 sm:p-6 md:p-8 glass-card">
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -767,7 +762,6 @@ const Home = () => {
                     </motion.div>
                   </AnimatePresence>
 
-                  {/* Navigation Buttons */}
                   <div className="flex justify-between mt-6 sm:mt-8 pt-4 sm:pt-6 border-t gap-4">
                     <Button
                       variant="outline"
@@ -792,7 +786,6 @@ const Home = () => {
                   </div>
                 </Card>
 
-                {/* Already have account */}
                 <div className="mt-4 text-center">
                   <p className="text-sm text-muted-foreground">
                     Already have an account?{" "}
@@ -861,7 +854,6 @@ const Home = () => {
           </AnimatePresence>
         </div>
 
-        {/* Floating brand logo - show for public hero AND authenticated home */}
         {(formMode === "hero" || isAuthenticated) &&
           formMode !== "signin" &&
           formMode !== "registration" && <FloatingBrandLogo />}
@@ -870,25 +862,26 @@ const Home = () => {
       {/* How It Works Section */}
       <HowItWorks />
 
-      {/* Features Section */}
+      {/* 5-Item Features Section */}
       <section className="py-12 sm:py-16 md:py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-10 sm:mb-16 max-w-3xl mx-auto"
+            className="text-center mb-10 sm:mb-16"
           >
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
               Why Choose Love &amp; Ring?
             </h2>
-            <p className="text-base sm:text-xl text-muted-foreground">
-              Built on trust, privacy, global reach, and dedicated guidance to help you find your perfect life partner.
+            <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+              We provide a secure, trusted platform to help you find your
+              perfect life partner
             </p>
           </motion.div>
 
           <div className="flex justify-center w-full">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 w-full max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 w-full max-w-5xl mx-auto">
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
@@ -898,25 +891,14 @@ const Home = () => {
                   transition={{ delay: index * 0.1 }}
                   className="flex"
                 >
-                  <Card className="p-6 sm:p-7 w-full border border-border/70 hover:border-primary/50 bg-card hover:shadow-xl transition-all duration-300 flex flex-col justify-between rounded-2xl group">
-                    <div>
-                      <div className="flex items-center justify-between mb-5">
-                        <div className="p-3.5 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                          <feature.icon className="h-7 w-7" />
-                        </div>
-                        <Badge variant="outline" className="text-[11px] font-semibold text-primary border-primary/30 bg-primary/5">
-                          {feature.badge}
-                        </Badge>
-                      </div>
-
-                      <h3 className="text-lg sm:text-xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors leading-tight">
-                        {feature.title}
-                      </h3>
-
-                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                        {feature.description}
-                      </p>
-                    </div>
+                  <Card className="p-5 sm:p-6 w-full glass-card hover:shadow-lg transition-all flex flex-col">
+                    <feature.icon className="h-10 w-10 sm:h-12 sm:w-12 text-primary mb-3 sm:mb-4" />
+                    <h3 className="text-lg sm:text-xl font-semibold mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm sm:text-base text-muted-foreground flex-1">
+                      {feature.description}
+                    </p>
                   </Card>
                 </motion.div>
               ))}
@@ -944,7 +926,7 @@ const Home = () => {
             </p>
           </motion.div>
 
-          <div className="">
+          <div>
             <FeaturedSuccessStory stories={successStories} />
           </div>
 
@@ -961,12 +943,53 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Extended Highlight Cards Section */}
+      <section className="py-12 sm:py-16 md:py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 w-full max-w-6xl mx-auto">
+            {highlightFeatures.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="flex"
+              >
+                <Card className="p-6 sm:p-7 w-full border border-border/70 hover:border-primary/50 bg-card hover:shadow-xl transition-all duration-300 flex flex-col justify-between rounded-2xl group">
+                  <div>
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="p-3.5 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                        <feature.icon className="h-7 w-7" />
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="text-[11px] font-semibold text-primary border-primary/30 bg-primary/5"
+                      >
+                        {feature.badge}
+                      </Badge>
+                    </div>
+
+                    <h3 className="text-lg sm:text-xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors leading-tight">
+                      {feature.title}
+                    </h3>
+
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Wedding Services Preview Tiles */}
       <HomeServicesSection />
 
       {/* Client Registration CTA */}
       <ClientRegistrationCTA />
-
 
       {/* About Preview Section */}
       <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
@@ -979,10 +1002,10 @@ const Home = () => {
               className="text-center space-y-4 sm:space-y-6"
             >
               <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold">
-                About Love & Ring
+                About Love &amp; Ring
               </h2>
               <p className="text-sm sm:text-lg text-muted-foreground leading-relaxed">
-                Love & Ring is a trusted, personalised matchmaking and
+                Love &amp; Ring is a trusted, personalised matchmaking and
                 matrimonial platform dedicated to helping individuals find their
                 ideal life partner. Our platform is built on trust,
                 authenticity, and a deep understanding of diverse social and
