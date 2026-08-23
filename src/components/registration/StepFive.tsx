@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Axios from "@/axios/axios";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -21,7 +22,7 @@ const StepFive = ({ formData, updateFormData }: StepFiveProps) => {
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
   const [selectedDiets, setSelectedDiets] = useState<string[]>([]);
 
-  const interests = [
+  const [masterInterests, setMasterInterests] = useState<{ id: string; name: string; icon: string }[]>([
     { id: "reading", name: "Reading", icon: "📚" },
     { id: "music", name: "Music", icon: "🎵" },
     { id: "travel", name: "Travel", icon: "✈️" },
@@ -30,7 +31,26 @@ const StepFive = ({ formData, updateFormData }: StepFiveProps) => {
     { id: "movies", name: "Movies", icon: "🎬" },
     { id: "photography", name: "Photography", icon: "📸" },
     { id: "art", name: "Art", icon: "🎨" },
-  ];
+  ]);
+
+  useEffect(() => {
+    const fetchMasterInterests = async () => {
+      try {
+        const { data } = await Axios.get("/api/master/interests");
+        if (data && Array.isArray(data.data) && data.data.length > 0) {
+          const formatted = data.data.map((item: any) => ({
+            id: item.name.toLowerCase(),
+            name: item.name,
+            icon: item.icon || "✨",
+          }));
+          setMasterInterests(formatted);
+        }
+      } catch (err) {
+        console.error("Failed to fetch master interests, using default", err);
+      }
+    };
+    fetchMasterInterests();
+  }, []);
 
   const traits = [
     { id: "friendly", name: "Friendly", icon: "😊" },
@@ -107,26 +127,25 @@ const StepFive = ({ formData, updateFormData }: StepFiveProps) => {
         <div className="space-y-3">
           <Label>Interests (Select multiple)</Label>
           <div className="flex flex-wrap gap-2">
-            {interests.map((interest) => (
+            {masterInterests.map((interest) => (
               <Badge
                 key={interest.id}
                 variant={
-                  selectedInterests.includes(interest.id)
+                  selectedInterests.includes(interest.id) || selectedInterests.includes(interest.name)
                     ? "default"
                     : "outline"
                 }
                 className="cursor-pointer px-4 py-2 text-sm"
                 onClick={() =>
                   toggleSelection(
-                    interest.id,
+                    interest.name,
                     selectedInterests,
                     setSelectedInterests,
                   )
                 }
               >
-                <span className="mr-1">{interest.icon}</span>
                 {interest.name}
-                {selectedInterests.includes(interest.id) && (
+                {(selectedInterests.includes(interest.id) || selectedInterests.includes(interest.name)) && (
                   <X className="ml-2 h-3 w-3" />
                 )}
               </Badge>
