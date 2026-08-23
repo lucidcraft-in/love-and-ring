@@ -10,6 +10,7 @@ import Footer from "./components/Footer";
 import WhatsAppButton from "./components/WhatsAppButton";
 import Home from "./pages/Home";
 import About from "./pages/About";
+import Explore from "./pages/Explore";
 import FAQ from "./pages/FAQ";
 import Pricing from "./pages/Pricing";
 import SuccessStories from "./pages/SuccessStories";
@@ -53,11 +54,11 @@ const AppLayout = () => {
   }, [location.pathname, location.search]);
 
   // Hero routes have transparent navbar overlay - no padding needed
-  const heroRoutes = ["/", "/login", "/register", "/client-terms", "/client-registration", "/about", "/success-stories", "/pricing", "/contact", "/forgot-password", "/privacy-details", "/terms"];
+  const heroRoutes = ["/", "/login", "/register", "/client-terms", "/client-registration", "/about", "/explore", "/success-stories", "/pricing", "/contact", "/forgot-password", "/privacy-details", "/terms"];
   const isHeroRoute = heroRoutes.includes(location.pathname) || location.pathname.startsWith("/pages/");
 
   // Public pages where WhatsApp button should show
-  const publicRoutes = ["/", "/about", "/pricing", "/faq", "/contact", "/success-stories"];
+  const publicRoutes = ["/", "/about", "/explore", "/pricing", "/faq", "/contact", "/success-stories"];
   const isPublicRoute = publicRoutes.includes(location.pathname);
 
   // Dashboard routes have their own footer - hide global footer
@@ -112,6 +113,7 @@ const AppLayout = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/explore" element={<Explore />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/pricing/:plan" element={<PlanDetail />} />
