@@ -79,11 +79,41 @@ interface InterestItem {
 }
 
 const Interests = () => {
-  const [activeTab, setActiveTab] = useState("received");
-  const [received, setReceived] = useState<InterestItem[]>([]);
-  const [sent, setSent] = useState<InterestItem[]>([]);
-  const [accepted, setAccepted] = useState<InterestItem[]>([]);
-  const [rejected, setRejected] = useState<InterestItem[]>([]);
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem("activeInterestsTab") || "received";
+  });
+  const [received, setReceived] = useState<InterestItem[]>(() => {
+    try {
+      const cached = sessionStorage.getItem("cached_interests_received");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [sent, setSent] = useState<InterestItem[]>(() => {
+    try {
+      const cached = sessionStorage.getItem("cached_interests_sent");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [accepted, setAccepted] = useState<InterestItem[]>(() => {
+    try {
+      const cached = sessionStorage.getItem("cached_interests_accepted");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [rejected, setRejected] = useState<InterestItem[]>(() => {
+    try {
+      const cached = sessionStorage.getItem("cached_interests_rejected");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [viewLoading, setViewLoading] = useState<string | null>(null);
@@ -112,7 +142,9 @@ const Interests = () => {
   console.log("userId", userId);
 
   const fetchInterests = async () => {
-    setLoading(true);
+    if (received.length === 0 && sent.length === 0 && accepted.length === 0 && rejected.length === 0) {
+      setLoading(true);
+    }
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
@@ -124,47 +156,54 @@ const Interests = () => {
         Axios.get("/api/user/interests/rejected/interest", { headers }),
       ]);
       console.log("res", receivedRes.data, sentRes.data, acceptedRes.data, rejectedRes.data);
-      const mapInterest = (item: any, userKey: string): InterestItem => ({
-        _id: item._id,
-        user: {
-          _id: item[userKey]._id,
-          fullName: item[userKey].fullName,
-          dateOfBirth: item[userKey].dateOfBirth,
-          heightCm: item[userKey].heightCm,
-          weightKg: item[userKey].weightKg,
-          maritalStatus: item[userKey].maritalStatus,
-          religion: item[userKey].religion,
-          caste: item[userKey].caste,
-          city: item[userKey].city,
-          state: item[userKey].state,
-          profileStatus: item[userKey].profileStatus,
-          isMillionClub: checkMillionStatus(item[userKey]),
-          interests: item[userKey].interests || [],
-          education: (item[userKey].primaryEducation || item[userKey].highestEducation || item[userKey].education)
-            ? { name: (item[userKey].primaryEducation || item[userKey].highestEducation || item[userKey].education).name }
-            : undefined,
-          profession: item[userKey].profession
-            ? { name: item[userKey].profession.name }
-            : undefined,
-          photos: item[userKey].photos || [],
-        },
-        matchScore: item.matchPercentage ?? 0,
-        status: item.status || "pending",
-      });
+      const mapInterest = (item: any, userKey: string): InterestItem | null => {
+        const u = item?.[userKey];
+        if (!u || u.isActive === false || u.approvalStatus === "INACTIVE") return null;
+        return {
+          _id: item._id,
+          user: {
+            _id: u._id,
+            fullName: u.fullName,
+            dateOfBirth: u.dateOfBirth,
+            heightCm: u.heightCm,
+            weightKg: u.weightKg,
+            maritalStatus: u.maritalStatus,
+            religion: u.religion,
+            caste: u.caste,
+            city: u.city,
+            state: u.state,
+            profileStatus: u.profileStatus,
+            isMillionClub: checkMillionStatus(u),
+            interests: u.interests || [],
+            education: (u.primaryEducation || u.highestEducation || u.education)
+              ? { name: (u.primaryEducation || u.highestEducation || u.education).name }
+              : undefined,
+            profession: u.profession
+              ? { name: u.profession.name }
+              : undefined,
+            photos: u.photos || [],
+          },
+          matchScore: item.matchPercentage ?? 0,
+          status: item.status || "pending",
+        };
+      };
 
-      setReceived(
-        (receivedRes.data || [])
-          .map((i: any) => mapInterest(i, "fromUser"))
-          .filter((i) => i.status?.toLowerCase() === "pending"),
-      );
+      const mappedReceived = (receivedRes.data || [])
+        .map((i: any) => mapInterest(i, "fromUser"))
+        .filter((i: InterestItem | null): i is InterestItem => i !== null && i.status?.toLowerCase() === "pending");
+      setReceived(mappedReceived);
 
-      setSent(
-        (sentRes.data || [])
-          .map((i: any) => mapInterest(i, "toUser"))
-          .filter((i) => i.status?.toLowerCase() !== "rejected"),
-      );
-      setAccepted(
-        (acceptedRes.data || []).map((item: any) => {
+      const mappedSent = (sentRes.data || [])
+        .map((i: any) => mapInterest(i, "toUser"))
+        .filter((i: InterestItem | null): i is InterestItem => i !== null && i.status?.toLowerCase() !== "rejected");
+      setSent(mappedSent);
+
+      const mappedAccepted = (acceptedRes.data || [])
+        .filter((item: any) => {
+          const otherUser = String(item.fromUser?._id) === String(userId) ? item.toUser : item.fromUser;
+          return otherUser && otherUser.isActive !== false && otherUser.approvalStatus !== "INACTIVE";
+        })
+        .map((item: any) => {
           const otherUser =
             String(item.fromUser._id) === String(userId)
               ? item.toUser
@@ -197,11 +236,15 @@ const Interests = () => {
             matchScore: item.matchPercentage ?? 0,
             status: item.status || "accepted",
           };
-        }),
-      );
+        });
+      setAccepted(mappedAccepted);
 
-      setRejected(
-        (rejectedRes.data || []).map((item: any) => {
+      const mappedRejected = (rejectedRes.data || [])
+        .filter((item: any) => {
+          const otherUser = String(item.fromUser?._id) === String(userId) ? item.toUser : item.fromUser;
+          return otherUser && otherUser.isActive !== false && otherUser.approvalStatus !== "INACTIVE";
+        })
+        .map((item: any) => {
           const otherUser =
             String(item.fromUser._id) === String(userId)
               ? item.toUser
@@ -234,8 +277,15 @@ const Interests = () => {
             matchScore: item.matchPercentage ?? 0,
             status: item.status || "rejected",
           };
-        }),
-      );
+        });
+      setRejected(mappedRejected);
+
+      try {
+        sessionStorage.setItem("cached_interests_received", JSON.stringify(mappedReceived));
+        sessionStorage.setItem("cached_interests_sent", JSON.stringify(mappedSent));
+        sessionStorage.setItem("cached_interests_accepted", JSON.stringify(mappedAccepted));
+        sessionStorage.setItem("cached_interests_rejected", JSON.stringify(mappedRejected));
+      } catch {}
     } catch (err) {
       console.error("Failed to fetch interests", err);
     } finally {
@@ -700,7 +750,7 @@ const Interests = () => {
   const displayedAccepted = accepted;
   const displayedRejected = rejected;
 
-  if (loading) {
+  if (loading && received.length === 0 && sent.length === 0 && accepted.length === 0 && rejected.length === 0) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
         <p className="text-muted-foreground">Loading interests… 💜</p>
@@ -714,11 +764,17 @@ const Interests = () => {
         <h2 className="text-2xl font-bold">Interests</h2>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs
+        value={activeTab}
+        onValueChange={(val) => {
+          setActiveTab(val);
+          localStorage.setItem("activeInterestsTab", val);
+        }}
+      >
         <div className="overflow-x-auto scrollbar-hide lg:overflow-visible px-1 -mx-1">
           <TabsList className="w-max lg:w-auto flex-nowrap">
             <TabsTrigger value="received">Received Interests</TabsTrigger>
-            <TabsTrigger value="accepted">Accepted Interests</TabsTrigger>
+            {/* <TabsTrigger value="accepted">Accepted Interests</TabsTrigger> */}
             <TabsTrigger value="sent">Requested Interests</TabsTrigger>
             <TabsTrigger value="rejected">Rejected Interests</TabsTrigger>
           </TabsList>
@@ -736,7 +792,7 @@ const Interests = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="sent" className="mt-6">
+        {/* <TabsContent value="sent" className="mt-6">
           {displayedSent.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {displayedSent.map((item) => (
@@ -746,7 +802,7 @@ const Interests = () => {
           ) : (
             <EmptyState message="No interests sent yet." />
           )}
-        </TabsContent>
+        </TabsContent> */}
         <TabsContent value="accepted" className="mt-6">
           {displayedAccepted.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

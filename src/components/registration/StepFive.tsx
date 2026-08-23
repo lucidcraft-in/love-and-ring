@@ -18,35 +18,38 @@ interface StepFiveProps {
 const StepFive = ({ formData, updateFormData }: StepFiveProps) => {
   const [incomeRange, setIncomeRange] = useState([25]);
   const [incomeType, setIncomeType] = useState("yearly");
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
-  const [selectedDiets, setSelectedDiets] = useState<string[]>([]);
+  const [loadingInterests, setLoadingInterests] = useState(false);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>(
+    () => formData?.interests || []
+  );
+  const [selectedTraits, setSelectedTraits] = useState<string[]>(
+    () => formData?.traits || []
+  );
+  const [selectedDiets, setSelectedDiets] = useState<string[]>(
+    () => formData?.diets || []
+  );
 
-  const [masterInterests, setMasterInterests] = useState<{ id: string; name: string; icon: string }[]>([
-    { id: "reading", name: "Reading", icon: "📚" },
-    { id: "music", name: "Music", icon: "🎵" },
-    { id: "travel", name: "Travel", icon: "✈️" },
-    { id: "cooking", name: "Cooking", icon: "🍳" },
-    { id: "sports", name: "Sports", icon: "⚽" },
-    { id: "movies", name: "Movies", icon: "🎬" },
-    { id: "photography", name: "Photography", icon: "📸" },
-    { id: "art", name: "Art", icon: "🎨" },
-  ]);
+  const [masterInterests, setMasterInterests] = useState<{ id: string; name: string; icon: string }[]>([]);
 
   useEffect(() => {
     const fetchMasterInterests = async () => {
+      setLoadingInterests(true);
       try {
-        const { data } = await Axios.get("/api/master/interests");
-        if (data && Array.isArray(data.data) && data.data.length > 0) {
-          const formatted = data.data.map((item: any) => ({
-            id: item.name.toLowerCase(),
-            name: item.name,
-            icon: item.icon || "✨",
-          }));
-          setMasterInterests(formatted);
-        }
+        const response = await Axios.get("/api/master/interests");
+        const resData = response.data;
+        const list = Array.isArray(resData?.data) ? resData.data : (Array.isArray(resData) ? resData : []);
+        
+        const activeList = list.filter((item: any) => item.status !== "Inactive");
+        const formatted = activeList.map((item: any) => ({
+          id: item._id || item.name,
+          name: item.name,
+          icon: item.icon || "✨",
+        }));
+        setMasterInterests(formatted);
       } catch (err) {
-        console.error("Failed to fetch master interests, using default", err);
+        console.error("Failed to fetch master interests from backend", err);
+      } finally {
+        setLoadingInterests(false);
       }
     };
     fetchMasterInterests();
@@ -126,34 +129,37 @@ const StepFive = ({ formData, updateFormData }: StepFiveProps) => {
         {/* Interests */}
         <div className="space-y-3">
           <Label>Interests (Select multiple)</Label>
-          <div className="flex flex-wrap gap-2">
-            {masterInterests.map((interest) => (
-              <Badge
-                key={interest.id}
-                variant={
-                  selectedInterests.includes(interest.id) || selectedInterests.includes(interest.name)
-                    ? "default"
-                    : "outline"
-                }
-                className="cursor-pointer px-4 py-2 text-sm"
-                onClick={() =>
-                  toggleSelection(
-                    interest.name,
-                    selectedInterests,
-                    setSelectedInterests,
-                  )
-                }
-              >
-                {interest.name}
-                {(selectedInterests.includes(interest.id) || selectedInterests.includes(interest.name)) && (
-                  <X className="ml-2 h-3 w-3" />
-                )}
-              </Badge>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            From CRUD-based list with icons
-          </p>
+          {loadingInterests ? (
+            <p className="text-xs text-muted-foreground">Loading interests from server…</p>
+          ) : masterInterests.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No interests available in master data.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {masterInterests.map((interest) => {
+                const isSelected =
+                  selectedInterests.includes(interest.name) ||
+                  selectedInterests.includes(interest.id);
+                return (
+                  <Badge
+                    key={interest.id}
+                    variant={isSelected ? "default" : "outline"}
+                    className="cursor-pointer px-4 py-2 text-sm"
+                    onClick={() =>
+                      toggleSelection(
+                        interest.name,
+                        selectedInterests,
+                        setSelectedInterests
+                      )
+                    }
+                  >
+                    <span className="mr-1">{interest.icon}</span>
+                    {interest.name}
+                    {isSelected && <X className="ml-2 h-3 w-3" />}
+                  </Badge>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Personality Traits */}

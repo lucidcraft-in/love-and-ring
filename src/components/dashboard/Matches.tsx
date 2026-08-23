@@ -79,14 +79,30 @@ interface MatchItem {
 }
 
 const Matches = () => {
-  const [activeTab, setActiveTab] = useState("new");
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem("activeMatchesTab") || "new";
+  });
   const [sentInterests, setSentInterests] = useState<string[]>([]);
   const [sentInterestMap, setSentInterestMap] = useState<Record<string, string>>({}); // targetUserId -> interestId
   const [sendingInterest, setSendingInterest] = useState<string | null>(null);
   const [cancelingInterest, setCancelingInterest] = useState<string | null>(null);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [matches, setMatches] = useState<MatchItem[]>([]);
-  const [myMatches, setMyMatches] = useState<MatchItem[]>([]); // Mutual / Accepted matches
+  const [matches, setMatches] = useState<MatchItem[]>(() => {
+    try {
+      const cached = sessionStorage.getItem("cached_matches_data");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [myMatches, setMyMatches] = useState<MatchItem[]>(() => {
+    try {
+      const cached = sessionStorage.getItem("cached_mymatches_data");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  }); // Mutual / Accepted matches
   const [millionClubMatches, setMillionClubMatches] = useState<MatchItem[]>([]);
   const [millionClubUserIds, setMillionClubUserIds] = useState<Set<string>>(new Set());
   const storedUser = localStorage.getItem("user");
@@ -110,8 +126,22 @@ const Matches = () => {
   const [loading, setLoading] = useState(false);
   const [likingProfile, setLikingProfile] = useState<string | null>(null);
   const [likedUserIds, setLikedUserIds] = useState<Set<string>>(new Set());
-  const [likedByMe, setLikedByMe] = useState<MatchItem[]>([]);
-  const [likedMe, setLikedMe] = useState<MatchItem[]>([]);
+  const [likedByMe, setLikedByMe] = useState<MatchItem[]>(() => {
+    try {
+      const cached = sessionStorage.getItem("cached_likedbyme_data");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [likedMe, setLikedMe] = useState<MatchItem[]>(() => {
+    try {
+      const cached = sessionStorage.getItem("cached_likedme_data");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
   const [receivedInterests, setReceivedInterests] = useState<string[]>([]);
   const [acceptedInterests, setAcceptedInterests] = useState<string[]>([]);
   const [profileLimitReached, setProfileLimitReached] = useState(false);
@@ -128,7 +158,7 @@ const Matches = () => {
       });
 
       const formatted: MatchItem[] = (res.data || [])
-        .filter((item: any) => item && item.likedUser)
+        .filter((item: any) => item && item.likedUser && item.likedUser.isActive !== false && item.likedUser.approvalStatus !== "INACTIVE")
         .map((item: any) => ({
           user: {
             _id: item.likedUser._id,
@@ -172,7 +202,7 @@ const Matches = () => {
       });
 
       const formatted: MatchItem[] = (res.data || [])
-        .filter((item: any) => item && item.likedBy)
+        .filter((item: any) => item && item.likedBy && item.likedBy.isActive !== false && item.likedBy.approvalStatus !== "INACTIVE")
         .map((item: any) => ({
           user: {
             _id: item.likedBy._id,
@@ -203,7 +233,9 @@ const Matches = () => {
   };
 
   const fetchMatches = async (likedIds: Set<string>) => {
-    setLoading(true);
+    if (matches.length === 0 && myMatches.length === 0) {
+      setLoading(true);
+    }
     try {
       const token = localStorage.getItem("token");
       const res = await Axios.get("/api/user/matches", {
@@ -212,7 +244,7 @@ const Matches = () => {
 
       const raw = Array.isArray(res.data?.data) ? res.data.data : [];
       const normalized: MatchItem[] = raw
-        .filter((item: any) => item && item.user)
+        .filter((item: any) => item && item.user && item.user.isActive !== false && item.user.approvalStatus !== "INACTIVE")
         .map((item: any) => ({
           user: {
             _id: item.user._id,
@@ -241,6 +273,9 @@ const Matches = () => {
         }));
 
       setMatches(normalized);
+      try {
+        sessionStorage.setItem("cached_matches_data", JSON.stringify(normalized));
+      } catch {}
     } catch (err) {
       console.error("Failed to fetch matches", err);
       toast.error("Failed to load matches");
@@ -258,7 +293,7 @@ const Matches = () => {
 
       const raw = Array.isArray(res.data) ? res.data : [];
       const formatted: MatchItem[] = raw
-        .filter((item: any) => item && item._id)
+        .filter((item: any) => item && item._id && item.isActive !== false && item.approvalStatus !== "INACTIVE")
         .map((item: any) => ({
           user: {
             _id: item._id,
@@ -392,6 +427,9 @@ const Matches = () => {
       });
 
       setMyMatches(formattedMyMatches);
+      try {
+        sessionStorage.setItem("cached_mymatches_data", JSON.stringify(formattedMyMatches));
+      } catch {}
     } catch (err) {
       console.error("Failed to fetch accepted interests", err);
     }
@@ -974,7 +1012,7 @@ const Matches = () => {
 
   const displayedLikedMe = likedMe;
 
-  if (loading) {
+  if (loading && matches.length === 0 && myMatches.length === 0 && likedByMe.length === 0) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
         <p className="text-muted-foreground">Finding your matches… 💜</p>
@@ -996,7 +1034,13 @@ const Matches = () => {
         }}
       />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs
+        value={activeTab}
+        onValueChange={(val) => {
+          setActiveTab(val);
+          localStorage.setItem("activeMatchesTab", val);
+        }}
+      >
         <div className="sticky top-16 lg:top-0 z-20 bg-[#fafafa]/95 dark:bg-background/95 backdrop-blur-md py-3 px-1 -mx-1 border-b border-border/40 overflow-x-auto scrollbar-hide lg:overflow-visible">
           <TabsList className="w-max lg:w-auto flex-nowrap">
             <TabsTrigger value="new">New Matches</TabsTrigger>

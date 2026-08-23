@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import Axios from "@/axios/axios";
 import { toast } from "sonner";
@@ -37,18 +38,13 @@ const PartnerPreference = () => {
   const [selectedEducation, setSelectedEducation] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
 
-  /* ---------- Static (can later convert to API) ---------- */
+  /* ---------- Master & Custom Interests ---------- */
   const [educations, setEducations] = useState<Education[]>([]);
+  const [masterInterests, setMasterInterests] = useState<string[]>([]);
+  const [customInterests, setCustomInterests] = useState<string[]>([]);
+  const [newInterestInput, setNewInterestInput] = useState<string>("");
 
-  const interests = [
-    "Travel",
-    "Music",
-    "Reading",
-    "Sports",
-    "Cooking",
-    "Art",
-    "Technology",
-  ];
+
 
   /* ================= LOAD EXISTING PREFERENCES ================= */
   useEffect(() => {
@@ -150,6 +146,55 @@ const PartnerPreference = () => {
 
     fetchHigherEducations();
   }, []);
+
+  /* ================= FETCH MASTER INTERESTS ================= */
+  useEffect(() => {
+    const fetchMasterInterests = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await Axios.get("/api/master/interests", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        const items = response.data?.data || (Array.isArray(response.data) ? response.data : []);
+        if (Array.isArray(items) && items.length > 0) {
+          const names = items
+            .map((item: any) => (typeof item === "object" ? item.name : item))
+            .filter(Boolean);
+          setMasterInterests(names);
+        }
+      } catch (error) {
+        console.error("Failed to load master interests:", error);
+      }
+    };
+
+    fetchMasterInterests();
+  }, []);
+
+  /* ================= ADD CUSTOM INTEREST ================= */
+  const handleAddCustomInterest = () => {
+    const trimmed = newInterestInput.trim();
+    if (!trimmed) return;
+
+    const formatted = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+
+    if (!selectedInterests.includes(formatted)) {
+      setSelectedInterests((prev) => [...prev, formatted]);
+    }
+    if (!customInterests.includes(formatted)) {
+      setCustomInterests((prev) => [...prev, formatted]);
+    }
+    setNewInterestInput("");
+  };
+
+  /* Combine master, saved, and custom interests from backend */
+  const allInterests = Array.from(
+    new Set([
+      ...masterInterests,
+      ...selectedInterests,
+      ...customInterests,
+    ]),
+  );
 
   /* ================= TOGGLE HANDLER ================= */
   const toggleSelection = (
@@ -297,33 +342,57 @@ const PartnerPreference = () => {
 
         {/* Interests */}
         <Card className="glass-card p-6 ">
-          <Label className="text-lg font-semibold mb-4 block">Interests</Label>
-          <div className="flex flex-wrap gap-2">
-            {interests.map((interest) => (
-              <Badge
-                key={interest}
-                variant={
-                  selectedInterests.includes(interest) ? "default" : "outline"
+          <Label className="text-lg font-semibold mb-3 block">Interests</Label>
+          
+          {/* Add Custom Interest Input */}
+          {/* <div className="flex gap-2 mb-4">
+            <Input
+              placeholder="Add new interest..."
+              value={newInterestInput}
+              onChange={(e) => setNewInterestInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddCustomInterest();
                 }
-                className={`cursor-pointer py-2 px-4 ${
-                  selectedInterests.includes(interest)
-                    ? "bg-gradient-to-r from-primary to-secondary"
-                    : ""
-                }`}
-                onClick={() =>
-                  toggleSelection(
-                    interest,
-                    selectedInterests,
-                    setSelectedInterests,
-                  )
-                }
-              >
-                {interest}
-                {selectedInterests.includes(interest) && (
-                  <X className="w-3 h-3 ml-1" />
-                )}
-              </Badge>
-            ))}
+              }}
+              className="max-w-xs"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleAddCustomInterest}
+              className="flex items-center gap-1 shrink-0"
+            >
+              <Plus className="w-4 h-4" /> Add
+            </Button>
+          </div> */}
+
+          <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pr-1">
+            {allInterests.map((interest) => {
+              const isSelected = selectedInterests.includes(interest);
+              return (
+                <Badge
+                  key={interest}
+                  variant={isSelected ? "default" : "outline"}
+                  className={`cursor-pointer py-2 px-4 transition-all ${
+                    isSelected
+                      ? "bg-gradient-to-r from-primary to-secondary text-white"
+                      : "hover:bg-accent"
+                  }`}
+                  onClick={() =>
+                    toggleSelection(
+                      interest,
+                      selectedInterests,
+                      setSelectedInterests,
+                    )
+                  }
+                >
+                  {interest}
+                  {isSelected && <X className="w-3 h-3 ml-1" />}
+                </Badge>
+              );
+            })}
           </div>
         </Card>
 
