@@ -12,6 +12,7 @@ export interface WeddingService {
   contactPhone?: string;
   status: "Active" | "Inactive";
   order?: number;
+  rating?: number;
   createdAt?: string;
 }
 
