@@ -15,7 +15,7 @@ const Navbar = () => {
   const location = useLocation();
 
   // Hero routes get special transparent/blur treatment
-  const heroRoutes = ["/", "/login", "/register", "/client-terms", "/client-registration", "/about", "/explore", "/success-stories", "/pricing", "/contact", "/forgot-password", "/privacy-details", "/terms"];
+  const heroRoutes = ["/", "/login", "/register", "/client-terms", "/client-registration", "/about", "/explore", "/services", "/success-stories", "/pricing", "/contact", "/forgot-password", "/privacy-details", "/terms"];
   const isHeroRoute = heroRoutes.includes(location.pathname);
 
   // Detect scroll position for hero-aware navbar
@@ -45,6 +45,7 @@ const Navbar = () => {
     { name: "Home", path: "/" },
     { name: "About", path: "/about" },
     { name: "Explore", path: "/explore" },
+    { name: "Services", path: "/services" },
     { name: "Pricing", path: "/pricing" },
     { name: "Success Stories", path: "/success-stories" },
     { name: "Contact", path: "/contact" },
