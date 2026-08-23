@@ -733,7 +733,7 @@ const Interests = () => {
         <div className="overflow-x-auto scrollbar-hide lg:overflow-visible px-1 -mx-1">
           <TabsList className="w-max lg:w-auto flex-nowrap">
             <TabsTrigger value="received">Received Interests</TabsTrigger>
-            <TabsTrigger value="accepted">Accepted Interests</TabsTrigger>
+            {/* <TabsTrigger value="accepted">Accepted Interests</TabsTrigger> */}
             <TabsTrigger value="sent">Requested Interests</TabsTrigger>
             <TabsTrigger value="rejected">Rejected Interests</TabsTrigger>
           </TabsList>
@@ -751,7 +751,7 @@ const Interests = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="sent" className="mt-6">
+        {/* <TabsContent value="sent" className="mt-6">
           {displayedSent.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {displayedSent.map((item) => (
@@ -761,7 +761,7 @@ const Interests = () => {
           ) : (
             <EmptyState message="No interests sent yet." />
           )}
-        </TabsContent>
+        </TabsContent> */}
         <TabsContent value="accepted" className="mt-6">
           {displayedAccepted.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
