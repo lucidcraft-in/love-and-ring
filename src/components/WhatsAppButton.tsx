@@ -5,7 +5,7 @@ const WhatsAppButton = () => {
   const [isHovered, setIsHovered] = useState(false);
   
   // Configure your WhatsApp support number here (with country code, no + or spaces)
-  const whatsappNumber = "9074503259";
+  const whatsappNumber = "+919074503259";
   const whatsappMessage = encodeURIComponent("Hi! I need help with Love & Ring matrimony services.");
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
 
