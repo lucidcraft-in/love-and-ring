@@ -679,7 +679,7 @@ const Matches = () => {
     const hasIncomingInterest = receivedInterests.includes(match.user._id);
     const isAccepted = acceptedInterests.includes(match.user._id);
     const alreadyViewed = viewedProfiles.some((id) => String(id) === String(match.user._id));
-    const canViewProfile = isAccepted || alreadyViewed;
+    const canViewProfile = isAccepted || alreadyViewed || hasActiveMembership;
     const isMillionClub = match.user.isMillionClub || match.user.profileStatus?.toLowerCase().includes("million") || millionClubUserIds.has(String(match.user._id)) || activeTab === "millionClub";
     const primaryPhoto = match.user.photos?.find((p) => p.isPrimary);
     const isPhotoHidden = primaryPhoto?.isHidden;
@@ -695,10 +695,13 @@ const Matches = () => {
           {/* Image Section - Clickable to View Profile */}
           <div
             className={`relative overflow-hidden bg-muted rounded-l-xl md:rounded-l-2xl ${
-              canViewProfile ? "cursor-pointer group" : ""
+              canViewProfile ? "cursor-pointer group" : "cursor-pointer"
             }`}
             onClick={() => {
-              if (!canViewProfile) return;
+              if (!canViewProfile) {
+                navigate("/pricing");
+                return;
+              }
               if (isLocked) {
                 navigate("/pricing");
                 return;
