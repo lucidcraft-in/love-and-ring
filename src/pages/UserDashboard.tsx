@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import ProfileSidebar from "@/components/dashboard/ProfileSidebar";
@@ -10,11 +10,13 @@ import Matches from "@/components/dashboard/Matches";
 import Interests from "@/components/dashboard/Interests";
 import Notifications from "@/components/dashboard/Notifications";
 import BrowseProfiles from "@/components/dashboard/BrowseProfiles";
+import ChatsSection from "@/components/dashboard/ChatsSection";
 import Footer from "@/components/Footer";
 
 const UserDashboard = () => {
   const [searchParams] = useSearchParams();
   const urlTab = searchParams.get("tab");
+  const mainRef = useRef<HTMLElement | null>(null);
 
   const [activeTab, setActiveTab] = useState(() => {
     return urlTab || localStorage.getItem("activeUserDashboardTab") || "summary";
@@ -50,6 +52,10 @@ const UserDashboard = () => {
     setActiveTab(tab);
     localStorage.setItem("activeUserDashboardTab", tab);
     setSidebarOpen(false);
+    if (mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+    window.scrollTo(0, 0);
   };
 
   const renderContent = () => {
@@ -66,6 +72,9 @@ const UserDashboard = () => {
         return <Matches />;
       case "interests":
         return <Interests />;
+      case "chat":
+      case "chats":
+        return <ChatsSection onNavigate={handleNavigate} />;
       case "notifications":
         return <Notifications onNavigate={handleNavigate} />;
       case "browse":
@@ -76,7 +85,7 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 dark:bg-background lg:h-screen lg:overflow-hidden">
+    <div className="min-h-[calc(100vh-4rem)] bg-muted/30 dark:bg-background lg:h-[calc(100vh-4rem)] lg:overflow-hidden">
       <div className="flex flex-col lg:flex-row lg:h-full">
         {/* Left: Sidebar */}
         <ProfileSidebar
@@ -87,7 +96,7 @@ const UserDashboard = () => {
         />
 
         {/* Right: Scrollable Main Content */}
-        <main className="flex-1 lg:overflow-y-auto lg:h-screen">
+        <main ref={mainRef} className="flex-1 lg:overflow-y-auto lg:h-[calc(100vh-4rem)]">
           <div className="min-h-screen lg:min-h-0 flex flex-col">
             <div className="flex-1 p-6 lg:p-8">
               {/* Mobile/Tablet Menu Toggle - Under navbar */}
