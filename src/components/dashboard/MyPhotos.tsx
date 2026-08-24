@@ -48,9 +48,10 @@ const MyPhotos = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const userId = user._id;
+  const userId = user._id || user.id;
 
   const fetchPhotos = async () => {
+    if (!userId) return;
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -192,15 +193,34 @@ const MyPhotos = () => {
 
   const setAsProfile = async (photoId: string) => {
     try {
+      if (!userId) {
+        toast.error("User ID not found. Please log in again.");
+        return;
+      }
       const token = localStorage.getItem("token");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      await Axios.patch(`/api/users/${userId}/photos/${photoId}/primary`, {}, { headers });
+      const res = await Axios.patch(`/api/users/${userId}/photos/${photoId}/primary`, {}, { headers });
 
-      toast.success("Profile photo updated");
-      fetchPhotos();
+      toast.success("Profile photo updated 🎉");
+      await fetchPhotos();
+
+      // Sync photos in local storage user object
+      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+      if (currentUser && Array.isArray(currentUser.photos)) {
+        currentUser.photos = currentUser.photos.map((p: any) => ({
+          ...p,
+          isPrimary: p._id === photoId || p.id === photoId,
+        }));
+        localStorage.setItem("user", JSON.stringify(currentUser));
+      } else if (res.data?.photos) {
+        currentUser.photos = res.data.photos;
+        localStorage.setItem("user", JSON.stringify(currentUser));
+      }
+
       window.dispatchEvent(new Event("userProfileUpdated"));
-    } catch {
-      toast.error("Failed to set profile photo");
+    } catch (error: any) {
+      console.error("Error setting primary photo:", error);
+      toast.error(error?.response?.data?.message || "Failed to set profile photo");
     }
   };
 
@@ -257,53 +277,64 @@ const MyPhotos = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {photos.map((photo) => (
-          <Card
-            key={photo._id}
-            className="glass-card overflow-hidden group relative"
-          >
-            <div className="aspect-square relative">
-              <ProtectedProfileImage
-                src={photo.url}
-                alt={`Photo ${photo._id}`}
-                className="w-full h-full object-cover"
-                showWatermark={false}
-              />
-              {photo.isPrimary && (
-                <div className="absolute top-2 left-2">
-                  <div className="bg-gradient-to-r from-primary to-secondary text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-white" />
-                    Profile Picture
+        {photos.map((photo) => {
+          const photoId = photo._id || (photo as any).id;
+          return (
+            <Card
+              key={photoId}
+              className="glass-card overflow-hidden group relative"
+            >
+              <div className="aspect-square relative">
+                <ProtectedProfileImage
+                  src={photo.url}
+                  alt={`Photo ${photoId}`}
+                  className="w-full h-full object-cover"
+                  showWatermark={false}
+                />
+                {photo.isPrimary && (
+                  <div className="absolute top-2 left-2 z-20">
+                    <div className="bg-gradient-to-r from-primary to-secondary text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow-md">
+                      <Star className="w-3 h-3 fill-white" />
+                      Profile Picture
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Overlay with actions */}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                {!photo.isPrimary && (
+                {/* Overlay with actions - z-20 to sit above ProtectedProfileImage protection shield */}
+                <div className="absolute inset-0 z-20 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-auto">
+                  {!photo.isPrimary && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="bg-white/90 hover:bg-white text-black font-semibold gap-1 cursor-pointer shadow-md"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setAsProfile(photoId);
+                      }}
+                    >
+                      <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                      Set as Profile
+                    </Button>
+                  )}
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="bg-white/90 hover:bg-white gap-1"
-                    onClick={() => setAsProfile(photo._id)}
+                    variant="destructive"
+                    className="gap-1 cursor-pointer font-semibold shadow-md"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDeleteClick(photoId);
+                    }}
                   >
-                    <Star className="w-3 h-3" />
-                    Set as Profile
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete
                   </Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="gap-1"
-                  onClick={() => handleDeleteClick(photo._id)}
-                >
-                  <Trash2 className="w-3 h-3" />
-                  Delete
-                </Button>
+                </div>
               </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
 
         {/* Upload New Photo Card */}
         <Card
