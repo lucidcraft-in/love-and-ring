@@ -373,9 +373,9 @@ const Home = () => {
                 transition={{ duration: 0.8 }}
                 className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 px-4"
               >
-                <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white hero-text-shadow">
+                <h1 className="text-3xl md:text-7xl  font-extrabold text-white tracking-tight">
                   Find Your{" "}
-                  <span className="gradient-text-light drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+                  <span className="gradient-text drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
                     Perfect Match
                   </span>
                 </h1>
@@ -476,7 +476,7 @@ const Home = () => {
                   className="hidden lg:flex lg:w-[45%] text-white p-12 xl:p-16 flex-col justify-center relative z-10"
                 >
                   <div className="relative z-10 max-w-lg">
-                    <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-6">
+                    <h1 className="text-4xl xl:text-5xl leading-tight mb-6 font-extrabold text-foreground tracking-tight">
                       Welcome Back
                       <br />
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
@@ -537,8 +537,8 @@ const Home = () => {
                     className="w-full max-w-xl"
                   >
                     <div className="lg:hidden text-center mb-6">
-                      <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
-                        Welcome <span className="text-primary">Back</span>
+                      <h1 className="text-3xl md:text-5xl font-extrabold text-foreground tracking-tight">
+                        Welcome <span className="gradient-text">Back</span>
                       </h1>
                       <p className="text-white/70 text-sm">
                         Don't have an account?{" "}
