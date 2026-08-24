@@ -27,8 +27,8 @@ export default function HomeServicesSection() {
     }
   };
 
-  // Take top 6 services to show as tiles
-  const previewServices = services.slice(0, 6);
+  // Take top 4 services to show as tiles
+  const previewServices = services.slice(0, 4);
 
   return (
     <section className="py-12 sm:py-16 md:py-20 bg-background relative overflow-hidden">
@@ -57,10 +57,10 @@ export default function HomeServicesSection() {
           </p>
         </motion.div>
 
-        {/* Services Grid (6 Tiles) */}
+        {/* Services Grid (4 Tiles) */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((n) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((n) => (
               <div key={n} className="rounded-2xl overflow-hidden bg-muted animate-pulse h-80" />
             ))}
           </div>
@@ -76,7 +76,7 @@ export default function HomeServicesSection() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {previewServices.map((service, idx) => (
               <motion.div
                 key={service._id}
