@@ -130,7 +130,7 @@ export default function DynamicStaticPage({ forcedSlug, fallbackTitle, fallbackC
                 {page.category}
               </span>
             )}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
+            <h1 className="text-3xl md:text-7xl  font-extrabold text-white tracking-tight">
               {displayTitle}
             </h1>
             {page?.updatedAt && (
