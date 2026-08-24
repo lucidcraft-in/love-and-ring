@@ -84,7 +84,10 @@ export default function HomeServicesSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: idx * 0.05 }}
-                onClick={() => navigate("/services")}
+                onClick={() => {
+                  const cat = service.category ? `category=${encodeURIComponent(service.category)}&` : "";
+                  navigate(`/services?${cat}serviceId=${service._id}`);
+                }}
                 className="group bg-card border border-border/60 hover:border-primary/50 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between"
               >
                 <div>
@@ -142,10 +145,18 @@ export default function HomeServicesSection() {
 
                 {/* Footer Action */}
                 <div className="p-5 pt-0">
-                  <div className="text-xs font-semibold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const cat = service.category ? `category=${encodeURIComponent(service.category)}&` : "";
+                      navigate(`/services?${cat}serviceId=${service._id}&openEnquiry=true`);
+                    }}
+                    className="text-xs font-semibold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform hover:underline text-left"
+                  >
                     <span>Enquire &amp; Details</span>
                     <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
+                  </button>
                 </div>
               </motion.div>
             ))}
