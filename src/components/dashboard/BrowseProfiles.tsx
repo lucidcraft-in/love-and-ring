@@ -468,7 +468,7 @@ const BrowseProfiles = () => {
     const isLiked = likedUserIds.has(profile._id);
 
     const isAccepted = acceptedInterests.includes(profile._id);
-    const canViewProfile = isAccepted || alreadyViewed;
+    const canViewProfile = isAccepted || alreadyViewed || hasActiveMembership;
     const isInterestSent = sentInterests.includes(profile._id);
     const hasIncomingInterest = receivedInterests.includes(profile._id);
     const isSending = sendingInterest === profile._id;
@@ -480,10 +480,13 @@ const BrowseProfiles = () => {
           {/* Image Section - Clickable to View Profile */}
           <div
             className={`relative overflow-hidden bg-muted rounded-l-xl md:rounded-l-2xl ${
-              canViewProfile ? "cursor-pointer group" : ""
+              canViewProfile ? "cursor-pointer group" : "cursor-pointer"
             }`}
             onClick={() => {
-              if (!canViewProfile) return;
+              if (!canViewProfile) {
+                navigate("/pricing");
+                return;
+              }
               if (lockedByLimit) {
                 toast.error("Profile view limit reached. Upgrade your plan 🔒");
                 navigate("/pricing");
