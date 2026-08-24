@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Facebook, Instagram } from "lucide-react";
+import { Facebook, Instagram, MapPin, Phone, Mail } from "lucide-react";
 import ringLogo from "@/assets/ring-logo.png";
 import Axios from "@/axios/axios";
 
@@ -183,35 +183,91 @@ const Footer = () => {
           ))}
         </div>
 
-        <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground space-y-2">
-          <p className="font-medium text-foreground">Love & Ring Ltd.</p>
+        <div className="border-t mt-8 pt-8 text-sm text-muted-foreground space-y-6">
+          <div className="text-center">
+            <p className="font-semibold text-base text-foreground">Love & Ring Ltd.</p>
+          </div>
 
-          <p>
-            Door Number. 66/127, Marika P O, Koothattukulam, Ernakulam,
-            Kerala, India – 686662
-          </p>
+          {/* Three Locations Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-2 text-sm">
+            {/* 1st: Ernakulam Address (First / Left) */}
+            <div className="space-y-2 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start space-x-2 text-foreground font-semibold">
+                <MapPin className="h-4 w-4 text-primary shrink-0" />
+                <span>Ernakulam Office</span>
+              </div>
+              <p className="leading-relaxed">
+                Door Number. 66/127, Marika P O,<br />
+                Koothattukulam, Ernakulam,<br />
+                Kerala, India – 686662
+              </p>
+            </div>
 
-          <p>
-            Email:
-            <a
-              href="mailto:loveandring.support@gmail.com"
-              className="hover:text-primary ml-1"
-            >
-              loveandring.support@gmail.com
-            </a>
-          </p>
+            {/* 2nd: Corporate Office in Kozhikode (Middle) */}
+            <div className="space-y-2 text-center">
+              <div className="flex items-center justify-center space-x-2 text-foreground font-semibold">
+                <MapPin className="h-4 w-4 text-primary shrink-0" />
+                <span>Corporate Office (Kozhikode)</span>
+              </div>
+              <p className="leading-relaxed">
+                Room Number 1215,<br />
+                HiLite Business Park,<br />
+                Calicut, Kerala, India
+              </p>
+            </div>
 
-          <p>
-            Phone:
-            <a href="tel:+919074503259" className="hover:text-primary ml-1">
-              +91-9074503259
-            </a>
-          </p>
+            {/* 3rd: UK Address (Right End) */}
+            <div className="space-y-2 text-center md:text-right">
+              <div className="flex items-center justify-center md:justify-end space-x-2 text-foreground font-semibold">
+                <MapPin className="h-4 w-4 text-primary shrink-0" />
+                <span>UK Office</span>
+              </div>
+              <p className="leading-relaxed">
+                4 Lime Close, Chichester,<br />
+                PO19 6SW, UK
+              </p>
+              <p>
+                <span className="font-medium text-foreground">No: </span>
+                <a href="tel:+447397877796" className="hover:text-primary transition-colors">
+                  +447397877796
+                </a>
+              </p>
+            </div>
+          </div>
 
-          <p className="mt-2">
-            &copy; {new Date().getFullYear()} Love & Ring Ltd. All rights
-            reserved.
-          </p>
+          {/* Contact Details & Copyright */}
+          <div className="border-t border-border/60 pt-6 text-center space-y-3">
+            <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-xs">
+              <p className="flex items-center space-x-1">
+                <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="font-medium text-foreground ml-1">Email:</span>
+                <a
+                  href="mailto:loveandring.support@gmail.com"
+                  className="hover:text-primary transition-colors ml-1"
+                >
+                  loveandring.support@gmail.com
+                </a>
+              </p>
+              <p className="flex items-center space-x-1">
+                <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="font-medium text-foreground ml-1">India:</span>
+                <a href="tel:+919074503259" className="hover:text-primary transition-colors ml-1">
+                  +91-9074503259
+                </a>
+              </p>
+              <p className="flex items-center space-x-1">
+                <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="font-medium text-foreground ml-1">UK:</span>
+                <a href="tel:+447397877796" className="hover:text-primary transition-colors ml-1">
+                  +447397877796
+                </a>
+              </p>
+            </div>
+
+            <p className="text-xs pt-2">
+              &copy; {new Date().getFullYear()} Love & Ring Ltd. All rights reserved.
+            </p>
+          </div>
         </div>
       </div>
     </footer>
