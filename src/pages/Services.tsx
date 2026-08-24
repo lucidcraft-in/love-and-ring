@@ -181,15 +181,53 @@ const Services = () => {
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [eventDate, setEventDate] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
+  const [location, setLocation] = useState<string>("");
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [ticketSuccess, setTicketSuccess] = useState<string | null>(null);
 
   const topRef = useRef<HTMLDivElement>(null);
 
+  const targetServiceId = searchParams.get("serviceId");
+  const openEnquiryParam = searchParams.get("openEnquiry");
+  const autoOpenedRef = useRef<boolean>(false);
+
   useEffect(() => {
     fetchServices();
   }, []);
+
+  useEffect(() => {
+    if (!loading && services.length > 0 && targetServiceId && !autoOpenedRef.current) {
+      const foundService = services.find((s) => s._id === targetServiceId);
+      if (foundService) {
+        autoOpenedRef.current = true;
+
+        // If category is not in URL, set category parameter automatically
+        if (!selectedCategory && foundService.category) {
+          const matchedTile = categoryTiles.find((t) => isCategoryMatch(foundService.category, t.id));
+          const catId = matchedTile ? matchedTile.id : foundService.category;
+          setSearchParams(
+            openEnquiryParam === "true"
+              ? { category: catId, serviceId: targetServiceId, openEnquiry: "true" }
+              : { category: catId, serviceId: targetServiceId },
+            { replace: true }
+          );
+        }
+
+        // Only open enquiry modal if explicitly requested via openEnquiry=true
+        if (openEnquiryParam === "true") {
+          handleOpenEnquiry(foundService);
+        }
+
+        // Smooth scroll to the target service section card
+        setTimeout(() => {
+          const cardEl = document.getElementById(`service-${targetServiceId}`);
+          if (cardEl) {
+            cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 300);
+      }
+    }
+  }, [loading, services, targetServiceId, selectedCategory, openEnquiryParam]);
 
   useEffect(() => {
     if (user) {
@@ -229,6 +267,7 @@ const Services = () => {
 
   const handleOpenEnquiry = (service: WeddingService) => {
     setSelectedService(service);
+    setLocation("");
     setTicketSuccess(null);
     setEnquiryOpen(true);
   };
@@ -256,7 +295,8 @@ const Services = () => {
         serviceTitle: selectedService.title,
         serviceCategory: selectedService.category,
         eventDate,
-        message,
+        location,
+        message: location ? `Event Location: ${location}` : "",
       });
 
       setTicketSuccess(result.ticketId);
@@ -552,6 +592,7 @@ const Services = () => {
                 {filteredServices.map((service) => {
                   const tileInfo = categoryTiles.find((t) => isCategoryMatch(service.category, t.id));
                   const CategoryIcon = tileInfo?.icon || Sparkles;
+                  const isTarget = service._id === targetServiceId;
 
                   return (
                     <motion.div
@@ -559,7 +600,12 @@ const Services = () => {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       key={service._id}
-                      className="group bg-card border border-border/70 hover:border-primary/50 rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col justify-between"
+                      id={`service-${service._id}`}
+                      className={`group bg-card border rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col justify-between ${
+                        isTarget
+                          ? "border-primary ring-2 ring-primary/60 shadow-xl scale-[1.01]"
+                          : "border-border/70 hover:border-primary/50"
+                      }`}
                     >
                       <div>
                         {/* Header Section - Admin Added Image Header */}
@@ -753,13 +799,12 @@ const Services = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="req-message" className="text-xs font-semibold">Message &amp; Requirements</Label>
-                  <Textarea
-                    id="req-message"
-                    rows={3}
-                    placeholder="Describe your event requirements, location, estimated guest count, or questions..."
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
+                  <Label htmlFor="req-location" className="text-xs font-semibold">Event Location / City</Label>
+                  <Input
+                    id="req-location"
+                    placeholder="Enter event location or city (e.g. Kochi, Kozhikode, Trivandrum...)"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
                     className="rounded-xl border-border focus-visible:ring-primary"
                   />
                 </div>
