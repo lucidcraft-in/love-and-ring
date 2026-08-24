@@ -329,6 +329,11 @@ const Interests = () => {
   };
 
   useEffect(() => {
+    const savedTab = localStorage.getItem("activeInterestsTab");
+    if (savedTab) {
+      setActiveTab(savedTab);
+    }
+
     Promise.all([fetchInterests(), checkProfileLimit()]);
 
     const handleInterestChanged = () => {
