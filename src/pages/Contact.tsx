@@ -170,8 +170,8 @@ const Contact = () => {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center space-y-6"
           >
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white hero-text-shadow">
-              Get In <span className="gradient-text-light">Touch</span>
+            <h1 className="text-3xl md:text-8xl  font-extrabold text-white tracking-tight">
+              Get In <span className="gradient-text">Touch</span>
             </h1>
             {/* <p className="text-xl md:text-2xl hero-subtext max-w-2xl mx-auto">
               {heroSection?.description ||
