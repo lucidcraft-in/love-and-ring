@@ -14,7 +14,7 @@ interface CvSectionProps {
   onCvUpdated: () => void;
 }
 
-const MAX_CV_SIZE = 5 * 1024 * 1024;
+const MAX_CV_SIZE = 100 * 1024 * 1024;
 
 const CvSection = ({ userId, cvUrl, cvFileName, cvUploadedAt, onCvUpdated }: CvSectionProps) => {
   const [uploading, setUploading] = useState(false);
@@ -42,7 +42,7 @@ const CvSection = ({ userId, cvUrl, cvFileName, cvUploadedAt, onCvUpdated }: CvS
     }
 
     if (file.size > MAX_CV_SIZE) {
-      toast.error("File size must be less than 5MB");
+      toast.error("File size must be less than 100MB");
       e.target.value = "";
       return;
     }
@@ -156,7 +156,7 @@ const CvSection = ({ userId, cvUrl, cvFileName, cvUploadedAt, onCvUpdated }: CvS
             <div>
               <p className="font-medium">{uploading ? "Uploading..." : "Upload your CV"}</p>
               <p className="text-sm text-muted-foreground">
-                PDF, DOC, DOCX – Max 5MB
+                PDF, DOC, DOCX – Max 100MB
               </p>
             </div>
             {replacing && (
