@@ -194,12 +194,12 @@ const Footer = () => {
             <div className="space-y-2 text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start space-x-2 text-foreground font-semibold">
                 <MapPin className="h-4 w-4 text-primary shrink-0" />
-                <span>Ernakulam Office</span>
+                <span>Ernakulam</span>
               </div>
               <p className="leading-relaxed">
                 Door Number. 66/127, Marika P O,<br />
-                Koothattukulam, Ernakulam,<br />
-                Kerala, India – 686662
+                Koothattukulam, Ernakulam, Kerala, India – 686662<br />
+                
               </p>
             </div>
 
@@ -211,8 +211,7 @@ const Footer = () => {
               </div>
               <p className="leading-relaxed">
                 Room Number 1215,<br />
-                HiLite Business Park,<br />
-                Calicut, Kerala, India
+                HiLite Business Park, Calicut, Kerala, India<br />
               </p>
             </div>
 
@@ -220,18 +219,18 @@ const Footer = () => {
             <div className="space-y-2 text-center md:text-right">
               <div className="flex items-center justify-center md:justify-end space-x-2 text-foreground font-semibold">
                 <MapPin className="h-4 w-4 text-primary shrink-0" />
-                <span>UK Office</span>
+                <span>United Kingdom</span>
               </div>
               <p className="leading-relaxed">
                 4 Lime Close, Chichester,<br />
                 PO19 6SW, UK
               </p>
-              <p>
+              {/* <p>
                 <span className="font-medium text-foreground">No: </span>
                 <a href="tel:+447397877796" className="hover:text-primary transition-colors">
                   +447397877796
                 </a>
-              </p>
+              </p> */}
             </div>
           </div>
 
