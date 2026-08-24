@@ -7,6 +7,7 @@ import {
   Heart,
   Users,
   Search,
+  Bell,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -48,6 +49,7 @@ const navigationItems = [
   { id: "summary", label: "Summary", icon: LayoutDashboard },
   { id: "matches", label: "Matches", icon: Users },
   { id: "interests", label: "Interests", icon: Heart },
+  { id: "notifications", label: "Notifications", icon: Bell },
   { id: "browse", label: "Browse Profiles", icon: Search },
   { id: "my-photos", label: "My Photos", icon: ImageIcon },
   { id: "partner-preference", label: "Partner Preference", icon: Search },
