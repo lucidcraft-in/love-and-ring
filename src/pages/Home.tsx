@@ -373,7 +373,7 @@ const Home = () => {
                 transition={{ duration: 0.8 }}
                 className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 px-4"
               >
-                <h1 className="text-3xl md:text-7xl  font-extrabold text-white tracking-tight">
+                <h1 className="text-3xl md:text-7xl font-extrabold text-white tracking-tight">
                   Find Your{" "}
                   <span className="gradient-text drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
                     Perfect Match
