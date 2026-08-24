@@ -220,9 +220,9 @@ const Pricing = () => {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center space-y-6"
           >
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white hero-text-shadow">
+            <h1 className="text-3xl md:text-7xl  font-extrabold text-white tracking-tight">
               Choose Your{" "}
-              <span className="gradient-text-light">Perfect Plan</span>
+              <span className="gradient-text">Perfect Plan</span>
             </h1>
             <p className="text-base sm:text-xl md:text-2xl hero-subtext min-h-[60px]">
               Find the plan that works best for your journey to finding your
