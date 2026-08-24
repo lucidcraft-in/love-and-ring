@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import ProfileSidebar from "@/components/dashboard/ProfileSidebar";
 import Summary from "@/components/dashboard/Summary";
@@ -7,14 +8,24 @@ import MyPhotos from "@/components/dashboard/MyPhotos";
 import PartnerPreference from "@/components/dashboard/PartnerPreference";
 import Matches from "@/components/dashboard/Matches";
 import Interests from "@/components/dashboard/Interests";
+import Notifications from "@/components/dashboard/Notifications";
 import BrowseProfiles from "@/components/dashboard/BrowseProfiles";
 import Footer from "@/components/Footer";
 
 const UserDashboard = () => {
+  const [searchParams] = useSearchParams();
+  const urlTab = searchParams.get("tab");
+
   const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem("activeUserDashboardTab") || "summary";
+    return urlTab || localStorage.getItem("activeUserDashboardTab") || "summary";
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (urlTab) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab]);
 
   // Lock body scroll on desktop/tablet only
   useEffect(() => {
@@ -55,10 +66,12 @@ const UserDashboard = () => {
         return <Matches />;
       case "interests":
         return <Interests />;
+      case "notifications":
+        return <Notifications onNavigate={handleNavigate} />;
       case "browse":
         return <BrowseProfiles />;
       default:
-        return <Summary />;
+        return <Summary onNavigate={handleNavigate} />;
     }
   };
 
