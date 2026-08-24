@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -470,6 +470,11 @@ const Matches = () => {
   };
 
   useEffect(() => {
+    const savedTab = localStorage.getItem("activeMatchesTab");
+    if (savedTab) {
+      setActiveTab(savedTab);
+    }
+
     const init = async () => {
       try {
         const [likedIdsArray] = await Promise.all([
@@ -670,329 +675,393 @@ const Matches = () => {
     }
   };
 
-  const MatchCard = ({ match, isNRI = false }: { match: MatchItem; isNRI?: boolean }) => {
-    const isInterestSent = sentInterests.includes(match.user._id);
-    const isSending = sendingInterest === match.user._id;
-    const isCanceling = cancelingInterest === match.user._id;
-    const isLocked = isNRI && !hasNRIPlan;
-    const isLiking = likingProfile === match.user._id;
-    const hasIncomingInterest = receivedInterests.includes(match.user._id);
-    const isAccepted = acceptedInterests.includes(match.user._id);
-    const alreadyViewed = viewedProfiles.some((id) => String(id) === String(match.user._id));
-    const canViewProfile = isAccepted || alreadyViewed || hasActiveMembership;
-    const isMillionClub = match.user.isMillionClub || match.user.profileStatus?.toLowerCase().includes("million") || millionClubUserIds.has(String(match.user._id)) || activeTab === "millionClub";
-    const primaryPhoto = match.user.photos?.find((p) => p.isPrimary);
-    const isPhotoHidden = primaryPhoto?.isHidden;
-    const lockedByLimit = profileLimitReached && !alreadyViewed;
+interface MatchCardProps {
+  match: MatchItem;
+  isNRI?: boolean;
+  hasNRIPlan?: boolean;
+  sentInterests: string[];
+  sendingInterest: string | null;
+  cancelingInterest: string | null;
+  likingProfile: string | null;
+  receivedInterests: string[];
+  acceptedInterests: string[];
+  viewedProfiles: string[];
+  hasActiveMembership: boolean;
+  millionClubUserIds: Set<string>;
+  activeTab: string;
+  profileLimitReached: boolean;
+  navigate: (path: string) => void;
+  handleViewProfile: (id: string) => void;
+  handleSendInterest: (id: string, name: string) => void;
+  handleCancelInterest: (id: string, name: string) => void;
+  handleLikeProfile: (id: string) => void;
+  handleUnlikeProfile: (id: string) => void;
+}
 
-    const canViewHiddenPhoto = false;
+const MatchCard = React.memo(({
+  match,
+  isNRI = false,
+  hasNRIPlan = false,
+  sentInterests,
+  sendingInterest,
+  cancelingInterest,
+  likingProfile,
+  receivedInterests,
+  acceptedInterests,
+  viewedProfiles,
+  hasActiveMembership,
+  millionClubUserIds,
+  activeTab,
+  profileLimitReached,
+  navigate,
+  handleViewProfile,
+  handleSendInterest,
+  handleCancelInterest,
+  handleLikeProfile,
+  handleUnlikeProfile,
+}: MatchCardProps) => {
+  const isInterestSent = sentInterests.includes(match.user._id);
+  const isSending = sendingInterest === match.user._id;
+  const isCanceling = cancelingInterest === match.user._id;
+  const isLocked = isNRI && !hasNRIPlan;
+  const isLiking = likingProfile === match.user._id;
+  const hasIncomingInterest = receivedInterests.includes(match.user._id);
+  const isAccepted = acceptedInterests.includes(match.user._id);
+  const alreadyViewed = viewedProfiles.some((id) => String(id) === String(match.user._id));
+  const canViewProfile = isAccepted || alreadyViewed || hasActiveMembership;
+  const isMillionClub = match.user.isMillionClub || match.user.profileStatus?.toLowerCase().includes("million") || millionClubUserIds.has(String(match.user._id)) || activeTab === "millionClub";
+  const primaryPhoto = match.user.photos?.find((p) => p.isPrimary);
+  const isPhotoHidden = primaryPhoto?.isHidden;
+  const lockedByLimit = profileLimitReached && !alreadyViewed;
 
-    const photoSrc = getProfilePhoto(match.user.photos, match.user.gender);
+  const canViewHiddenPhoto = false;
 
-    return (
-      <Card className="glass-card overflow-hidden hover:shadow-md md:hover:shadow-lg transition-all rounded-xl md:rounded-2xl border border-border/40">
-        <div className="grid grid-cols-[90px_1fr] md:grid-cols-[160px_1fr] min-h-[145px] md:h-[240px]">
-          {/* Image Section - Clickable to View Profile */}
-          <div
-            className={`relative overflow-hidden bg-muted rounded-l-xl md:rounded-l-2xl ${
-              canViewProfile ? "cursor-pointer group" : "cursor-pointer"
-            }`}
-            onClick={() => {
-              if (!canViewProfile) {
-                navigate("/pricing");
-                return;
-              }
-              if (isLocked) {
-                navigate("/pricing");
-                return;
-              }
-              if (lockedByLimit) {
-                toast.error("Profile view limit reached. Upgrade your plan 🔒");
-                navigate("/pricing");
-                return;
-              }
-              handleViewProfile(match.user._id);
-            }}
-          >
-            <OptimizedProfileImage
-              src={photoSrc}
-              alt={match.user.fullName}
-              isLocked={isLocked}
-              className={`w-full h-full object-cover ${
-                canViewProfile ? "transition-transform duration-300 group-hover:scale-105" : ""
-              } ${isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""}`}
-            />
+  const getProfilePhoto = (photos?: any[], gender?: string) => {
+    if (!photos || photos.length === 0) {
+      const g = (gender || "").toLowerCase();
+      if (g === "female" || g === "lesbian") return FemaleDummy;
+      if (g === "male" || g === "gay") return MaleDummy;
+      return DummyProfile;
+    }
+    return photos.find((p: any) => p.isPrimary)?.url || photos[0].url || DummyProfile;
+  };
 
-            <div className="absolute top-1 left-1 md:top-2 md:right-2 md:left-auto z-10">
-              <Badge className="bg-gradient-to-r from-primary to-secondary text-[9px] md:text-xs px-1 md:px-2 py-0 md:py-0.5">
-                {match.matchScore}% Match
-              </Badge>
-            </div>
+  const calculateAge = (dob: string) => {
+    if (!dob) return "N/A";
+    const birth = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  };
 
-            {canViewProfile && !isLocked && (
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10 pointer-events-none">
-                <div className="bg-white/90 text-foreground text-[10px] md:text-xs px-2 py-1 rounded-full shadow font-medium flex items-center gap-1">
-                  <Eye className="w-3 h-3 text-primary" />
-                  <span>View Profile</span>
-                </div>
-              </div>
-            )}
+  const photoSrc = getProfilePhoto(match.user.photos, match.user.gender);
 
-            {isLocked && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
-                <div className="bg-white/90 rounded-full p-2 md:p-4 shadow-lg">
-                  <Lock className="w-4 h-4 md:w-8 md:h-8 text-primary" />
-                </div>
-              </div>
-            )}
+  return (
+    <Card className="glass-card overflow-hidden hover:shadow-md md:hover:shadow-lg transition-all rounded-xl md:rounded-2xl border border-border/40">
+      <div className="grid grid-cols-[90px_1fr] md:grid-cols-[160px_1fr] min-h-[145px] md:h-[240px]">
+        {/* Image Section - Clickable to View Profile */}
+        <div
+          className={`relative overflow-hidden bg-muted rounded-l-xl md:rounded-l-2xl ${
+            canViewProfile ? "cursor-pointer group" : "cursor-pointer"
+          }`}
+          onClick={() => {
+            if (!canViewProfile) {
+              navigate("/pricing");
+              return;
+            }
+            if (isLocked) {
+              navigate("/pricing");
+              return;
+            }
+            if (lockedByLimit) {
+              toast.error("Profile view limit reached. Upgrade your plan 🔒");
+              navigate("/pricing");
+              return;
+            }
+            handleViewProfile(match.user._id);
+          }}
+        >
+          <OptimizedProfileImage
+            src={photoSrc}
+            alt={match.user.fullName}
+            isLocked={isLocked}
+            className={`w-full h-full object-cover ${
+              canViewProfile ? "transition-transform duration-300 group-hover:scale-105" : ""
+            } ${isPhotoHidden && !canViewHiddenPhoto ? "blur-md" : ""}`}
+          />
+
+          <div className="absolute top-1 left-1 md:top-2 md:right-2 md:left-auto z-10">
+            <Badge className="bg-gradient-to-r from-primary to-secondary text-[9px] md:text-xs px-1 md:px-2 py-0 md:py-0.5">
+              {match.matchScore}% Match
+            </Badge>
           </div>
 
-          {/* Content Section */}
-          <div className="p-2.5 md:p-4 flex flex-col justify-between overflow-hidden">
-            <div>
-              <div className="flex items-start justify-between gap-1 mb-0.5 md:mb-1">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <h3
-                    className={`text-xs md:text-base font-bold truncate leading-tight ${
-                      canViewProfile ? "cursor-pointer hover:text-primary transition-colors" : ""
-                    }`}
-                    onClick={() => {
-                      if (!canViewProfile) return;
-                      if (isLocked) {
-                        navigate("/pricing");
-                        return;
-                      }
-                      if (lockedByLimit) {
-                        toast.error("Profile view limit reached. Upgrade your plan 🔒");
-                        navigate("/pricing");
-                        return;
-                      }
-                      handleViewProfile(match.user._id);
-                    }}
-                  >
-                    {match.user.fullName}, {calculateAge(match.user.dateOfBirth)}
-                  </h3>
-                  {isMillionClub && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex items-center justify-center p-1 bg-amber-500/10 rounded-full text-amber-500 hover:bg-amber-500/20 transition-colors cursor-pointer shrink-0">
-                            <Crown className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-none shadow-md font-semibold text-xs flex items-center gap-1 z-50">
-                          <Crown className="w-3.5 h-3.5 fill-white text-white" />
-                          <span>Million Club Member</span>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
-                {!isLocked && (
-                  <Button
-                    size="icon"
-                    variant={match.liked ? "default" : "outline"}
-                    className={`shrink-0 h-6 w-6 md:h-8 md:w-8 ${match.liked ? "bg-gradient-to-r from-primary to-secondary" : ""
-                      }`}
-                    disabled={isLiking}
-                    onClick={() => {
-                      if (match.liked) {
-                        handleUnlikeProfile(match.user._id);
-                      } else {
-                        handleLikeProfile(match.user._id);
-                      }
-                    }}
-                  >
-                    {isLiking ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      >
-                        <Heart className="w-3 h-3 md:w-4 md:h-4" />
-                      </motion.div>
-                    ) : (
-                      <Heart className={`w-3 h-3 md:w-4 md:h-4 ${match.liked ? "fill-white" : ""}`} />
-                    )}
-                  </Button>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-0.5 md:gap-1 mt-0.5 md:mt-1 text-[11px] md:text-xs text-muted-foreground">
-                {match.user.maritalStatus && (
-                  <span className="flex items-center gap-1 font-medium text-foreground/90 truncate">
-                    <Heart className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
-                    {match.user.maritalStatus}
-                  </span>
-                )}
-
-                {(match.user.heightCm || match.user.weightKg) && (
-                  <span className="flex items-center gap-1 truncate">
-                    <Ruler className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
-                    {formatHeightWeight(match.user.heightCm, match.user.weightKg)}
-                  </span>
-                )}
-
-                {(match.user.religion || match.user.caste) && (
-                  <span className="flex items-center gap-1 truncate">
-                    <Sparkles className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
-                    {formatReligionCaste(match.user.religion, match.user.caste)}
-                  </span>
-                )}
-
-                <span className="flex items-center gap-1 truncate">
-                  <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
-                  {match.user.city || "N/A"}{match.user.state ? `, ${match.user.state}` : ""}
-                </span>
-
-                <span className="hidden md:flex items-center gap-1 truncate">
-                  <GraduationCap className="w-3.5 h-3.5 shrink-0 text-primary/80" />
-                  {match.user.education?.name || match.user.primaryEducation?.name || "—"}
-                </span>
-
-                <span className="flex items-center gap-1 truncate">
-                  <Briefcase className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
-                  {match.user.profession?.name || "—"}
-                </span>
+          {canViewProfile && !isLocked && (
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10 pointer-events-none">
+              <div className="bg-white/90 text-foreground text-[10px] md:text-xs px-2 py-1 rounded-full shadow font-medium flex items-center gap-1">
+                <Eye className="w-3 h-3 text-primary" />
+                <span>View Profile</span>
               </div>
             </div>
+          )}
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-1.5 md:gap-2 mt-2 pt-1 md:pt-1.5 border-t border-border/30">
-              {isLocked ? (
-                <Button
-                  className="w-full bg-gradient-to-r from-primary to-secondary text-[10px] md:text-xs h-7 md:h-8 px-2"
-                  onClick={() => navigate("/pricing")}
+          {isLocked && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
+              <div className="bg-white/90 rounded-full p-2 md:p-4 shadow-lg">
+                <Lock className="w-4 h-4 md:w-8 md:h-8 text-primary" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Content Section */}
+        <div className="p-2.5 md:p-4 flex flex-col justify-between overflow-hidden">
+          <div>
+            <div className="flex items-start justify-between gap-1 mb-0.5 md:mb-1">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <h3
+                  className={`text-xs md:text-base font-bold truncate leading-tight ${
+                    canViewProfile ? "cursor-pointer hover:text-primary transition-colors" : ""
+                  }`}
+                  onClick={() => {
+                    if (!canViewProfile) return;
+                    if (isLocked) {
+                      navigate("/pricing");
+                      return;
+                    }
+                    if (lockedByLimit) {
+                      toast.error("Profile view limit reached. Upgrade your plan 🔒");
+                      navigate("/pricing");
+                      return;
+                    }
+                    handleViewProfile(match.user._id);
+                  }}
                 >
-                  <Lock className="w-3 h-3 md:w-3.5 md:h-3.5" />
-                  Upgrade
+                  {match.user.fullName}, {calculateAge(match.user.dateOfBirth)}
+                </h3>
+                {isMillionClub && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex items-center justify-center p-1 bg-amber-500/10 rounded-full text-amber-500 hover:bg-amber-500/20 transition-colors cursor-pointer shrink-0">
+                          <Crown className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-none shadow-md font-semibold text-xs flex items-center gap-1 z-50">
+                        <Crown className="w-3.5 h-3.5 fill-white text-white" />
+                        <span>Million Club Member</span>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
+              {!isLocked && (
+                <Button
+                  size="icon"
+                  variant={match.liked ? "default" : "outline"}
+                  className={`shrink-0 h-6 w-6 md:h-8 md:w-8 ${match.liked ? "bg-gradient-to-r from-primary to-secondary" : ""
+                    }`}
+                  disabled={isLiking}
+                  onClick={() => {
+                    if (match.liked) {
+                      handleUnlikeProfile(match.user._id);
+                    } else {
+                      handleLikeProfile(match.user._id);
+                    }
+                  }}
+                >
+                  {isLiking ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Heart className="w-3 h-3 md:w-4 md:h-4" />
+                    </motion.div>
+                  ) : (
+                    <Heart className={`w-3 h-3 md:w-4 md:h-4 ${match.liked ? "fill-white" : ""}`} />
+                  )}
                 </Button>
-              ) : isAccepted ? (
-                <>
-                  <Button
-                    className="flex-1 bg-gradient-to-r from-primary to-secondary text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                    onClick={() => {
-                      if (lockedByLimit) {
-                        toast.error("Profile view limit reached. Upgrade your plan 🔒");
-                        navigate("/pricing");
-                        return;
-                      }
-                      handleViewProfile(match.user._id);
-                    }}
-                  >
-                    {lockedByLimit ? (
-                      <>
-                        <Lock className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
-                        Upgrade
-                      </>
-                    ) : (
-                      <>
-                        <Eye className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
-                        View Profile
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    disabled
-                    className="flex-1 bg-green-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                  >
-                    <Check className="w-3 h-3 mr-1" /> Matched
-                  </Button>
-                </>
-              ) : canViewProfile ? (
-                <>
-                  <Button
-                    className="flex-1 bg-gradient-to-r from-primary to-secondary text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                    onClick={() => {
-                      if (lockedByLimit) {
-                        toast.error("Profile view limit reached. Upgrade your plan 🔒");
-                        navigate("/pricing");
-                        return;
-                      }
-                      handleViewProfile(match.user._id);
-                    }}
-                  >
-                    {lockedByLimit ? (
-                      <>
-                        <Lock className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
-                        Upgrade
-                      </>
-                    ) : (
-                      <>
-                        <Eye className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
-                        View Profile
-                      </>
-                    )}
-                  </Button>
-                  {hasIncomingInterest ? (
-                    <Button
-                      disabled
-                      className="flex-1 bg-blue-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                    >
-                      💌 Received
-                    </Button>
-                  ) : isInterestSent ? (
-                    <Button
-                      variant="outline"
-                      className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                      onClick={() => handleCancelInterest(match.user._id, match.user.fullName)}
-                      disabled={isCanceling}
-                    >
-                      {isCanceling ? "Canceling..." : "Cancel Interest"}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="flex-1 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                      disabled={isSending}
-                      onClick={() => handleSendInterest(match.user._id, match.user.fullName)}
-                    >
-                      {isSending ? "Sending..." : "Send Interest"}
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <AnimatePresence mode="wait">
-                  {hasIncomingInterest ? (
-                    <Button
-                      disabled
-                      className="w-full bg-blue-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                    >
-                      💌 Received
-                    </Button>
-                  ) : isInterestSent ? (
-                    <Button
-                      variant="outline"
-                      className="w-full border-amber-500 text-amber-600 hover:bg-amber-50 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                      onClick={() => handleCancelInterest(match.user._id, match.user.fullName)}
-                      disabled={isCanceling}
-                    >
-                      {isCanceling ? (
-                        "Canceling..."
-                      ) : (
-                        <>
-                          <X className="w-3 h-3 mr-1" />
-                          <span>Cancel Sent Interest</span>
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="w-full text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
-                      disabled={isSending}
-                      onClick={() => handleSendInterest(match.user._id, match.user.fullName)}
-                    >
-                      {isSending ? "Sending..." : "Send Interest"}
-                    </Button>
-                  )}
-                </AnimatePresence>
               )}
             </div>
+
+            <div className="flex flex-col gap-0.5 md:gap-1 mt-0.5 md:mt-1 text-[11px] md:text-xs text-muted-foreground">
+              {match.user.maritalStatus && (
+                <span className="flex items-center gap-1 font-medium text-foreground/90 truncate">
+                  <Heart className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
+                  {match.user.maritalStatus}
+                </span>
+              )}
+
+              {(match.user.heightCm || match.user.weightKg) && (
+                <span className="flex items-center gap-1 truncate">
+                  <Ruler className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
+                  {formatHeightWeight(match.user.heightCm, match.user.weightKg)}
+                </span>
+              )}
+
+              {(match.user.religion || match.user.caste) && (
+                <span className="flex items-center gap-1 truncate">
+                  <Sparkles className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
+                  {formatReligionCaste(match.user.religion, match.user.caste)}
+                </span>
+              )}
+
+              <span className="flex items-center gap-1 truncate">
+                <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
+                {match.user.city || "N/A"}{match.user.state ? `, ${match.user.state}` : ""}
+              </span>
+
+              <span className="hidden md:flex items-center gap-1 truncate">
+                <GraduationCap className="w-3.5 h-3.5 shrink-0 text-primary/80" />
+                {match.user.education?.name || match.user.primaryEducation?.name || "—"}
+              </span>
+
+              <span className="flex items-center gap-1 truncate">
+                <Briefcase className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-primary/80" />
+                {match.user.profession?.name || "—"}
+              </span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-1.5 md:gap-2 mt-2 pt-1 md:pt-1.5 border-t border-border/30">
+            {isLocked ? (
+              <Button
+                className="w-full bg-gradient-to-r from-primary to-secondary text-[10px] md:text-xs h-7 md:h-8 px-2"
+                onClick={() => navigate("/pricing")}
+              >
+                <Lock className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                Upgrade
+              </Button>
+            ) : isAccepted ? (
+              <>
+                <Button
+                  className="flex-1 bg-gradient-to-r from-primary to-secondary text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                  onClick={() => {
+                    if (lockedByLimit) {
+                      toast.error("Profile view limit reached. Upgrade your plan 🔒");
+                      navigate("/pricing");
+                      return;
+                    }
+                    handleViewProfile(match.user._id);
+                  }}
+                >
+                  {lockedByLimit ? (
+                    <>
+                      <Lock className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
+                      Upgrade
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
+                      View Profile
+                    </>
+                  )}
+                </Button>
+                <Button
+                  disabled
+                  className="flex-1 bg-green-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                >
+                  <Check className="w-3 h-3 mr-1" /> Matched
+                </Button>
+              </>
+            ) : canViewProfile ? (
+              <>
+                <Button
+                  className="flex-1 bg-gradient-to-r from-primary to-secondary text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                  onClick={() => {
+                    if (lockedByLimit) {
+                      toast.error("Profile view limit reached. Upgrade your plan 🔒");
+                      navigate("/pricing");
+                      return;
+                    }
+                    handleViewProfile(match.user._id);
+                  }}
+                >
+                  {lockedByLimit ? (
+                    <>
+                      <Lock className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
+                      Upgrade
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1" />
+                      View Profile
+                    </>
+                  )}
+                </Button>
+                {hasIncomingInterest ? (
+                  <Button
+                    disabled
+                    className="flex-1 bg-blue-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                  >
+                    💌 Received
+                  </Button>
+                ) : isInterestSent ? (
+                  <Button
+                    variant="outline"
+                    className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                    onClick={() => handleCancelInterest(match.user._id, match.user.fullName)}
+                    disabled={isCanceling}
+                  >
+                    {isCanceling ? "Canceling..." : "Cancel Interest"}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="flex-1 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                    disabled={isSending}
+                    onClick={() => handleSendInterest(match.user._id, match.user.fullName)}
+                  >
+                    {isSending ? "Sending..." : "Send Interest"}
+                  </Button>
+                )}
+              </>
+            ) : (
+              <AnimatePresence mode="wait">
+                {hasIncomingInterest ? (
+                  <Button
+                    disabled
+                    className="w-full bg-blue-500 text-white cursor-default text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                  >
+                    💌 Received
+                  </Button>
+                ) : isInterestSent ? (
+                  <Button
+                    variant="outline"
+                    className="w-full border-amber-500 text-amber-600 hover:bg-amber-50 text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                    onClick={() => handleCancelInterest(match.user._id, match.user.fullName)}
+                    disabled={isCanceling}
+                  >
+                    {isCanceling ? (
+                      "Canceling..."
+                    ) : (
+                      <>
+                        <X className="w-3 h-3 mr-1" />
+                        <span>Cancel Sent Interest</span>
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full text-[10px] md:text-xs h-7 md:h-8 px-1.5 md:px-3"
+                    disabled={isSending}
+                    onClick={() => handleSendInterest(match.user._id, match.user.fullName)}
+                  >
+                    {isSending ? "Sending..." : "Send Interest"}
+                  </Button>
+                )}
+              </AnimatePresence>
+            )}
           </div>
         </div>
-      </Card>
-    );
-  };
+      </div>
+    </Card>
+  );
+});
 
   const isTargetMillionClubUser = (user: MatchUser) => {
     if (!user) return false;
@@ -1014,6 +1083,32 @@ const Matches = () => {
   const displayedLikedByMe = likedByMe;
 
   const displayedLikedMe = likedMe;
+
+  const renderMatchCard = (match: MatchItem, isNRI: boolean = false) => (
+    <MatchCard
+      key={match.user._id}
+      match={match}
+      isNRI={isNRI}
+      hasNRIPlan={hasNRIPlan}
+      sentInterests={sentInterests}
+      sendingInterest={sendingInterest}
+      cancelingInterest={cancelingInterest}
+      likingProfile={likingProfile}
+      receivedInterests={receivedInterests}
+      acceptedInterests={acceptedInterests}
+      viewedProfiles={viewedProfiles}
+      hasActiveMembership={hasActiveMembership}
+      millionClubUserIds={millionClubUserIds}
+      activeTab={activeTab}
+      profileLimitReached={profileLimitReached}
+      navigate={navigate}
+      handleViewProfile={handleViewProfile}
+      handleSendInterest={handleSendInterest}
+      handleCancelInterest={handleCancelInterest}
+      handleLikeProfile={handleLikeProfile}
+      handleUnlikeProfile={handleUnlikeProfile}
+    />
+  );
 
   if (loading && matches.length === 0 && myMatches.length === 0 && likedByMe.length === 0) {
     return (
@@ -1059,9 +1154,7 @@ const Matches = () => {
         <TabsContent value="new" className="mt-6">
           {displayedMatches.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-              {displayedMatches.map((match) => (
-                <MatchCard key={match.user._id} match={match} />
-              ))}
+              {displayedMatches.map((match) => renderMatchCard(match))}
             </div>
           ) : (
             <div className="flex items-center justify-center min-h-[50vh]">
@@ -1079,9 +1172,7 @@ const Matches = () => {
         <TabsContent value="all" className="mt-6">
           {displayedMyMatches.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {displayedMyMatches.map((match) => (
-                <MatchCard key={match.user._id} match={match} />
-              ))}
+              {displayedMyMatches.map((match) => renderMatchCard(match))}
             </div>
           ) : (
             <div className="flex items-center justify-center min-h-[50vh]">
@@ -1101,9 +1192,7 @@ const Matches = () => {
             <h3 className="text-xl font-semibold mb-4">Profiles You’re Interested In ❤️</h3>
             {displayedLikedByMe.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {displayedLikedByMe.map((match) => (
-                  <MatchCard key={match.user._id} match={match} />
-                ))}
+                {displayedLikedByMe.map((match) => renderMatchCard(match))}
               </div>
             ) : (
               <Card className="glass-card p-8 text-center">
@@ -1116,9 +1205,7 @@ const Matches = () => {
             <h3 className="text-xl font-semibold mb-4">People Who Showed Interest in You ✨</h3>
             {displayedLikedMe.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {displayedLikedMe.map((match) => (
-                  <MatchCard key={match.user._id} match={match} />
-                ))}
+                {displayedLikedMe.map((match) => renderMatchCard(match))}
               </div>
             ) : (
               <Card className="glass-card p-8 text-center">
@@ -1133,9 +1220,7 @@ const Matches = () => {
           <TabsContent value="millionClub" className="mt-6">
             {millionClubMatches.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-                {millionClubMatches.map((match) => (
-                  <MatchCard key={match.user._id} match={match} />
-                ))}
+                {millionClubMatches.map((match) => renderMatchCard(match))}
               </div>
             ) : (
               <div className="flex items-center justify-center min-h-[50vh]">
