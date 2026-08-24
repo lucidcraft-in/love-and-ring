@@ -186,12 +186,33 @@ const Summary = ({ onNavigate }: SummaryProps) => {
   };
 
   const handleCardClick = (cardTitle: string) => {
-    if (cardTitle === "Contact Viewed") {
-      navigate("/dashboard/contacts-viewed");
-    } else if (cardTitle === "Chats") {
-      navigate("/dashboard/chats");
-    } else if (cardTitle === "Pending Invitations" || cardTitle === "Accepted Invitations") {
-      if (onNavigate) onNavigate("interests");
+    if (cardTitle === "Chats") {
+      if (onNavigate) {
+        onNavigate("chat");
+      } else {
+        navigate("/dashboard?tab=chat");
+      }
+    } else if (cardTitle === "Accepted Invitations") {
+      localStorage.setItem("activeMatchesTab", "all");
+      if (onNavigate) {
+        onNavigate("matches");
+      } else {
+        navigate("/dashboard?tab=matches");
+      }
+    } else if (cardTitle === "Pending Invitations") {
+      localStorage.setItem("activeInterestsTab", "received");
+      if (onNavigate) {
+        onNavigate("interests");
+      } else {
+        navigate("/dashboard?tab=interests");
+      }
+    } else if (cardTitle === "Recent Visitors") {
+      localStorage.setItem("activeMatchesTab", "new");
+      if (onNavigate) {
+        onNavigate("matches");
+      } else {
+        navigate("/dashboard?tab=matches");
+      }
     }
   };
 
@@ -635,7 +656,13 @@ const Summary = ({ onNavigate }: SummaryProps) => {
     };
   }, []);
 
-  const summaryCards = [
+  const summaryCards: {
+    title: string;
+    count: number;
+    icon: any;
+    color: string;
+    premium?: boolean;
+  }[] = [
     {
       title: "Pending Invitations",
       count: summaryData?.pendingInvitations ?? 0,
@@ -655,18 +682,10 @@ const Summary = ({ onNavigate }: SummaryProps) => {
       color: "from-blue-500 to-cyan-500",
     },
     {
-      title: "Contact Viewed",
-      count: summaryData?.contactViewed ?? 0,
-      icon: Phone,
-      color: "from-pink-500 to-rose-600",
-      premium: true,
-    },
-    {
       title: "Chats",
       count: summaryData?.chats ?? 0,
       icon: MessageCircle,
       color: "from-green-500 to-emerald-600",
-      premium: true,
     },
   ];
 
@@ -695,8 +714,8 @@ const Summary = ({ onNavigate }: SummaryProps) => {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Summary</h2>
 
-            {/* Grid display: 1 Row on Desktop, 2/3 cols on tablet/mobile */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
+            {/* Grid display: 1 Row on Desktop, 2/4 cols on tablet/mobile */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3 lg:gap-4">
               {summaryCards.map((card) => {
                 const Icon = card.icon;
                 const isLocked = card.premium && !isPremium;
