@@ -73,6 +73,11 @@ const MyPhotos = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 100 * 1024 * 1024) {
+        toast.error("File size must be less than 100MB");
+        e.target.value = "";
+        return;
+      }
       const reader = new FileReader();
       reader.onload = () => {
         setSelectedImage(reader.result as string);
@@ -341,9 +346,10 @@ const MyPhotos = () => {
           className="glass-card border-2 border-dashed border-primary/50 hover:border-primary transition-colors cursor-pointer"
           onClick={() => fileInputRef.current?.click()}
         >
-          <div className="aspect-square flex flex-col items-center justify-center gap-3 text-muted-foreground hover:text-foreground transition-colors">
-            <Upload className="w-12 h-12" />
+          <div className="aspect-square flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors p-4 text-center">
+            <Upload className="w-10 h-10 text-primary" />
             <p className="font-medium">Upload New Photo</p>
+            <p className="text-xs text-muted-foreground">PNG, JPG, WEBP up to 100MB</p>
           </div>
         </Card>
       </div>
