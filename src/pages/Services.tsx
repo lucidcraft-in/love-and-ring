@@ -218,13 +218,19 @@ const Services = () => {
           handleOpenEnquiry(foundService);
         }
 
-        // Smooth scroll to the target service section card
-        setTimeout(() => {
-          const cardEl = document.getElementById(`service-${targetServiceId}`);
+        // Scroll to the target service card directly without bouncing
+        const scrollToTarget = () => {
+          const cardEl =
+            document.getElementById(`service-${targetServiceId}`) ||
+            document.getElementById(`service-card-${targetServiceId}`);
           if (cardEl) {
-            cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            cardEl.scrollIntoView({ behavior: "auto", block: "center" });
           }
-        }, 300);
+        };
+
+        scrollToTarget();
+        requestAnimationFrame(() => scrollToTarget());
+        setTimeout(scrollToTarget, 100);
       }
     }
   }, [loading, services, targetServiceId, selectedCategory, openEnquiryParam]);
