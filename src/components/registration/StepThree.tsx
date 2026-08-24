@@ -81,6 +81,10 @@ const StepThree = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 100 * 1024 * 1024) {
+        alert("File size must be less than 100MB");
+        return;
+      }
       const reader = new FileReader();
       reader.onload = () => {
         setSelectedImage(reader.result as string);
@@ -378,7 +382,7 @@ const StepThree = ({
                 <div>
                   <p className="font-medium">Upload your profile photo</p>
                   <p className="text-sm text-muted-foreground">
-                    Click to upload or drag and drop (Max 5MB)
+                    Click to upload or drag and drop (Max 100MB)
                   </p>
                 </div>
               </div>
