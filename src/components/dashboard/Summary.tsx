@@ -44,6 +44,7 @@ import ProtectedProfileImage from "./ProtectedProfileImage";
 import FemaleDummy from "@/assets/UserWomen.png";
 import MaleDummy from "@/assets/UserMen.png";
 import DummyProfile from "@/assets/DummyProfile.png";
+import { fetchDashboardNotifications } from "@/services/notificationService";
 
 interface SummaryData {
   pendingInvitations: number;
@@ -400,248 +401,23 @@ const Summary = ({ onNavigate }: SummaryProps) => {
   const fetchNotifications = async () => {
     setLoadingNotifications(true);
     try {
-      const token = localStorage.getItem("token");
-      const headers = { Authorization: `Bearer ${token}` };
-
-      // Fetch received interests
-      const receivedRes = await Axios.get("/api/user/interests/received", { headers });
-      const rawInterests = receivedRes.data || [];
-
-      // Convert interests to notifications
-      const interestNotifications: NotificationItem[] = rawInterests.map((item: any) => {
-        const fromUser = item.fromUser || {};
-        const photo = getProfilePhoto(fromUser.photos, fromUser.gender);
-        
-        return {
-          id: item._id,
-          type: "interest_received",
-          title: "Interest Received",
-          senderName: fromUser.fullName || "A Member",
-          senderPhoto: photo,
-          senderGender: fromUser.gender,
-          senderId: fromUser._id,
-          description: `You've received an interest from ${fromUser.fullName || "a member"}. Please check their profile and choose to accept or decline.`,
-          timestamp: formatRelativeTime(item.createdAt),
-          rawDate: item.createdAt ? new Date(item.createdAt) : new Date(Date.now() - 24 * 3600000),
-        };
-      });
-
-      // Add the 10 specified temporary mockup notifications for design purposes
-      const mockNotifications: NotificationItem[] = [
-        {
-          id: "mock-msg-1",
-          type: "message_received",
-          title: "Message Received",
-          senderName: "Priya Sharma",
-          senderPhoto: FemaleDummy,
-          description: "Hey! I saw your profile and would love to connect. Are you free to chat this weekend?",
-          timestamp: "2 hours ago",
-          rawDate: new Date(Date.now() - 2 * 3600000),
-        },
-        {
-          id: "mock-photo-1",
-          type: "photo_request",
-          title: "Photo View Accepted",
-          senderName: "Amit Patel",
-          senderPhoto: MaleDummy,
-          description: "Amit Patel accepted your request to view their private photos. Click to view their photos.",
-          timestamp: "Yesterday",
-          rawDate: new Date(Date.now() - 24 * 3600000),
-        },
-        {
-          id: "mock-match-1",
-          type: "match_suggestion",
-          title: "New Match Suggestion",
-          senderName: "Love & Ring",
-          senderPhoto: DummyProfile,
-          description: "We found 3 new profiles matching your partner preferences today. Take a look!",
-          timestamp: "2 days ago",
-          rawDate: new Date(Date.now() - 2 * 24 * 3600000),
-        },
-        {
-          id: "mock-interest-1",
-          type: "interest_received",
-          title: "Interest Received",
-          senderName: "Neha Thomas",
-          senderPhoto: FemaleDummy,
-          description: "Neha Thomas showed interest in your profile.",
-          timestamp: "3 days ago",
-          rawDate: new Date(Date.now() - 3 * 24 * 3600000),
-        },
-        {
-          id: "mock-boost-1",
-          type: "photo_request",
-          title: "Profile Boost Expiring",
-          senderName: "Love & Ring",
-          senderPhoto: DummyProfile,
-          description: "Your profile boost will expire in 2 days. Upgrade to stay visible.",
-          timestamp: "4 days ago",
-          rawDate: new Date(Date.now() - 4 * 24 * 3600000),
-        },
-        {
-          id: "mock-msg-2",
-          type: "message_received",
-          title: "Message Received",
-          senderName: "Arjun Nair",
-          senderPhoto: MaleDummy,
-          description: "Hi! I liked your profile and wanted to know you better.",
-          timestamp: "5 days ago",
-          rawDate: new Date(Date.now() - 5 * 24 * 3600000),
-        },
-        {
-          id: "mock-match-2",
-          type: "match_suggestion",
-          title: "New Match Found",
-          senderName: "Love & Ring",
-          senderPhoto: DummyProfile,
-          description: "We found a new profile that closely matches your preferences.",
-          timestamp: "6 days ago",
-          rawDate: new Date(Date.now() - 6 * 24 * 3600000),
-        },
-        {
-          id: "mock-interest-2",
-          type: "interest_received",
-          title: "Interest Accepted",
-          senderName: "Anjali Menon",
-          senderPhoto: FemaleDummy,
-          description: "Anjali accepted your interest. You can now connect with her.",
-          timestamp: "1 week ago",
-          rawDate: new Date(Date.now() - 7 * 24 * 3600000),
-        },
-        {
-          id: "mock-view-1",
-          type: "photo_request",
-          title: "Profile Viewed",
-          senderName: "Sneha",
-          senderPhoto: FemaleDummy,
-          description: "Sneha viewed your profile.",
-          timestamp: "1 week ago",
-          rawDate: new Date(Date.now() - 7 * 24 * 3600000),
-        },
-        {
-          id: "mock-rec-1",
-          type: "match_suggestion",
-          title: "New Recommendation",
-          senderName: "Love & Ring",
-          senderPhoto: DummyProfile,
-          description: "A new recommended profile is waiting for you.",
-          timestamp: "2 weeks ago",
-          rawDate: new Date(Date.now() - 14 * 24 * 3600000),
-        }
-      ];
-
-      // Merge and sort by rawDate descending
-      const merged = [...interestNotifications, ...mockNotifications].sort(
-        (a, b) => b.rawDate.getTime() - a.rawDate.getTime()
-      );
-
-      setNotifications(merged);
+      const data = await fetchDashboardNotifications();
+      const mapped: NotificationItem[] = data.map((item) => ({
+        id: item.id,
+        type: "interest_received",
+        title: item.title,
+        senderName: item.name,
+        senderPhoto: item.avatar,
+        senderGender: item.gender,
+        senderId: item.userId,
+        description: item.description,
+        timestamp: formatRelativeTime(item.date),
+        rawDate: item.date ? new Date(item.date) : new Date(),
+      }));
+      setNotifications(mapped);
     } catch (error) {
       console.error("Error fetching notifications data:", error);
-      // Fallback
-      const mockNotifications: NotificationItem[] = [
-        {
-          id: "mock-msg-1",
-          type: "message_received",
-          title: "Message Received",
-          senderName: "Priya Sharma",
-          senderPhoto: FemaleDummy,
-          description: "Hey! I saw your profile and would love to connect. Are you free to chat this weekend?",
-          timestamp: "2 hours ago",
-          rawDate: new Date(),
-        },
-        {
-          id: "mock-photo-1",
-          type: "photo_request",
-          title: "Photo View Accepted",
-          senderName: "Amit Patel",
-          senderPhoto: MaleDummy,
-          description: "Amit Patel accepted your request to view their private photos. Click to view their photos.",
-          timestamp: "Yesterday",
-          rawDate: new Date(Date.now() - 24 * 3600000),
-        },
-        {
-          id: "mock-match-1",
-          type: "match_suggestion",
-          title: "New Match Suggestion",
-          senderName: "Love & Ring",
-          senderPhoto: DummyProfile,
-          description: "We found 3 new profiles matching your partner preferences today. Take a look!",
-          timestamp: "2 days ago",
-          rawDate: new Date(Date.now() - 2 * 24 * 3600000),
-        },
-        {
-          id: "mock-interest-1",
-          type: "interest_received",
-          title: "Interest Received",
-          senderName: "Neha Thomas",
-          senderPhoto: FemaleDummy,
-          description: "Neha Thomas showed interest in your profile.",
-          timestamp: "3 days ago",
-          rawDate: new Date(Date.now() - 3 * 24 * 3600000),
-        },
-        {
-          id: "mock-boost-1",
-          type: "photo_request",
-          title: "Profile Boost Expiring",
-          senderName: "Love & Ring",
-          senderPhoto: DummyProfile,
-          description: "Your profile boost will expire in 2 days. Upgrade to stay visible.",
-          timestamp: "4 days ago",
-          rawDate: new Date(Date.now() - 4 * 24 * 3600000),
-        },
-        {
-          id: "mock-msg-2",
-          type: "message_received",
-          title: "Message Received",
-          senderName: "Arjun Nair",
-          senderPhoto: MaleDummy,
-          description: "Hi! I liked your profile and wanted to know you better.",
-          timestamp: "5 days ago",
-          rawDate: new Date(Date.now() - 5 * 24 * 3600000),
-        },
-        {
-          id: "mock-match-2",
-          type: "match_suggestion",
-          title: "New Match Found",
-          senderName: "Love & Ring",
-          senderPhoto: DummyProfile,
-          description: "We found a new profile that closely matches your preferences.",
-          timestamp: "6 days ago",
-          rawDate: new Date(Date.now() - 6 * 24 * 3600000),
-        },
-        {
-          id: "mock-interest-2",
-          type: "interest_received",
-          title: "Interest Accepted",
-          senderName: "Anjali Menon",
-          senderPhoto: FemaleDummy,
-          description: "Anjali accepted your interest. You can now connect with her.",
-          timestamp: "1 week ago",
-          rawDate: new Date(Date.now() - 7 * 24 * 3600000),
-        },
-        {
-          id: "mock-view-1",
-          type: "photo_request",
-          title: "Profile Viewed",
-          senderName: "Sneha",
-          senderPhoto: FemaleDummy,
-          description: "Sneha viewed your profile.",
-          timestamp: "1 week ago",
-          rawDate: new Date(Date.now() - 7 * 24 * 3600000),
-        },
-        {
-          id: "mock-rec-1",
-          type: "match_suggestion",
-          title: "New Recommendation",
-          senderName: "Love & Ring",
-          senderPhoto: DummyProfile,
-          description: "A new recommended profile is waiting for you.",
-          timestamp: "2 weeks ago",
-          rawDate: new Date(Date.now() - 14 * 24 * 3600000),
-        }
-      ];
-      setNotifications(mockNotifications);
+      setNotifications([]);
     } finally {
       setLoadingNotifications(false);
     }
@@ -1050,7 +826,7 @@ const Summary = ({ onNavigate }: SummaryProps) => {
                   const hasIncomingInterest = receivedInterests.includes(match.user._id);
                   const isAccepted = acceptedInterests.includes(match.user._id);
                   const alreadyViewed = viewedProfiles.some((id) => String(id) === String(match.user._id));
-                  const canViewProfile = isAccepted || alreadyViewed;
+                  const canViewProfile = isAccepted || alreadyViewed || isPremium;
                   const isMillionClub = match.user.isMillionClub || match.user.profileStatus?.toLowerCase().includes("million");
                   const primaryPhoto = match.user.photos?.find((p) => p.isPrimary);
                   const isPhotoHidden = primaryPhoto?.isHidden;
@@ -1066,7 +842,21 @@ const Summary = ({ onNavigate }: SummaryProps) => {
                       className="w-[240px] sm:w-[260px] md:w-[270px] shrink-0 snap-start glass-card overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-3xl border border-border/40 flex flex-col h-[460px] relative group"
                     >
                       {/* Image section */}
-                      <div className="relative h-[225px] w-full overflow-hidden bg-muted shrink-0">
+                      <div
+                        className="relative h-[225px] w-full overflow-hidden bg-muted shrink-0 cursor-pointer"
+                        onClick={() => {
+                          if (!canViewProfile) {
+                            setShowUpgradeModal(true);
+                            return;
+                          }
+                          if (lockedByLimit) {
+                            toast.error("Profile view limit reached. Upgrade your plan 🔒");
+                            navigate("/pricing");
+                            return;
+                          }
+                          handleViewProfile(match.user._id);
+                        }}
+                      >
                         <OptimizedProfileImage
                           src={photoSrc}
                           alt={match.user.fullName}
@@ -1130,6 +920,10 @@ const Summary = ({ onNavigate }: SummaryProps) => {
                               <h4
                                 className="text-base font-bold truncate leading-tight text-foreground cursor-pointer hover:text-primary transition-colors flex items-center gap-1"
                                 onClick={() => {
+                                  if (!canViewProfile) {
+                                    setShowUpgradeModal(true);
+                                    return;
+                                  }
                                   if (lockedByLimit) {
                                     toast.error("Profile view limit reached. Upgrade your plan 🔒");
                                     navigate("/pricing");
@@ -1194,22 +988,7 @@ const Summary = ({ onNavigate }: SummaryProps) => {
 
                         {/* Card Actions */}
                         <div className="flex items-center gap-2 mt-auto pt-3 border-t border-border/20 shrink-0">
-                          {isAccepted ? (
-                            <>
-                              <Button
-                                className="flex-1 bg-gradient-to-r from-primary to-secondary text-white text-xs h-9 rounded-full font-semibold hover:opacity-95 hover:-translate-y-0.5 shadow-md active:translate-y-0 transition-all"
-                                onClick={() => handleViewProfile(match.user._id)}
-                              >
-                                View Profile
-                              </Button>
-                              <Button
-                                disabled
-                                className="flex-1 bg-green-500 text-white text-xs h-9 rounded-full font-semibold"
-                              >
-                                <Check className="w-3.5 h-3.5 mr-1" /> Matched
-                              </Button>
-                            </>
-                          ) : (
+                          {canViewProfile ? (
                             <>
                               <Button
                                 className="flex-1 bg-gradient-to-r from-primary to-secondary text-white text-xs h-9 rounded-full font-semibold hover:opacity-95 hover:-translate-y-0.5 shadow-md active:translate-y-0 transition-all"
@@ -1224,8 +1003,14 @@ const Summary = ({ onNavigate }: SummaryProps) => {
                               >
                                 View Profile
                               </Button>
-
-                              {hasIncomingInterest ? (
+                              {isAccepted ? (
+                                <Button
+                                  disabled
+                                  className="flex-1 bg-green-500 text-white text-xs h-9 rounded-full font-semibold"
+                                >
+                                  <Check className="w-3.5 h-3.5 mr-1" /> Matched
+                                </Button>
+                              ) : hasIncomingInterest ? (
                                 <Button
                                   disabled
                                   className="flex-1 bg-blue-500 text-white text-xs h-9 rounded-full font-semibold"
@@ -1252,6 +1037,33 @@ const Summary = ({ onNavigate }: SummaryProps) => {
                                 </Button>
                               )}
                             </>
+                          ) : (
+                            /* Non-premium users only get the Send Interest button */
+                            hasIncomingInterest ? (
+                              <Button
+                                disabled
+                                className="w-full bg-blue-500 text-white text-xs h-9 rounded-full font-semibold"
+                              >
+                                Received
+                              </Button>
+                            ) : isInterestSent ? (
+                              <Button
+                                variant="outline"
+                                className="w-full border-amber-500 text-amber-600 text-xs h-9 rounded-full hover:bg-amber-50 hover:-translate-y-0.5 active:translate-y-0 font-semibold transition-all"
+                                onClick={() => handleCancelInterest(match.user._id, match.user.fullName)}
+                                disabled={isCanceling}
+                              >
+                                {isCanceling ? "..." : "Cancel Sent Interest"}
+                              </Button>
+                            ) : (
+                              <Button
+                                className="w-full bg-gradient-to-r from-primary to-secondary text-white hover:opacity-95 hover:-translate-y-0.5 active:translate-y-0 text-xs h-9 rounded-full font-semibold transition-all shadow-md"
+                                disabled={isSending}
+                                onClick={() => handleSendInterest(match.user._id, match.user.fullName)}
+                              >
+                                {isSending ? "Sending..." : "Send Interest"}
+                              </Button>
+                            )
                           )}
                         </div>
                       </div>
@@ -1336,7 +1148,7 @@ const Summary = ({ onNavigate }: SummaryProps) => {
           <Button
             variant="outline"
             className="w-full text-xs font-semibold mt-2 border-primary/40 text-primary hover:bg-primary hover:text-white shrink-0"
-            onClick={() => onNavigate && onNavigate("interests")}
+            onClick={() => onNavigate && onNavigate("notifications")}
           >
             View All Notifications
           </Button>
