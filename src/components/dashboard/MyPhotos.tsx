@@ -27,6 +27,8 @@ interface Photo {
   approvalStatus: string;
 }
 
+const MAX_PHOTOS = 10;
+
 const MyPhotos = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -73,6 +75,11 @@ const MyPhotos = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (photos.length >= MAX_PHOTOS) {
+        toast.error("Maximum 10 photos allowed. Please delete an existing photo to upload a new one.");
+        e.target.value = "";
+        return;
+      }
       if (file.size > 100 * 1024 * 1024) {
         toast.error("File size must be less than 100MB");
         e.target.value = "";
@@ -262,22 +269,38 @@ const MyPhotos = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">My Photos</h2>
-        <Button
-          className="bg-gradient-to-r from-primary to-secondary gap-2"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl font-bold">My Photos</h2>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+            {photos.length} / {MAX_PHOTOS} Photos
+          </span>
+        </div>
+        <label
+          htmlFor="my-photos-upload-input"
+          className={photos.length >= MAX_PHOTOS ? "cursor-not-allowed" : "cursor-pointer"}
         >
-          <Upload className="w-4 h-4" />
-          {uploading ? "Uploading..." : "Upload Photo"}
-        </Button>
+          <Button
+            type="button"
+            className="bg-gradient-to-r from-primary to-secondary gap-2 pointer-events-none w-full sm:w-auto"
+            disabled={uploading || photos.length >= MAX_PHOTOS}
+          >
+            <Upload className="w-4 h-4" />
+            {uploading
+              ? "Uploading..."
+              : photos.length >= MAX_PHOTOS
+              ? "Limit Reached (10/10)"
+              : "Upload Photo"}
+          </Button>
+        </label>
         <input
+          id="my-photos-upload-input"
           ref={fileInputRef}
           type="file"
-          accept="image/*"
-          hidden
+          accept="image/*,image/heic,image/heif,image/png,image/jpeg,image/jpg,image/webp"
+          className="hidden"
           onChange={handleFileChange}
+          disabled={uploading || photos.length >= MAX_PHOTOS}
         />
       </div>
 
@@ -342,16 +365,28 @@ const MyPhotos = () => {
         })}
 
         {/* Upload New Photo Card */}
-        <Card
-          className="glass-card border-2 border-dashed border-primary/50 hover:border-primary transition-colors cursor-pointer"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <div className="aspect-square flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors p-4 text-center">
-            <Upload className="w-10 h-10 text-primary" />
-            <p className="font-medium">Upload New Photo</p>
-            <p className="text-xs text-muted-foreground">PNG, JPG, WEBP up to 100MB</p>
-          </div>
-        </Card>
+        {photos.length < MAX_PHOTOS ? (
+          <label htmlFor="my-photos-upload-input" className="block cursor-pointer">
+            <Card className="glass-card border-2 border-dashed border-primary/50 hover:border-primary transition-colors h-full min-h-[220px]">
+              <div className="aspect-square flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-foreground transition-colors p-4 text-center">
+                <Upload className="w-10 h-10 text-primary" />
+                <p className="font-medium text-foreground">Upload New Photo</p>
+                <p className="text-xs text-muted-foreground">Photo Library / Camera / Files</p>
+                <span className="text-[11px] text-primary font-medium mt-1">
+                  {MAX_PHOTOS - photos.length} slot{MAX_PHOTOS - photos.length > 1 ? "s" : ""} remaining
+                </span>
+              </div>
+            </Card>
+          </label>
+        ) : (
+          <Card className="glass-card border-2 border-dashed border-muted bg-muted/20 h-full min-h-[220px] flex items-center justify-center p-4 text-center">
+            <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+              <Star className="w-10 h-10 text-amber-500/50" />
+              <p className="font-semibold text-sm text-foreground">Maximum 10 Photos Reached</p>
+              <p className="text-xs text-muted-foreground">Delete an existing photo to upload a new one.</p>
+            </div>
+          </Card>
+        )}
       </div>
 
       {/* Photo Adjustment & Crop Dialog */}
