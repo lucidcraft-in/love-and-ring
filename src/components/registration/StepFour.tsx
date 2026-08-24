@@ -28,13 +28,13 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
 
   const cvInputRef = useRef<HTMLInputElement>(null);
 
-  const MAX_CV_SIZE = 5 * 1024 * 1024; // 5MB
+  const MAX_CV_SIZE = 100 * 1024 * 1024; // 100MB
 
   const handleCvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > MAX_CV_SIZE) {
-      toast.error("File size must be less than 5MB");
+      toast.error("File size must be less than 100MB");
       e.target.value = "";
       return;
     }
@@ -234,7 +234,7 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
                 <div>
                   <p className="font-medium">Upload your CV</p>
                   <p className="text-sm text-muted-foreground">
-                    Click to upload or drag and drop (PDF, DOC, DOCX, TXT – Max 5MB)
+                    Click to upload or drag and drop (PDF, DOC, DOCX, TXT – Max 100MB)
                   </p>
                 </div>
               </div>
