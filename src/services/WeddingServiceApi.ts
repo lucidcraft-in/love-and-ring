@@ -24,6 +24,7 @@ export interface EnquiryRequestPayload {
   serviceTitle: string;
   serviceCategory: string;
   message?: string;
+  location?: string;
   eventDate?: string;
 }
 
