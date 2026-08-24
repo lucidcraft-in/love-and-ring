@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import DummyProfile from "@/assets/DummyProfile.png";
@@ -11,59 +11,60 @@ interface OptimizedProfileImageProps {
   className?: string;
 }
 
+// Global cache to keep track of loaded image URLs across component remounts
+const loadedImageUrls = new Set<string>();
+
 const OptimizedProfileImage = ({
   src,
   alt,
   isLocked = false,
   className,
 }: OptimizedProfileImageProps) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(false);
-  const imgRef = useRef<HTMLDivElement>(null);
+  const isAlreadyCached =
+    !src ||
+    loadedImageUrls.has(src) ||
+    src.startsWith("data:") ||
+    src.includes("static") ||
+    src.includes("assets");
+
+  const [isLoaded, setIsLoaded] = useState<boolean>(isAlreadyCached);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "100px", threshold: 0.1 }
-    );
-
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
+    if (src && loadedImageUrls.has(src)) {
+      setIsLoaded(true);
     }
+  }, [src]);
 
-    return () => observer.disconnect();
-  }, []);
+  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    if (src) loadedImageUrls.add(src);
+    setIsLoaded(true);
+  };
+
+  const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = DummyProfile;
+    setIsLoaded(true);
+  };
 
   return (
-    <div ref={imgRef} className={cn("relative w-full h-full", className)}>
-      {/* Skeleton placeholder */}
+    <div className={cn("relative w-full h-full bg-muted overflow-hidden", className)}>
+      {/* Skeleton placeholder - only shown while image is loading for the very first time */}
       {!isLoaded && (
-        <Skeleton className="absolute inset-0 w-full h-full rounded-none" />
+        <Skeleton className="absolute inset-0 w-full h-full rounded-none z-0" />
       )}
 
-      {/* Actual image - only load when in viewport */}
-      {isInView && (
-        <ProtectedProfileImage
-          src={src}
-          alt={alt}
-          loading="lazy"
-          onLoad={() => setIsLoaded(true)}
-          onError={(e) => {
-            e.currentTarget.src = DummyProfile;
-            setIsLoaded(true);
-          }}
-          className={cn(
-            "w-full h-full object-cover object-center transition-opacity duration-500",
-            isLoaded ? "opacity-100" : "opacity-0"
-          )}
-          isLocked={isLocked}
-        />
-      )}
+      {/* Actual image rendered directly using native browser lazy loading */}
+      <ProtectedProfileImage
+        src={src || DummyProfile}
+        alt={alt}
+        loading="lazy"
+        onLoad={handleLoad}
+        onError={handleError}
+        className={cn(
+          "w-full h-full object-cover object-center transition-opacity duration-150 relative z-10",
+          isLoaded ? "opacity-100" : "opacity-0"
+        )}
+        isLocked={isLocked}
+      />
     </div>
   );
 };
