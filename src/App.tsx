@@ -50,8 +50,10 @@ const AppLayout = () => {
   const navigate = useNavigate();
   const [incomingCall, setIncomingCall] = useState<any>(null);
 
-  // Scroll to top on route navigation
+  // Scroll to top on route navigation (except when deep-linking to a specific service)
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has("serviceId")) return;
     window.scrollTo(0, 0);
   }, [location.pathname, location.search]);
 
