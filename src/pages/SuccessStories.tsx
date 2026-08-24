@@ -245,37 +245,6 @@ const SuccessStories = () => {
         </section>
       )}
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary to-secondary text-white">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center space-y-6 max-w-3xl mx-auto"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold">
-              Write Your Own Success Story
-            </h2>
-            <p className="text-xl opacity-90">
-              Join thousands of happy couples who found their perfect match on
-              MatrimonyHub
-            </p>
-            <div className="pt-4">
-              <a href="/register">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-white text-primary px-8 py-4 rounded-full font-semibold text-lg hover:bg-white/90 transition-all"
-                >
-                  Start Your Journey
-                </motion.button>
-              </a>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Read More Modal */}
       <Dialog
         open={!!selectedStory}
