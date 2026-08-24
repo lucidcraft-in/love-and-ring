@@ -133,9 +133,9 @@ const SuccessStories = () => {
             transition={{ duration: 0.8 }}
             className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8"
           >
-            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white hero-text-shadow">
+            <h1 className="text-3xl md:text-8xl  font-extrabold text-white tracking-tight">
               Success{" "}
-              <span className="gradient-text-light drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+              <span className="gradient-text drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
                 Stories
               </span>
             </h1>
