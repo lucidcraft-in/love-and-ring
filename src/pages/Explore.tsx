@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Youtube, Heart, Calendar, ExternalLink, X, Play, Filter, Sparkles, Image as ImageIcon } from "lucide-react";
+import { Camera, Youtube, Heart, Calendar, ExternalLink, X, Play, Filter, Sparkles, Image as ImageIcon, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getPublicExploreItems, ExploreItem } from "@/services/ExploreServices";
+import { useNavigate } from "react-router-dom";
 
 export const extractYoutubeVideoId = (url?: string): string | null => {
   if (!url) return null;
@@ -13,6 +14,7 @@ export const extractYoutubeVideoId = (url?: string): string | null => {
 };
 
 export default function Explore() {
+  const navigate = useNavigate();
   const [items, setItems] = useState<ExploreItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<"all" | "image" | "video">("all");
@@ -29,7 +31,7 @@ export default function Explore() {
       setItems(data || []);
     } catch (err) {
       console.error("Failed to fetch explore gallery items", err);
-    } flexlly: {
+    } finally {
       setLoading(false);
     }
   };
@@ -125,6 +127,7 @@ export default function Explore() {
                 const isVideo = item.type === "video";
                 const vId = extractYoutubeVideoId(item.youtubeUrl) || item.youtubeVideoId;
                 const displayThumb = item.thumbnailUrl || (vId ? `https://img.youtube.com/vi/${vId}/hqdefault.jpg` : item.imageUrl);
+                const hasStory = !!item.successStoryId;
 
                 return (
                   <motion.div
@@ -160,8 +163,8 @@ export default function Explore() {
                         </div>
                       )}
 
-                      {/* Type Badge */}
-                      <div className="absolute top-3 left-3">
+                      {/* Type Badges */}
+                      <div className="absolute top-3 left-3 flex flex-col gap-1">
                         <Badge className="bg-black/60 text-white backdrop-blur-md border-0 text-[10px] font-semibold tracking-wider uppercase gap-1 px-2.5 py-1">
                           {isVideo ? (
                             <>
@@ -175,6 +178,11 @@ export default function Explore() {
                             </>
                           )}
                         </Badge>
+                        {hasStory && (
+                          <Badge className="bg-rose-600/90 text-white backdrop-blur-md border-0 text-[10px] font-semibold gap-1 px-2 py-0.5 shadow">
+                            <Heart className="w-3 h-3 fill-current" /> Story Linked
+                          </Badge>
+                        )}
                       </div>
 
                       {/* Gradient overlay on hover */}
@@ -312,6 +320,18 @@ export default function Explore() {
                   </div>
 
                   <div className="pt-6 space-y-2">
+                    {selectedItem.successStoryId && (
+                      <Button
+                        onClick={() => {
+                          setSelectedItem(null);
+                          navigate("/success-stories");
+                        }}
+                        className="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs gap-2 py-5 shadow"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        Read Full Couple Success Story
+                      </Button>
+                    )}
                     {selectedItem.type === "video" && (
                       <a
                         href={canonicalYoutubeShortsUrl}
