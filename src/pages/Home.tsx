@@ -36,6 +36,7 @@ import HowItWorks from "@/components/HowItWorks";
 import FeaturedSuccessStory from "@/components/FeaturedSuccessStory";
 import ClientRegistrationCTA from "@/components/ClientRegistrationCTA";
 import HomeServicesSection from "@/components/HomeServicesSection";
+import HomeExploreSection from "@/components/HomeExploreSection";
 import { loginUserApi } from "@/services/AuthServices";
 import Axios from "@/axios/axios";
 import { getNextIncompleteStep } from "@/utils/profileStatus";
@@ -984,6 +985,9 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Explore Gallery Preview Tiles */}
+      <HomeExploreSection />
 
       {/* Wedding Services Preview Tiles */}
       <HomeServicesSection />
