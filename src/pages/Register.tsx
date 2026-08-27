@@ -31,6 +31,7 @@ import heroSlide3 from "@/assets/hero-slide-3.jpg";
 import { completeUserProfile, verifyRegistrationOtp, registerFullUserApi } from "@/services/UserServices";
 import Axios from "@/axios/axios";
 import PrivacyConsentModal from "@/components/registration/PrivacyConsentModal";
+import { trackUserActivity } from "@/utils/activityTracker";
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
@@ -259,12 +260,32 @@ const Register = () => {
   const handleSendOtp = async () => {
     if (!formData.email || !formData.mobile) {
       toast.error("Email and Mobile number are required");
+      trackUserActivity({
+        category: "REGISTRATION",
+        action: "REGISTRATION_STEP_1_VALIDATION_ERROR",
+        step: 1,
+        status: "ERROR",
+        userEmail: formData.email,
+        userPhone: formData.mobile,
+        userFullName: formData.fullName,
+        errorMessage: "Email and Mobile number are required for OTP",
+      });
       return;
     }
 
     try {
       setSendingOtp(true);
       setSubmissionError(null);
+
+      trackUserActivity({
+        category: "REGISTRATION",
+        action: "REGISTRATION_SEND_OTP_REQUEST",
+        step: 1,
+        status: "INFO",
+        userEmail: formData.email,
+        userPhone: formData.mobile,
+        userFullName: formData.fullName,
+      });
 
       // 1. Check availability
       await Axios.post("/api/users/check-availability", {
@@ -282,12 +303,33 @@ const Register = () => {
       setOtpSent(true);
       setShowOTPVerification(true);
 
+      trackUserActivity({
+        category: "REGISTRATION",
+        action: "REGISTRATION_SEND_OTP_SUCCESS",
+        step: 1,
+        status: "SUCCESS",
+        userEmail: formData.email,
+        userPhone: formData.mobile,
+        userFullName: formData.fullName,
+      });
+
       toast.success("OTP sent to your Email and Mobile number");
     } catch (err: any) {
       const isNetErr = !err.response || err.code === "ERR_NETWORK" || !navigator.onLine;
       const message = isNetErr
         ? "Network connection error while sending OTP. Your data is saved locally. Please check your connection and retry."
         : err.response?.data?.message || "Failed to send OTP";
+
+      trackUserActivity({
+        category: "REGISTRATION",
+        action: "REGISTRATION_SEND_OTP_ERROR",
+        step: 1,
+        status: "ERROR",
+        userEmail: formData.email,
+        userPhone: formData.mobile,
+        userFullName: formData.fullName,
+        errorMessage: message,
+      });
 
       setSubmissionError({ message, action: "otp" });
       toast.error(message);
@@ -356,12 +398,44 @@ const Register = () => {
   };
 
   const nextStep = () => {
+    const requiredFields = getRequiredFieldsForStep(currentStep);
+    const missingFields = requiredFields.filter((field) => {
+      const value = formData[field];
+      if (Array.isArray(value)) return value.length === 0;
+      if (typeof value === "string") return value.trim() === "";
+      return !value;
+    });
+
+    if (missingFields.length > 0) {
+      trackUserActivity({
+        category: "REGISTRATION",
+        action: `REGISTRATION_STEP_${currentStep}_VALIDATION_ERROR`,
+        step: currentStep,
+        status: "ERROR",
+        userEmail: formData.email,
+        userPhone: formData.mobile,
+        userFullName: formData.fullName,
+        errorMessage: `Step ${currentStep} incomplete. Missing fields: ${missingFields.join(", ")}`,
+        details: { missingFields },
+      });
+    }
+
     if (currentStep === 1 && !isOTPVerified) {
       setShowOTPVerification(true);
       return;
     }
 
     if (currentStep < totalSteps) {
+      trackUserActivity({
+        category: "REGISTRATION",
+        action: `REGISTRATION_STEP_${currentStep}_NEXT`,
+        step: currentStep,
+        status: "SUCCESS",
+        userEmail: formData.email,
+        userPhone: formData.mobile,
+        userFullName: formData.fullName,
+        details: { nextStep: currentStep + 1 },
+      });
       setCurrentStep(currentStep + 1);
       setStepErrors({});
     }
@@ -390,19 +464,52 @@ const Register = () => {
       setShowOTPVerification(false);
       setCurrentStep(2);
 
-      // Save password into MongoDB directly at Step 1
+      trackUserActivity({
+        category: "REGISTRATION",
+        action: "REGISTRATION_OTP_VERIFIED",
+        step: 1,
+        status: "SUCCESS",
+        userEmail: formData.email,
+        userPhone: formData.mobile,
+        userFullName: formData.fullName,
+      });
+
+      // Save password and initial profile details into MongoDB directly at Step 1
       try {
-        await verifyRegistrationOtp({
+        const otpRes = await verifyRegistrationOtp({
           email: formData.email,
           otp,
           password,
+          accountFor: formData.accountFor
+            ? formData.accountFor.charAt(0).toUpperCase() + formData.accountFor.slice(1)
+            : "Self",
+          fullName: formData.fullName,
+          mobile: formData.mobile,
+          alternateMobile: formData.alternateMobile,
+          countryCode: formData.countryCode || "+91",
+          gender: formData.gender
+            ? formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1)
+            : "Male",
         });
+        if (otpRes?.data?.user?._id) {
+          setUserId(otpRes.data.user._id);
+        }
       } catch (saveErr) {
         console.warn("OTP/password DB sync warning:", saveErr);
       }
 
       toast.success("OTP verified. Please complete your registration details.");
     } catch (err: any) {
+      trackUserActivity({
+        category: "REGISTRATION",
+        action: "REGISTRATION_OTP_VERIFICATION_FAILED",
+        step: 1,
+        status: "ERROR",
+        userEmail: formData.email,
+        userPhone: formData.mobile,
+        userFullName: formData.fullName,
+        errorMessage: err.message || "Failed to proceed after OTP verification",
+      });
       toast.error("Failed to proceed after OTP verification");
     }
   };
@@ -484,33 +591,48 @@ const Register = () => {
 
       submitData.append("profileStatus", "COMPLETED");
 
-      if (userId) {
+      let res;
+      if (userId && localStorage.getItem("token")) {
         const token = localStorage.getItem("token");
-        const res = await Axios.put(`/api/users/${userId}`, submitData, {
+        res = await Axios.put(`/api/users/${userId}`, submitData, {
           headers: {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
           },
         });
-        const updatedUser = res.data;
-        if (updatedUser) {
-          const currentSaved = JSON.parse(localStorage.getItem("user") || "{}");
-          const mergedUser = {
-            ...currentSaved,
-            ...updatedUser,
-            profileStatus: "COMPLETED",
-          };
-          localStorage.setItem("user", JSON.stringify(mergedUser));
-          window.dispatchEvent(new Event("userProfileUpdated"));
-        }
-        localStorage.removeItem("registration_draft");
-        sessionStorage.removeItem("register_temp_password");
+      } else {
+        res = await registerFullUserApi(submitData);
+      }
+
+      const updatedUser = res.data?.user || res.data;
+      if (updatedUser) {
+        const currentSaved = JSON.parse(localStorage.getItem("user") || "{}");
+        const mergedUser = {
+          ...currentSaved,
+          ...updatedUser,
+          profileStatus: "COMPLETED",
+        };
+        localStorage.setItem("user", JSON.stringify(mergedUser));
+        window.dispatchEvent(new Event("userProfileUpdated"));
+      }
+
+      trackUserActivity({
+        category: "REGISTRATION",
+        action: "REGISTRATION_SUBMIT_SUCCESS",
+        step: 5,
+        status: "SUCCESS",
+        userEmail: formData.email,
+        userPhone: formData.mobile,
+        userFullName: formData.fullName,
+      });
+
+      localStorage.removeItem("registration_draft");
+      sessionStorage.removeItem("register_temp_password");
+
+      if (userId && localStorage.getItem("token")) {
         toast.success("Profile updated successfully!");
         navigate("/dashboard");
       } else {
-        await registerFullUserApi(submitData);
-        localStorage.removeItem("registration_draft");
-        sessionStorage.removeItem("register_temp_password");
         toast.success("Profile created successfully!");
         navigate("/login", {
           state: {
@@ -525,6 +647,17 @@ const Register = () => {
       const message = isNetErr
         ? "Network connection lost during submission. Your details are saved safely. Click Retry below to resubmit."
         : err.response?.data?.message || "Failed to complete registration";
+
+      trackUserActivity({
+        category: "REGISTRATION",
+        action: "REGISTRATION_SUBMIT_FAILED",
+        step: 5,
+        status: "ERROR",
+        userEmail: formData.email,
+        userPhone: formData.mobile,
+        userFullName: formData.fullName,
+        errorMessage: message,
+      });
 
       setSubmissionError({ message, action: "submit" });
       toast.error(message);
