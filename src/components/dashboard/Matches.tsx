@@ -517,11 +517,12 @@ const Matches = ({ onNavigate }: MatchesProps) => {
   const calculateAge = (dob: string) => {
     if (!dob) return "N/A";
     const birth = new Date(dob);
+    if (isNaN(birth.getTime())) return "N/A";
     const today = new Date();
     let age = today.getFullYear() - birth.getFullYear();
     const m = today.getMonth() - birth.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-    return age;
+    return age >= 0 ? age : "N/A";
   };
 
   const getProfilePhoto = (photos?: any[], gender?: string) => {
@@ -754,11 +755,12 @@ const MatchCard = React.memo(({
   const calculateAge = (dob: string) => {
     if (!dob) return "N/A";
     const birth = new Date(dob);
+    if (isNaN(birth.getTime())) return "N/A";
     const today = new Date();
     let age = today.getFullYear() - birth.getFullYear();
     const m = today.getMonth() - birth.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-    return age;
+    return age >= 0 ? age : "N/A";
   };
 
   const photoSrc = getProfilePhoto(match.user.photos, match.user.gender);
