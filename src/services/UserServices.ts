@@ -21,6 +21,12 @@ export const verifyRegistrationOtp = (data: {
   email: string;
   otp: string;
   password: string;
+  accountFor?: string;
+  fullName?: string;
+  mobile?: string;
+  alternateMobile?: string;
+  countryCode?: string;
+  gender?: string;
 }) => {
   return Axios.post("/api/users/verify-otp", data);
 };
