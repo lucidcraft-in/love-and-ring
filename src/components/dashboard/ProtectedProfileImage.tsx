@@ -1,4 +1,4 @@
-import React from "react";
+import ringLogo from "@/assets/ring-logo.png";
 import { cn } from "@/lib/utils";
 import { PROFILE_PHOTO_PROTECTION_ENABLED } from "@/config/security";
 
@@ -54,9 +54,26 @@ const ProtectedProfileImage: React.FC<ProtectedProfileImageProps> = ({
         {...props}
       />
 
+      {/* Center Watermark: Love & Ring Logo + Brand Name with Low Opacity */}
+      {showWatermark && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none select-none p-3">
+          <div className="flex flex-col items-center justify-center opacity-30 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+            <img
+              src={ringLogo}
+              alt="Love & Ring"
+              className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain"
+              draggable={false}
+            />
+            <span className="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-white mt-1.5 drop-shadow-md text-center whitespace-nowrap">
+              Love & Ring
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Invisible Shield Overlay that captures right-clicks, selections, and drag events */}
       <div
-        className="absolute inset-0 z-10 bg-transparent cursor-pointer"
+        className="absolute inset-0 z-20 bg-transparent cursor-pointer"
         onContextMenu={(e) => e.preventDefault()}
         draggable={false}
         onClick={onClick}
