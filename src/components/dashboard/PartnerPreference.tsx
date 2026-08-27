@@ -21,6 +21,31 @@ interface Education {
   name: string;
 }
 
+interface Caste {
+  _id: string;
+  name: string;
+  religion?: string | { _id: string; name: string };
+}
+
+const staticDietOptions = [
+  { id: "veg", name: "Vegetarian", icon: "🥗" },
+  { id: "non-veg", name: "Non-Veg", icon: "🍗" },
+  { id: "vegan", name: "Vegan", icon: "🌱" },
+  { id: "eggetarian", name: "Eggetarian", icon: "🥚" },
+  { id: "jain", name: "Jain", icon: "🙏" },
+];
+
+const staticTraitsOptions = [
+  { id: "friendly", name: "Friendly", icon: "😊" },
+  { id: "ambitious", name: "Ambitious", icon: "🎯" },
+  { id: "creative", name: "Creative", icon: "💡" },
+  { id: "honest", name: "Honest", icon: "✨" },
+  { id: "caring", name: "Caring", icon: "❤️" },
+  { id: "funny", name: "Funny", icon: "😄" },
+  { id: "intelligent", name: "Intelligent", icon: "🧠" },
+  { id: "patient", name: "Patient", icon: "🕊️" },
+];
+
 /* ================= COMPONENT ================= */
 const PartnerPreference = () => {
   const [showConfirm, setShowConfirm] = useState(false);
@@ -32,19 +57,22 @@ const PartnerPreference = () => {
 
   /* ---------- Master Data ---------- */
   const [religions, setReligions] = useState<Religion[]>([]);
+  const [castes, setCastes] = useState<Caste[]>([]);
+  const [loadingCastes, setLoadingCastes] = useState<boolean>(false);
 
   /* ---------- Selected Values (IDs) ---------- */
   const [selectedReligions, setSelectedReligions] = useState<string[]>([]);
+  const [selectedCastes, setSelectedCastes] = useState<string[]>([]);
   const [selectedEducation, setSelectedEducation] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [selectedDiets, setSelectedDiets] = useState<string[]>([]);
+  const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
 
   /* ---------- Master & Custom Interests ---------- */
   const [educations, setEducations] = useState<Education[]>([]);
   const [masterInterests, setMasterInterests] = useState<string[]>([]);
   const [customInterests, setCustomInterests] = useState<string[]>([]);
   const [newInterestInput, setNewInterestInput] = useState<string>("");
-
-
 
   /* ================= LOAD EXISTING PREFERENCES ================= */
   useEffect(() => {
@@ -61,8 +89,6 @@ const PartnerPreference = () => {
         });
 
         const data = response.data;
-        console.log(data, "dataaa");
-
         if (!data) return;
 
         // 🔹 Set sliders
@@ -79,12 +105,24 @@ const PartnerPreference = () => {
           setSelectedReligions(data.religions);
         }
 
+        if (data.castes) {
+          setSelectedCastes(data.castes);
+        }
+
         if (data.educationLevels) {
           setSelectedEducation(data.educationLevels);
         }
 
         if (data.interests) {
           setSelectedInterests(data.interests);
+        }
+
+        if (data.diets || data.dietPreferences) {
+          setSelectedDiets(data.diets || data.dietPreferences);
+        }
+
+        if (data.personalityTraits || data.traits) {
+          setSelectedTraits(data.personalityTraits || data.traits);
         }
       } catch (error: any) {
         console.error("Failed to load preferences", error);
@@ -111,11 +149,9 @@ const PartnerPreference = () => {
           },
         });
 
-        // API returns: { total, take, skip, data: [] }
         setReligions(response.data.data);
       } catch (error: any) {
         console.error(error);
-
         if (error?.response?.status === 401) {
           toast.error("Unauthorized. Please login again.");
         } else {
@@ -127,24 +163,45 @@ const PartnerPreference = () => {
     fetchReligions();
   }, []);
 
+  /* ================= FETCH CASTES ================= */
   useEffect(() => {
-    const fetchHigherEducations = async () => {
+    const fetchCastes = async () => {
+      try {
+        setLoadingCastes(true);
+        const token = localStorage.getItem("token");
+        const response = await Axios.get("/api/master/castes", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const list = response.data?.data || response.data || [];
+        setCastes(Array.isArray(list) ? list : []);
+      } catch (error) {
+        console.error("Failed to fetch castes", error);
+      } finally {
+        setLoadingCastes(false);
+      }
+    };
+
+    fetchCastes();
+  }, []);
+
+  useEffect(() => {
+    const fetchQualificationLevels = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const response = await Axios.get("/api/master/higherEducations", {
+        const response = await Axios.get("/api/master/primaryEducations", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         setEducations(response.data.data || []);
       } catch (error: any) {
-        console.error("Higher education fetch error:", error);
-        toast.error("Failed to load education levels");
+        console.error("Qualification level fetch error:", error);
+        toast.error("Failed to load qualification levels");
       }
     };
 
-    fetchHigherEducations();
+    fetchQualificationLevels();
   }, []);
 
   /* ================= FETCH MASTER INTERESTS ================= */
@@ -196,6 +253,13 @@ const PartnerPreference = () => {
     ]),
   );
 
+  /* Filter castes based on selected religions */
+  const filteredCastes = castes.filter((caste) => {
+    if (selectedReligions.length === 0) return false;
+    const relId = typeof caste.religion === "object" ? caste.religion?._id : caste.religion;
+    return selectedReligions.includes(relId || "");
+  });
+
   /* ================= TOGGLE HANDLER ================= */
   const toggleSelection = (
     value: string,
@@ -230,8 +294,11 @@ const PartnerPreference = () => {
           max: heightRange[1],
         },
         religions: selectedReligions, // IDs
+        castes: selectedCastes, // IDs
         educationLevels: selectedEducation, // IDs
         interests: selectedInterests,
+        diets: selectedDiets,
+        personalityTraits: selectedTraits,
       };
 
       await Axios.post("/api/user/partner-preferences/me", payload, {
@@ -308,7 +375,14 @@ const PartnerPreference = () => {
 
         {/* Religion (API Driven) */}
         <Card className="glass-card p-6">
-          <Label className="text-lg font-semibold mb-4 block">Religion</Label>
+          <div className="flex items-center justify-between mb-4">
+            <Label className="text-lg font-semibold block">Religion</Label>
+            {selectedReligions.length > 0 && (
+              <span className="text-xs text-muted-foreground font-medium">
+                {selectedReligions.length} selected
+              </span>
+            )}
+          </div>
           <div className="flex flex-wrap gap-2">
             {religions.map((religion) => (
               <Badge
@@ -318,10 +392,10 @@ const PartnerPreference = () => {
                     ? "default"
                     : "outline"
                 }
-                className={`cursor-pointer py-2 px-4 ${
+                className={`cursor-pointer py-2 px-4 transition-all ${
                   selectedReligions.includes(religion._id)
-                    ? "bg-gradient-to-r from-primary to-secondary"
-                    : ""
+                    ? "bg-gradient-to-r from-primary to-secondary text-white"
+                    : "hover:bg-accent"
                 }`}
                 onClick={() =>
                   toggleSelection(
@@ -340,34 +414,155 @@ const PartnerPreference = () => {
           </div>
         </Card>
 
-        {/* Interests */}
-        <Card className="glass-card p-6 ">
-          <Label className="text-lg font-semibold mb-3 block">Interests</Label>
-          
-          {/* Add Custom Interest Input */}
-          {/* <div className="flex gap-2 mb-4">
-            <Input
-              placeholder="Add new interest..."
-              value={newInterestInput}
-              onChange={(e) => setNewInterestInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleAddCustomInterest();
-                }
-              }}
-              className="max-w-xs"
-            />
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleAddCustomInterest}
-              className="flex items-center gap-1 shrink-0"
-            >
-              <Plus className="w-4 h-4" /> Add
-            </Button>
-          </div> */}
+        {/* Caste / Community (Dynamically loaded based on selected Religion) */}
+        <Card className="glass-card p-6">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <Label className="text-lg font-semibold block">Caste / Community</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {selectedReligions.length === 0
+                  ? "Select religion(s) to filter castes"
+                  : `Castes matching selected religion(s)`}
+              </p>
+            </div>
+            {filteredCastes.length > 0 && selectedReligions.length > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-xs h-7 text-primary hover:text-primary/80"
+                onClick={() => {
+                  const allFilteredIds = filteredCastes.map((c) => c._id);
+                  const isAllSelected = allFilteredIds.every((id) => selectedCastes.includes(id));
+                  if (isAllSelected) {
+                    setSelectedCastes((prev) => prev.filter((id) => !allFilteredIds.includes(id)));
+                  } else {
+                    setSelectedCastes((prev) => Array.from(new Set([...prev, ...allFilteredIds])));
+                  }
+                }}
+              >
+                {filteredCastes.every((c) => selectedCastes.includes(c._id))
+                  ? "Deselect All"
+                  : "Select All"}
+              </Button>
+            )}
+          </div>
 
+          {loadingCastes ? (
+            <p className="text-xs text-muted-foreground py-2">Loading castes...</p>
+          ) : selectedReligions.length === 0 ? (
+            <div className="p-4 rounded-lg bg-muted/30 text-center border border-dashed border-border/60">
+              <p className="text-xs text-muted-foreground">
+                Please select at least one religion above to view corresponding castes.
+              </p>
+            </div>
+          ) : filteredCastes.length === 0 ? (
+            <div className="p-4 rounded-lg bg-muted/30 text-center border border-dashed border-border/60">
+              <p className="text-xs text-muted-foreground">
+                No castes found in master data for the selected religion(s).
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pr-1 pt-1">
+              {filteredCastes.map((caste) => {
+                const isSelected = selectedCastes.includes(caste._id);
+                return (
+                  <Badge
+                    key={caste._id}
+                    variant={isSelected ? "default" : "outline"}
+                    className={`cursor-pointer py-2 px-4 transition-all ${
+                      isSelected
+                        ? "bg-gradient-to-r from-primary to-secondary text-white"
+                        : "hover:bg-accent"
+                    }`}
+                    onClick={() =>
+                      toggleSelection(
+                        caste._id,
+                        selectedCastes,
+                        setSelectedCastes,
+                      )
+                    }
+                  >
+                    {caste.name}
+                    {isSelected && <X className="w-3 h-3 ml-1" />}
+                  </Badge>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+
+        {/* Diet Preference */}
+        <Card className="glass-card p-6">
+          <Label className="text-lg font-semibold mb-4 block">
+            Diet Preference
+          </Label>
+          <div className="flex flex-wrap gap-2">
+            {staticDietOptions.map((diet) => {
+              const isSelected = selectedDiets.includes(diet.name) || selectedDiets.includes(diet.id);
+              return (
+                <Badge
+                  key={diet.id}
+                  variant={isSelected ? "default" : "outline"}
+                  className={`cursor-pointer py-2 px-4 transition-all ${
+                    isSelected
+                      ? "bg-gradient-to-r from-primary to-secondary text-white"
+                      : "hover:bg-accent"
+                  }`}
+                  onClick={() =>
+                    toggleSelection(
+                      diet.name,
+                      selectedDiets,
+                      setSelectedDiets,
+                    )
+                  }
+                >
+                  <span className="mr-1">{diet.icon}</span>
+                  {diet.name}
+                  {isSelected && <X className="w-3 h-3 ml-1" />}
+                </Badge>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Personality Traits */}
+        <Card className="glass-card p-6">
+          <Label className="text-lg font-semibold mb-4 block">
+            Personality Traits
+          </Label>
+          <div className="flex flex-wrap gap-2">
+            {staticTraitsOptions.map((trait) => {
+              const isSelected = selectedTraits.includes(trait.name) || selectedTraits.includes(trait.id);
+              return (
+                <Badge
+                  key={trait.id}
+                  variant={isSelected ? "default" : "outline"}
+                  className={`cursor-pointer py-2 px-4 transition-all ${
+                    isSelected
+                      ? "bg-gradient-to-r from-primary to-secondary text-white"
+                      : "hover:bg-accent"
+                  }`}
+                  onClick={() =>
+                    toggleSelection(
+                      trait.name,
+                      selectedTraits,
+                      setSelectedTraits,
+                    )
+                  }
+                >
+                  <span className="mr-1">{trait.icon}</span>
+                  {trait.name}
+                  {isSelected && <X className="w-3 h-3 ml-1" />}
+                </Badge>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Interests */}
+        <Card className="glass-card p-6">
+          <Label className="text-lg font-semibold mb-3 block">Interests</Label>
           <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pr-1">
             {allInterests.map((interest) => {
               const isSelected = selectedInterests.includes(interest);
@@ -396,10 +591,10 @@ const PartnerPreference = () => {
           </div>
         </Card>
 
-        {/* Education */}
+        {/* Qualification Level */}
         <Card className="glass-card p-6 lg:col-span-2">
           <Label className="text-lg font-semibold mb-4 block">
-            Education Level
+            Qualification Level
           </Label>
           <div className="flex flex-wrap gap-2">
             {educations.map((edu) => (
