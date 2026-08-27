@@ -19,6 +19,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
@@ -242,11 +243,12 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
 
       const planTitle =
         (typeof user.membership?.plan === "object" && (user.membership?.plan?.title || user.membership?.plan?.name)) ||
+        (typeof user.membership?.plan === "string" && user.membership.plan) ||
         (user.profileStatus && user.profileStatus.toLowerCase().includes("million")
           ? "Million Club"
           : null);
 
-      const hasPlan = Boolean(user.membership?.plan && planTitle);
+      const hasPlan = Boolean(planTitle && planTitle !== "Free Plan");
 
       const formatGender = (g?: string) => {
         if (!g) return "";
@@ -267,7 +269,9 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
         mobile: user.mobile || "",
         alternateMobile: user.alternateMobile || "",
         gender: formatGender(user.gender),
-        dob: user.dateOfBirth ? user.dateOfBirth.slice(0, 10) : "",
+        dob: user.dateOfBirth
+          ? (typeof user.dateOfBirth === "string" ? user.dateOfBirth.slice(0, 10) : new Date(user.dateOfBirth).toISOString().slice(0, 10))
+          : "",
         preferredLanguage: user.preferredLanguage || "English",
         address: user.address || "",
 
@@ -464,6 +468,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
         alternateMobile: profile.alternateMobile,
         gender: profile.gender,
         dateOfBirth: profile.dob,
+        dob: profile.dob,
         preferredLanguage: profile.preferredLanguage,
         address: profile.address,
 
@@ -568,8 +573,8 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Edit Profile</h2>
         <Badge variant="outline" className="gap-2">
-          <Crown className="w-4 h-4" />
-          {currentMembership} Member
+          <Crown className="w-4 h-4 text-primary" />
+          {currentMembership.includes("Free") ? "Free Plan" : `${currentMembership} Member`}
         </Badge>
       </div>
 
@@ -1071,8 +1076,9 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
               {/* Profession */}
               <div>
                 <Label htmlFor="profession">Profession</Label>
-                <Select
-                  value={isCustomProfession ? "OTHER" : (profile?.profession || "")}
+                <SearchableSelect
+                  options={professions}
+                  value={profile?.profession || ""}
                   onValueChange={(value) => {
                     if (value === "OTHER") {
                       setIsCustomProfession(true);
@@ -1082,21 +1088,16 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
                       setProfile((p) => (p ? { ...p, profession: value } : p));
                     }
                   }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Profession" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {professions.map((p) => (
-                      <SelectItem key={p._id} value={p._id}>
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="OTHER" className="text-primary font-medium">
-                      + Add Custom Profession
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                  placeholder="Select Profession"
+                  searchPlaceholder="Search profession..."
+                  allowCustom={true}
+                  customLabel="+ Add Custom Profession"
+                  isCustomSelected={isCustomProfession}
+                  onCustomSelect={() => {
+                    setIsCustomProfession(true);
+                    setProfile((p) => (p ? { ...p, profession: customProfessionText } : p));
+                  }}
+                />
 
                 {isCustomProfession && (
                   <div className="mt-2 animate-fade-in">
