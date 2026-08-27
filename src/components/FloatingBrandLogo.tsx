@@ -41,19 +41,19 @@ const FloatingBrandLogo = ({ className = "", variant = "hero" }: FloatingBrandLo
             src={ringLogo}
             alt=""
             aria-hidden="true"
-            className="h-10 w-10 sm:h-14 sm:w-14 object-contain motion-reduce:animate-none"
+            className="h-14 w-14 sm:h-20 sm:w-20 object-contain motion-reduce:animate-none"
           />
         </motion.div>
       </div>
     );
   }
 
-  // Hero variant: two floating logos for Home page
+  // Hero variant: two floating logos for Home page / Hero sections
   return (
     <div className={`pointer-events-none select-none ${className}`}>
       {/* Top-left floating logo */}
       <motion.div
-        className="absolute top-24 left-4 sm:left-10 opacity-20 sm:opacity-25"
+        className="absolute top-24 left-4 sm:left-10 opacity-25 sm:opacity-30"
         initial={{ y: 0 }}
         animate={{ y: [0, -12, 0] }}
         transition={{
@@ -69,13 +69,13 @@ const FloatingBrandLogo = ({ className = "", variant = "hero" }: FloatingBrandLo
           src={ringLogo}
           alt=""
           aria-hidden="true"
-          className="h-12 w-12 sm:h-20 sm:w-20 object-contain motion-reduce:animate-none"
+          className="h-16 w-16 sm:h-28 sm:w-28 object-contain motion-reduce:animate-none"
         />
       </motion.div>
 
       {/* Bottom-right floating logo */}
       <motion.div
-        className="absolute bottom-24 right-4 sm:right-10 opacity-15 sm:opacity-20"
+        className="absolute bottom-24 right-4 sm:right-10 opacity-20 sm:opacity-25"
         initial={{ y: 0 }}
         animate={{ y: [0, 10, 0] }}
         transition={{
@@ -92,7 +92,7 @@ const FloatingBrandLogo = ({ className = "", variant = "hero" }: FloatingBrandLo
           src={ringLogo}
           alt=""
           aria-hidden="true"
-          className="h-14 w-14 sm:h-24 sm:w-24 object-contain motion-reduce:animate-none"
+          className="h-20 w-20 sm:h-36 sm:w-36 object-contain motion-reduce:animate-none"
         />
       </motion.div>
     </div>
