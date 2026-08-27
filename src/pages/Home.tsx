@@ -815,7 +815,7 @@ const Home = () => {
                     textShadow: "0 2px 12px rgba(0,0,0,0.35)",
                   }}
                 >
-                  Welcome <span className="gradient-text-light">Back!</span>
+                  Welcome <span className="gradient-text">Back!</span>
                 </h1>
                 <p
                   className="text-base sm:text-xl md:text-2xl"
