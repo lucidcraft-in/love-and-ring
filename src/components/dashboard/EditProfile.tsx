@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown, Edit, Upload, Camera, Plus, Star, Check, Sparkles } from "lucide-react";
+import { Crown, Edit, Upload, Camera, Plus, Star, Check, Sparkles, X } from "lucide-react";
 import ProtectedProfileImage from "./ProtectedProfileImage";
 import CvSection from "@/components/dashboard/CvSection";
 import { useEffect, useState } from "react";
@@ -60,8 +60,8 @@ interface UserProfile {
   motherTongue?: string;
 
   interests?: string[];
-  personalityTraits?: string;
-  dietPreference?: string;
+  personalityTraits?: string | string[];
+  dietPreference?: string | string[];
 
   profileImage?: string;
   membership?: string;
@@ -150,6 +150,14 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
   const [sendingEmailOtp, setSendingEmailOtp] = useState(false);
   const [verifyingEmailOtp, setVerifyingEmailOtp] = useState(false);
 
+  // Mobile update modal states
+  const [showMobileModal, setShowMobileModal] = useState(false);
+  const [newMobile, setNewMobile] = useState("");
+  const [mobileOtp, setMobileOtp] = useState("");
+  const [mobileStep, setMobileStep] = useState<"INPUT" | "OTP">("INPUT");
+  const [sendingMobileOtp, setSendingMobileOtp] = useState(false);
+  const [verifyingMobileOtp, setVerifyingMobileOtp] = useState(false);
+
   const currentMembership = profile?.membership || "Free";
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = user._id;
@@ -224,6 +232,76 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
       toast.error(err.response?.data?.message || "Invalid OTP. Verification failed.");
     } finally {
       setVerifyingEmailOtp(false);
+    }
+  };
+
+  const handleSendMobileOtp = async () => {
+    const cleanNum = newMobile.replace(/[^0-9]/g, "");
+    if (!cleanNum || cleanNum.length < 10) {
+      toast.error("Please enter a valid 10-digit mobile number");
+      return;
+    }
+    if (cleanNum.slice(-10) === profile?.mobile?.replace(/[^0-9]/g, "").slice(-10)) {
+      toast.error("New mobile number must be different from current mobile number");
+      return;
+    }
+
+    setSendingMobileOtp(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await Axios.post(
+        `/api/users/${userId}/send-mobile-otp`,
+        { newMobile: cleanNum.slice(-10) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(res.data.message || "OTP sent to your mobile number");
+      setMobileStep("OTP");
+    } catch (err: any) {
+      console.error("Failed to send mobile update OTP", err);
+      toast.error(err.response?.data?.message || "Failed to send OTP to mobile number");
+    } finally {
+      setSendingMobileOtp(false);
+    }
+  };
+
+  const handleVerifyMobileOtp = async () => {
+    if (!mobileOtp || mobileOtp.trim().length < 4) {
+      toast.error("Please enter the 4-digit OTP");
+      return;
+    }
+
+    setVerifyingMobileOtp(true);
+    try {
+      const token = localStorage.getItem("token");
+      const cleanNum = newMobile.replace(/[^0-9]/g, "").slice(-10);
+      const res = await Axios.post(
+        `/api/users/${userId}/verify-mobile-otp`,
+        { newMobile: cleanNum, otp: mobileOtp.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success("Mobile number updated successfully!");
+
+      setProfile((prev) => (prev ? { ...prev, mobile: res.data.mobile || cleanNum } : prev));
+
+      try {
+        const cachedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        if (cachedUser) {
+          cachedUser.mobile = res.data.mobile || cleanNum;
+          localStorage.setItem("user", JSON.stringify(cachedUser));
+        }
+      } catch (e) {
+        console.error("Error updating local storage user:", e);
+      }
+
+      window.dispatchEvent(new Event("userProfileUpdated"));
+      setShowMobileModal(false);
+    } catch (err: any) {
+      console.error("Failed to verify mobile OTP", err);
+      toast.error(err.response?.data?.message || "Invalid OTP. Verification failed.");
+    } finally {
+      setVerifyingMobileOtp(false);
     }
   };
 
@@ -620,15 +698,13 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
               <button
                 type="button"
                 onClick={handleHidePhotoToggle}
-                className={`w-11 h-6 flex items-center rounded-full p-1 transition ${
-                  hidePhoto ? "bg-primary" : "bg-gray-300"
-                }`}
+                className={`w-11 h-6 flex items-center rounded-full p-1 transition ${hidePhoto ? "bg-primary" : "bg-gray-300"
+                  }`}
                 title="Toggle profile photo visibility"
               >
                 <div
-                  className={`bg-white w-4 h-4 rounded-full shadow transform transition ${
-                    hidePhoto ? "translate-x-5" : ""
-                  }`}
+                  className={`bg-white w-4 h-4 rounded-full shadow transform transition ${hidePhoto ? "translate-x-5" : ""
+                    }`}
                 />
               </button>
             </div>
@@ -657,11 +733,10 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
               return (
                 <div
                   key={photoId}
-                  className={`relative aspect-square rounded-xl overflow-hidden group border-2 transition-all ${
-                    isPrimary
+                  className={`relative aspect-square rounded-xl overflow-hidden group border-2 transition-all ${isPrimary
                       ? "border-primary ring-2 ring-primary/20 shadow-md"
                       : "border-border/60 hover:border-primary/50"
-                  }`}
+                    }`}
                 >
                   <ProtectedProfileImage
                     src={photo.url}
@@ -800,7 +875,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
                       setEmailOtp("");
                       setShowEmailModal(true);
                     }}
-                    className="text-xs font-semibold text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer hover:underline"
+                    className="text-xs font-semibold gradient-text hover:gradient-text-light flex items-center gap-1 cursor-pointer hover:underline"
                   >
                     <Edit className="w-3.5 h-3.5" /> Edit Email
                   </button>
@@ -814,15 +889,27 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
                 />
               </div>
               <div>
-                <Label htmlFor="mobile">Mobile Number</Label>
+                <div className="flex justify-between items-center mb-1">
+                  <Label htmlFor="mobile" className="text-sm font-medium text-gray-700">Mobile Number</Label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewMobile(profile?.mobile || "");
+                      setMobileStep("INPUT");
+                      setMobileOtp("");
+                      setShowMobileModal(true);
+                    }}
+                    className="text-xs font-semibold gradient-text hover:gradient-text-light flex items-center gap-1 cursor-pointer hover:underline"
+                  >
+                    <Edit className="w-3.5 h-3.5 " /> Edit Mobile
+                  </button>
+                </div>
                 <Input
                   id="mobile"
+                  type="text"
                   value={profile?.mobile || ""}
-                  onChange={(e) =>
-                    setProfile((prev) =>
-                      prev ? { ...prev, mobile: e.target.value } : prev,
-                    )
-                  }
+                  disabled
+                  className="bg-gray-50 text-gray-700 border-gray-200"
                 />
               </div>
               <div>
@@ -1247,33 +1334,112 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
               </div>
 
               {/* Diet Preference */}
-              <div>
-                <Label htmlFor="dietPreference">Diet Preference</Label>
-                <Select
-                  value={profile?.dietPreference || "Non-Vegetarian"}
-                  onValueChange={(val) => setProfile((p) => p && { ...p, dietPreference: val })}
-                >
-                  <SelectTrigger id="dietPreference">
-                    <SelectValue placeholder="Select Diet Preference" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Non-Vegetarian">Non-Vegetarian</SelectItem>
-                    <SelectItem value="Vegetarian">Vegetarian</SelectItem>
-                    <SelectItem value="Eggetarian">Eggetarian</SelectItem>
-                    <SelectItem value="Vegan">Vegan</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="md:col-span-2 space-y-2">
+                <Label>Diet Preference (Select all that apply)</Label>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {[
+                    { id: "veg", name: "Vegetarian", icon: "🥗" },
+                    { id: "non-veg", name: "Non-Veg", icon: "🍗" },
+                    { id: "vegan", name: "Vegan", icon: "🌱" },
+                    { id: "eggetarian", name: "Eggetarian", icon: "🥚" },
+                    { id: "jain", name: "Jain", icon: "🙏" },
+                  ].map((diet) => {
+                    const currentDiets = Array.isArray(profile?.dietPreference)
+                      ? profile.dietPreference
+                      : typeof profile?.dietPreference === "string"
+                      ? (profile.dietPreference as string).split(",").map((s) => s.trim()).filter(Boolean)
+                      : [];
+
+                    const isSelected = currentDiets.some(
+                      (d) => d.toLowerCase() === diet.name.toLowerCase() || d.toLowerCase() === diet.id.toLowerCase()
+                    );
+
+                    const toggleDiet = () => {
+                      let updated: string[];
+                      if (isSelected) {
+                        updated = currentDiets.filter(
+                          (d) => d.toLowerCase() !== diet.name.toLowerCase() && d.toLowerCase() !== diet.id.toLowerCase()
+                        );
+                      } else {
+                        updated = [...currentDiets, diet.name];
+                      }
+                      setProfile((p) => (p ? { ...p, dietPreference: updated } : p));
+                    };
+
+                    return (
+                      <Badge
+                        key={diet.id}
+                        variant={isSelected ? "default" : "outline"}
+                        className={`cursor-pointer px-4 py-2 text-sm font-medium transition-all ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground shadow-xs"
+                            : "hover:bg-accent text-foreground"
+                        }`}
+                        onClick={toggleDiet}
+                      >
+                        <span className="mr-1.5">{diet.icon}</span>
+                        {diet.name}
+                        {isSelected && <X className="ml-2 h-3.5 w-3.5" />}
+                      </Badge>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Personality Traits */}
-              <div>
-                <Label htmlFor="personalityTraits">Personality Traits <span className="text-xs text-muted-foreground font-normal">(comma-separated)</span></Label>
-                <Input
-                  id="personalityTraits"
-                  placeholder="e.g. friendly, honest, adventourous, calm"
-                  value={profile?.personalityTraits || ""}
-                  onChange={(e) => setProfile((p) => p && { ...p, personalityTraits: e.target.value })}
-                />
+              <div className="md:col-span-2 space-y-2">
+                <Label>Personality Traits (Select all that apply)</Label>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {[
+                    { id: "friendly", name: "Friendly", icon: "😊" },
+                    { id: "ambitious", name: "Ambitious", icon: "🎯" },
+                    { id: "creative", name: "Creative", icon: "💡" },
+                    { id: "honest", name: "Honest", icon: "✨" },
+                    { id: "caring", name: "Caring", icon: "❤️" },
+                    { id: "funny", name: "Funny", icon: "😄" },
+                    { id: "intelligent", name: "Intelligent", icon: "🧠" },
+                    { id: "patient", name: "Patient", icon: "🕊️" },
+                  ].map((trait) => {
+                    const currentTraits = Array.isArray(profile?.personalityTraits)
+                      ? profile.personalityTraits
+                      : typeof profile?.personalityTraits === "string"
+                      ? (profile.personalityTraits as string).split(",").map((s) => s.trim()).filter(Boolean)
+                      : [];
+
+                    const isSelected = currentTraits.some(
+                      (t) => t.toLowerCase() === trait.name.toLowerCase() || t.toLowerCase() === trait.id.toLowerCase()
+                    );
+
+                    const toggleTrait = () => {
+                      let updated: string[];
+                      if (isSelected) {
+                        updated = currentTraits.filter(
+                          (t) => t.toLowerCase() !== trait.name.toLowerCase() && t.toLowerCase() !== trait.id.toLowerCase()
+                        );
+                      } else {
+                        updated = [...currentTraits, trait.name];
+                      }
+                      setProfile((p) => (p ? { ...p, personalityTraits: updated } : p));
+                    };
+
+                    return (
+                      <Badge
+                        key={trait.id}
+                        variant={isSelected ? "default" : "outline"}
+                        className={`cursor-pointer px-4 py-2 text-sm font-medium transition-all ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground shadow-xs"
+                            : "hover:bg-accent text-foreground"
+                        }`}
+                        onClick={toggleTrait}
+                      >
+                        <span className="mr-1.5">{trait.icon}</span>
+                        {trait.name}
+                        {isSelected && <X className="ml-2 h-3.5 w-3.5" />}
+                      </Badge>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
@@ -1297,11 +1463,10 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
                       key={interest}
                       type="button"
                       onClick={() => handleToggleInterest(interest)}
-                      className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1 font-medium cursor-pointer ${
-                        isSelected
+                      className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1 font-medium cursor-pointer ${isSelected
                           ? "bg-primary text-white border-primary shadow-sm"
                           : "bg-background hover:bg-muted text-foreground border-border/80"
-                      }`}
+                        }`}
                     >
                       {isSelected && <Check className="w-3 h-3 text-white" />}
                       <span>{interest}</span>
@@ -1433,6 +1598,103 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
                   className="bg-gradient-to-r from-primary to-secondary"
                 >
                   {verifyingEmailOtp ? "Verifying..." : "Verify & Update Email"}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Mobile Number Change OTP Dialog */}
+      <Dialog open={showMobileModal} onOpenChange={setShowMobileModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              Update Mobile Number
+            </DialogTitle>
+            <DialogDescription className="text-sm text-gray-500">
+              {mobileStep === "INPUT"
+                ? "Enter your new 10-digit mobile number to receive an OTP verification code."
+                : `We sent a 4-digit OTP code to verify +91 ${newMobile}. Please enter it below.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {mobileStep === "INPUT" ? (
+            <div className="space-y-4 py-2">
+              <div>
+                <Label htmlFor="modal-new-mobile" className="text-sm font-medium text-gray-700">
+                  New Mobile Number
+                </Label>
+                <Input
+                  id="modal-new-mobile"
+                  type="tel"
+                  placeholder="Enter 10-digit mobile number"
+                  maxLength={10}
+                  value={newMobile}
+                  onChange={(e) => setNewMobile(e.target.value.replace(/[^0-9]/g, ""))}
+                  className="mt-1 font-medium"
+                />
+              </div>
+              <DialogFooter className="pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowMobileModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  disabled={sendingMobileOtp || !newMobile.trim() || newMobile.trim().length < 10}
+                  onClick={handleSendMobileOtp}
+                  className="bg-gradient-to-r from-primary to-secondary"
+                >
+                  {sendingMobileOtp ? "Sending OTP..." : "Send OTP"}
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4 py-2">
+              <div>
+                <Label htmlFor="modal-mobile-otp" className="text-sm font-medium text-gray-700">
+                  Verification OTP
+                </Label>
+                <Input
+                  id="modal-mobile-otp"
+                  type="text"
+                  maxLength={6}
+                  placeholder="Enter OTP"
+                  value={mobileOtp}
+                  onChange={(e) => setMobileOtp(e.target.value)}
+                  className="mt-1 text-center font-mono text-lg tracking-widest"
+                />
+              </div>
+              <div className="flex justify-between items-center text-xs text-gray-500">
+                <span>Didn't receive code?</span>
+                <button
+                  type="button"
+                  disabled={sendingMobileOtp}
+                  onClick={handleSendMobileOtp}
+                  className="text-rose-600 font-semibold hover:underline cursor-pointer disabled:opacity-50"
+                >
+                  {sendingMobileOtp ? "Resending..." : "Resend OTP"}
+                </button>
+              </div>
+              <DialogFooter className="pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setMobileStep("INPUT")}
+                >
+                  Back
+                </Button>
+                <Button
+                  type="button"
+                  disabled={verifyingMobileOtp || !mobileOtp.trim()}
+                  onClick={handleVerifyMobileOtp}
+                  className="bg-gradient-to-r from-primary to-secondary"
+                >
+                  {verifyingMobileOtp ? "Verifying..." : "Verify & Update Mobile"}
                 </Button>
               </DialogFooter>
             </div>
