@@ -130,11 +130,11 @@ const ProfileSidebar = ({
         .join("")
         .toUpperCase() || "U",
   };
-  const planName =
-    (typeof userData?.membership?.plan === "object" && userData?.membership?.plan?.title) ||
-    (typeof userData?.membership?.plan === "object" && userData?.membership?.plan?.name) ||
-    userData?.profileStatus ||
-    "Free Account";
+  const rawPlanTitle =
+    (typeof userData?.membership?.plan === "object" && (userData?.membership?.plan?.title || userData?.membership?.plan?.name)) ||
+    (userData?.profileStatus && userData?.profileStatus.toLowerCase().includes("million") ? "Million Club" : null);
+
+  const planName = rawPlanTitle || "Free Plan";
   return (
     <>
       {/* Mobile Overlay */}
@@ -172,7 +172,7 @@ const ProfileSidebar = ({
 
           <span
             className={`mt-2 px-3 py-0.5 text-xs font-medium rounded-full ${
-              planName === "Free Account"
+              !rawPlanTitle || planName === "Free Plan"
                 ? "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                 : "bg-gradient-to-r from-primary to-secondary text-white shadow-xs"
             }`}
