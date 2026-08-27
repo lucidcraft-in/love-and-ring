@@ -70,6 +70,41 @@ interface Profile {
   approvalStatus?: string;
 }
 
+interface MasterOption {
+  _id: string;
+  name: string;
+}
+
+interface FilterState {
+  religion: string;
+  caste: string;
+  maritalStatus: string;
+  minAge: string;
+  maxAge: string;
+  minHeight: string;
+  maxHeight: string;
+  minWeight: string;
+  maxWeight: string;
+  city: string;
+  primaryEducation: string;
+  profession: string;
+}
+
+const initialFilterState: FilterState = {
+  religion: "",
+  caste: "",
+  maritalStatus: "",
+  minAge: "",
+  maxAge: "",
+  minHeight: "",
+  maxHeight: "",
+  minWeight: "",
+  maxWeight: "",
+  city: "",
+  primaryEducation: "",
+  profession: "",
+};
+
 const formatReligionCaste = (religion?: any, caste?: any) => {
   const relName = typeof religion === "object" ? religion?.name : religion;
   const casteName = typeof caste === "object" ? caste?.name : caste;
@@ -108,6 +143,17 @@ const BrowseProfiles = () => {
   const [sendingInterest, setSendingInterest] = useState<string | null>(null);
   const [cancelingInterest, setCancelingInterest] = useState<string | null>(null);
 
+  // Master Data Options
+  const [religions, setReligions] = useState<MasterOption[]>([]);
+  const [castes, setCastes] = useState<MasterOption[]>([]);
+  const [primaryEducations, setPrimaryEducations] = useState<MasterOption[]>([]);
+  const [professions, setProfessions] = useState<MasterOption[]>([]);
+
+  // Advance Filters State
+  const [filters, setFilters] = useState<FilterState>(initialFilterState);
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>(initialFilterState);
+  const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
+
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser) : null;
   const checkMillionStatus = (userObj: any) => {
@@ -130,14 +176,90 @@ const BrowseProfiles = () => {
   const loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const loggedUserId = loggedUser?._id;
 
-  const fetchProfiles = async () => {
+  // Fetch Master Data
+  useEffect(() => {
+    const fetchMasterData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const [religionRes, primaryEduRes, professionRes] = await Promise.all([
+          Axios.get("/api/master/religions", { headers }).catch(() => ({ data: { data: [] } })),
+          Axios.get("/api/master/primaryEducations", { headers }).catch(() => ({ data: { data: [] } })),
+          Axios.get("/api/master/occupations", { headers }).catch(() => ({ data: { data: [] } })),
+        ]);
+
+        setReligions(religionRes.data?.data || []);
+        setPrimaryEducations(primaryEduRes.data?.data || []);
+        setProfessions(professionRes.data?.data || []);
+      } catch (err) {
+        console.error("Failed to load master data for filters", err);
+      }
+    };
+
+    fetchMasterData();
+  }, []);
+
+  // Fetch Castes dynamically when Religion filter changes
+  useEffect(() => {
+    if (!filters.religion) {
+      setCastes([]);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    Axios.get(`/api/master/castes?religionId=${filters.religion}&religion=${filters.religion}`, { headers })
+      .then((res) => {
+        const rawCastes = res.data?.data || [];
+        const filtered = rawCastes.filter((c: any) => {
+          const cReligionId = typeof c.religion === "object" ? c.religion?._id : c.religion;
+          return cReligionId === filters.religion;
+        });
+        setCastes(filtered);
+      })
+      .catch((err) => console.error("Failed to load castes for filter", err));
+  }, [filters.religion]);
+
+  const fetchProfiles = async (
+    query: string = searchQuery,
+    currentFilters: FilterState = appliedFilters
+  ) => {
     if (profiles.length === 0) {
       setLoading(true);
     }
     try {
       const token = localStorage.getItem("token");
 
-      const response = await Axios.get("/api/users?take=100&skip=0", {
+      const params = new URLSearchParams();
+      params.append("take", "100");
+      params.append("skip", "0");
+
+      if (query.trim()) {
+        params.append("search", query.trim());
+      }
+
+      if (currentFilters.religion) params.append("religion", currentFilters.religion);
+      if (currentFilters.caste) params.append("caste", currentFilters.caste);
+      if (currentFilters.maritalStatus && currentFilters.maritalStatus !== "all") {
+        params.append("maritalStatus", currentFilters.maritalStatus);
+      }
+      if (currentFilters.minAge) params.append("minAge", currentFilters.minAge);
+      if (currentFilters.maxAge) params.append("maxAge", currentFilters.maxAge);
+      if (currentFilters.minHeight) params.append("minHeight", currentFilters.minHeight);
+      if (currentFilters.maxHeight) params.append("maxHeight", currentFilters.maxHeight);
+      if (currentFilters.minWeight) params.append("minWeight", currentFilters.minWeight);
+      if (currentFilters.maxWeight) params.append("maxWeight", currentFilters.maxWeight);
+      if (currentFilters.city) params.append("city", currentFilters.city);
+      if (currentFilters.primaryEducation && currentFilters.primaryEducation !== "all") {
+        params.append("primaryEducation", currentFilters.primaryEducation);
+      }
+      if (currentFilters.profession && currentFilters.profession !== "all") {
+        params.append("profession", currentFilters.profession);
+      }
+
+      const response = await Axios.get(`/api/users?${params.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -163,6 +285,15 @@ const BrowseProfiles = () => {
       setLoading(false);
     }
   };
+
+  // Debounced effect for Search and Filters (backend query)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      fetchProfiles(searchQuery, appliedFilters);
+    }, 400);
+
+    return () => clearTimeout(handler);
+  }, [searchQuery, appliedFilters]);
 
   const fetchProfilesILiked = async () => {
     try {
@@ -273,7 +404,6 @@ const BrowseProfiles = () => {
   };
 
   useEffect(() => {
-    fetchProfiles();
     fetchProfilesILiked();
     checkProfileLimit();
     fetchReceivedInterests();
@@ -284,11 +414,12 @@ const BrowseProfiles = () => {
   const calculateAge = (dob?: string) => {
     if (!dob) return "--";
     const birth = new Date(dob);
+    if (isNaN(birth.getTime())) return "--";
     const today = new Date();
     let age = today.getFullYear() - birth.getFullYear();
     const m = today.getMonth() - birth.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-    return age;
+    return age >= 0 ? age : "--";
   };
 
   const getProfileImage = (photos?: any[], gender?: string) => {
@@ -325,16 +456,11 @@ const BrowseProfiles = () => {
       if (!targetGenders.includes(profileGender)) return false;
     }
 
-    // Search query check
-    const matchesSearch = (p.fullName ?? "")
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-
     if (showLikedOnly) {
-      return matchesSearch && likedUserIds.has(p._id);
+      return likedUserIds.has(p._id);
     }
 
-    return matchesSearch;
+    return true;
   });
 
   const handleLikeProfile = async (userId: string) => {
@@ -756,6 +882,21 @@ const BrowseProfiles = () => {
     );
   };
 
+  const handleApplyFilters = () => {
+    setAppliedFilters(filters);
+    setIsFilterDialogOpen(false);
+  };
+
+  const handleResetFilters = () => {
+    setFilters(initialFilterState);
+    setAppliedFilters(initialFilterState);
+    setIsFilterDialogOpen(false);
+  };
+
+  const activeFilterCount = Object.values(appliedFilters).filter(
+    (v) => v !== "" && v !== "all"
+  ).length;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -788,110 +929,287 @@ const BrowseProfiles = () => {
             Liked Profiles
           </Button>
 
-          <Dialog>
+          <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
             <DialogTrigger asChild>
-              {/* <Button variant="outline" className="gap-2">
+              <Button
+                variant={activeFilterCount > 0 ? "default" : "outline"}
+                className={`gap-2 ${
+                  activeFilterCount > 0
+                    ? "bg-gradient-to-r from-primary to-secondary text-white"
+                    : ""
+                }`}
+              >
                 <Filter className="w-4 h-4" />
                 Advanced Filters
-              </Button> */}
+                {activeFilterCount > 0 && (
+                  <Badge className="ml-1 bg-white text-primary text-xs px-1.5 py-0.5 font-bold rounded-full">
+                    {activeFilterCount}
+                  </Badge>
+                )}
+              </Button>
             </DialogTrigger>
-            <DialogContent className="glass-card max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="glass-card max-w-2xl max-h-[85vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Advanced Filters</DialogTitle>
+                <DialogTitle className="flex items-center justify-between pr-6">
+                  <span className="flex items-center gap-2 text-xl font-bold">
+                    <Filter className="w-5 h-5 text-primary" />
+                    Advanced Filters
+                  </span>
+                  {activeFilterCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-muted-foreground hover:text-destructive"
+                      onClick={handleResetFilters}
+                    >
+                      Reset All
+                    </Button>
+                  )}
+                </DialogTitle>
               </DialogHeader>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                {/* Age Range */}
                 <div>
-                  <Label>Religion</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select religion" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hindu">Hindu</SelectItem>
-                      <SelectItem value="muslim">Muslim</SelectItem>
-                      <SelectItem value="christian">Christian</SelectItem>
-                      <SelectItem value="sikh">Sikh</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Education</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select education" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="graduate">Graduate</SelectItem>
-                      <SelectItem value="postgraduate">
-                        Post Graduate
-                      </SelectItem>
-                      <SelectItem value="doctorate">Doctorate</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Profession</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select profession" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="engineer">Engineer</SelectItem>
-                      <SelectItem value="doctor">Doctor</SelectItem>
-                      <SelectItem value="business">Business</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Marital Status</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="single">Single</SelectItem>
-                      <SelectItem value="divorced">Divorced</SelectItem>
-                      <SelectItem value="widow">Widow/Widower</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Age Range</Label>
-                  <div className="flex gap-2">
-                    <Input placeholder="Min" type="number" />
-                    <Input placeholder="Max" type="number" />
+                  <Label className="text-xs font-semibold text-foreground/90">Age Range (Years)</Label>
+                  <div className="flex gap-2 mt-1.5">
+                    <Input
+                      placeholder="Min Age"
+                      type="number"
+                      value={filters.minAge}
+                      onChange={(e) => setFilters((f) => ({ ...f, minAge: e.target.value }))}
+                    />
+                    <Input
+                      placeholder="Max Age"
+                      type="number"
+                      value={filters.maxAge}
+                      onChange={(e) => setFilters((f) => ({ ...f, maxAge: e.target.value }))}
+                    />
                   </div>
                 </div>
 
+                {/* Marital Status */}
                 <div>
-                  <Label>Income Range</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select range" />
+                  <Label className="text-xs font-semibold text-foreground/90">Marital Status</Label>
+                  <Select
+                    value={filters.maritalStatus || "all"}
+                    onValueChange={(val) => setFilters((f) => ({ ...f, maritalStatus: val }))}
+                  >
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder="All Marital Statuses" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="0-5">₹0 - ₹5L</SelectItem>
-                      <SelectItem value="5-10">₹5L - ₹10L</SelectItem>
-                      <SelectItem value="10-20">₹10L - ₹20L</SelectItem>
-                      <SelectItem value="20+">₹20L+</SelectItem>
+                      <SelectItem value="all">All Marital Statuses</SelectItem>
+                      <SelectItem value="Single">Single</SelectItem>
+                      <SelectItem value="Divorced">Divorced</SelectItem>
+                      <SelectItem value="Widowed">Widowed</SelectItem>
+                      <SelectItem value="Awaiting Divorce">Awaiting Divorce</SelectItem>
+                      <SelectItem value="Annulled">Annulled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Height Range */}
+                <div>
+                  <Label className="text-xs font-semibold text-foreground/90">Height Range (cm)</Label>
+                  <div className="flex gap-2 mt-1.5">
+                    <Input
+                      placeholder="Min Height (cm)"
+                      type="number"
+                      value={filters.minHeight}
+                      onChange={(e) => setFilters((f) => ({ ...f, minHeight: e.target.value }))}
+                    />
+                    <Input
+                      placeholder="Max Height (cm)"
+                      type="number"
+                      value={filters.maxHeight}
+                      onChange={(e) => setFilters((f) => ({ ...f, maxHeight: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Weight Range */}
+                <div>
+                  <Label className="text-xs font-semibold text-foreground/90">Weight Range (kg)</Label>
+                  <div className="flex gap-2 mt-1.5">
+                    <Input
+                      placeholder="Min Weight (kg)"
+                      type="number"
+                      value={filters.minWeight}
+                      onChange={(e) => setFilters((f) => ({ ...f, minWeight: e.target.value }))}
+                    />
+                    <Input
+                      placeholder="Max Weight (kg)"
+                      type="number"
+                      value={filters.maxWeight}
+                      onChange={(e) => setFilters((f) => ({ ...f, maxWeight: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Religion */}
+                <div>
+                  <Label className="text-xs font-semibold text-foreground/90">Religion</Label>
+                  <Select
+                    value={filters.religion || "all"}
+                    onValueChange={(val) => setFilters((f) => ({ ...f, religion: val === "all" ? "" : val, caste: "" }))}
+                  >
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder="All Religions" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Religions</SelectItem>
+                      {religions.map((rel) => (
+                        <SelectItem key={rel._id} value={rel._id}>
+                          {rel.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Caste */}
+                <div>
+                  <Label className="text-xs font-semibold text-foreground/90">Caste</Label>
+                  <Select
+                    disabled={!filters.religion || castes.length === 0}
+                    value={filters.caste || "all"}
+                    onValueChange={(val) => setFilters((f) => ({ ...f, caste: val === "all" ? "" : val }))}
+                  >
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder={!filters.religion ? "Select religion first" : "All Castes"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Castes</SelectItem>
+                      {castes.map((c) => (
+                        <SelectItem key={c._id} value={c._id}>
+                          {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* City */}
+                <div>
+                  <Label className="text-xs font-semibold text-foreground/90">City / Location</Label>
+                  <Input
+                    placeholder="Search by city..."
+                    className="mt-1.5"
+                    value={filters.city}
+                    onChange={(e) => setFilters((f) => ({ ...f, city: e.target.value }))}
+                  />
+                </div>
+
+                {/* Education */}
+                <div>
+                  <Label className="text-xs font-semibold text-foreground/90">Education</Label>
+                  <Select
+                    value={filters.primaryEducation || "all"}
+                    onValueChange={(val) => setFilters((f) => ({ ...f, primaryEducation: val === "all" ? "" : val }))}
+                  >
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder="All Educations" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Educations</SelectItem>
+                      {primaryEducations.map((edu) => (
+                        <SelectItem key={edu._id} value={edu._id}>
+                          {edu.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Profession */}
+                <div className="md:col-span-2">
+                  <Label className="text-xs font-semibold text-foreground/90">Profession</Label>
+                  <Select
+                    value={filters.profession || "all"}
+                    onValueChange={(val) => setFilters((f) => ({ ...f, profession: val === "all" ? "" : val }))}
+                  >
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder="All Professions" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Professions</SelectItem>
+                      {professions.map((prof) => (
+                        <SelectItem key={prof._id} value={prof._id}>
+                          {prof.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline">Reset</Button>
-                <Button className="bg-gradient-to-r from-primary to-secondary">
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-border/40">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setFilters(appliedFilters);
+                    setIsFilterDialogOpen(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button variant="outline" onClick={handleResetFilters}>
+                  Reset
+                </Button>
+                <Button
+                  className="bg-gradient-to-r from-primary to-secondary text-white font-medium"
+                  onClick={handleApplyFilters}
+                >
                   Apply Filters
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Active Filter Badges Display */}
+        {activeFilterCount > 0 && (
+          <div className="flex flex-wrap items-center gap-2 pt-3 mt-3 border-t border-border/30">
+            <span className="text-xs font-medium text-muted-foreground">Active Filters:</span>
+            {appliedFilters.minAge && <Badge variant="secondary" className="text-xs">Min Age: {appliedFilters.minAge}</Badge>}
+            {appliedFilters.maxAge && <Badge variant="secondary" className="text-xs">Max Age: {appliedFilters.maxAge}</Badge>}
+            {appliedFilters.maritalStatus && <Badge variant="secondary" className="text-xs">Status: {appliedFilters.maritalStatus}</Badge>}
+            {appliedFilters.minHeight && <Badge variant="secondary" className="text-xs">Min Height: {appliedFilters.minHeight}cm</Badge>}
+            {appliedFilters.maxHeight && <Badge variant="secondary" className="text-xs">Max Height: {appliedFilters.maxHeight}cm</Badge>}
+            {appliedFilters.minWeight && <Badge variant="secondary" className="text-xs">Min Weight: {appliedFilters.minWeight}kg</Badge>}
+            {appliedFilters.maxWeight && <Badge variant="secondary" className="text-xs">Max Weight: {appliedFilters.maxWeight}kg</Badge>}
+            {appliedFilters.religion && (
+              <Badge variant="secondary" className="text-xs">
+                Religion: {religions.find((r) => r._id === appliedFilters.religion)?.name || "Selected"}
+              </Badge>
+            )}
+            {appliedFilters.caste && (
+              <Badge variant="secondary" className="text-xs">
+                Caste: {castes.find((c) => c._id === appliedFilters.caste)?.name || "Selected"}
+              </Badge>
+            )}
+            {appliedFilters.city && <Badge variant="secondary" className="text-xs">City: {appliedFilters.city}</Badge>}
+            {appliedFilters.primaryEducation && (
+              <Badge variant="secondary" className="text-xs">
+                Education: {primaryEducations.find((e) => e._id === appliedFilters.primaryEducation)?.name || "Selected"}
+              </Badge>
+            )}
+            {appliedFilters.profession && (
+              <Badge variant="secondary" className="text-xs">
+                Profession: {professions.find((p) => p._id === appliedFilters.profession)?.name || "Selected"}
+              </Badge>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-[11px] text-destructive hover:bg-destructive/10 px-2"
+              onClick={handleResetFilters}
+            >
+              Clear All
+            </Button>
+          </div>
+        )}
       </Card>
 
       {/* Profiles Grid */}
