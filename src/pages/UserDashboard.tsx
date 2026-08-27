@@ -63,13 +63,13 @@ const UserDashboard = () => {
       case "summary":
         return <Summary onNavigate={handleNavigate} />;
       case "edit-profile":
-        return <EditProfile />;
+        return <EditProfile onNavigate={handleNavigate} />;
       case "my-photos":
         return <MyPhotos />;
       case "partner-preference":
         return <PartnerPreference />;
       case "matches":
-        return <Matches />;
+        return <Matches onNavigate={handleNavigate} />;
       case "interests":
         return <Interests />;
       case "chat":
