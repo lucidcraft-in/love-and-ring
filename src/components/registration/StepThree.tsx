@@ -307,13 +307,13 @@ const StepThree = ({
           <Label htmlFor="city">City You Live In *</Label>
           <Input
             id="city"
-            placeholder="Start typing city name..."
+            placeholder="Type your city (e.g., Kozhikode, Kochi...)"
             value={formData?.city || ""}
             onChange={(e) => handleChange("city", e.target.value)}
             className={errors.city ? "border-destructive" : ""}
           />
           <p className="text-xs text-muted-foreground">
-            Google Places autocomplete integration
+            Enter the city where you currently reside
           </p>
           {errors.city && (
             <p className="text-xs text-destructive">{errors.city}</p>
