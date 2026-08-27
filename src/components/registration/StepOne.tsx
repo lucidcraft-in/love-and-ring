@@ -144,7 +144,10 @@ const StepOne = ({
               if (!updateFormData) return;
 
               const dialCode = (country as any).dialCode ?? "";
-              const phoneNumber = dialCode ? value.replace(dialCode, "") : value;
+              let phoneNumber = value;
+              if (dialCode && value.startsWith(dialCode)) {
+                phoneNumber = value.slice(dialCode.length);
+              }
 
               updateFormData("countryCode", dialCode ? `+${dialCode}` : "");
               updateFormData("mobile", phoneNumber);
