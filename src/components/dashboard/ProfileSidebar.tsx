@@ -132,6 +132,7 @@ const ProfileSidebar = ({
   };
   const rawPlanTitle =
     (typeof userData?.membership?.plan === "object" && (userData?.membership?.plan?.title || userData?.membership?.plan?.name)) ||
+    (typeof userData?.membership?.plan === "string" && userData.membership.plan) ||
     (userData?.profileStatus && userData?.profileStatus.toLowerCase().includes("million") ? "Million Club" : null);
 
   const planName = rawPlanTitle || "Free Plan";
