@@ -15,6 +15,7 @@ import {
   Eye,
   Crown,
   Ruler,
+  Sliders,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -78,7 +79,11 @@ interface MatchItem {
   liked: boolean;
 }
 
-const Matches = () => {
+interface MatchesProps {
+  onNavigate?: (tab: string) => void;
+}
+
+const Matches = ({ onNavigate }: MatchesProps) => {
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem("activeMatchesTab") || "new";
   });
@@ -1158,11 +1163,27 @@ const MatchCard = React.memo(({
             </div>
           ) : (
             <div className="flex items-center justify-center min-h-[50vh]">
-              <Card className="glass-card p-12 text-center max-w-lg w-full">
-                <p className="text-muted-foreground text-lg font-medium">No matches available.</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Set your partner preference to find matches.
+              <Card className="glass-card p-10 text-center max-w-lg w-full flex flex-col items-center justify-center space-y-4">
+                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
+                  <Sliders className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">No Matches Available</h3>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  First, set your partner preferences to find compatible matches.
                 </p>
+                <Button
+                  className="mt-2 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-full shadow-md hover:opacity-95 transition-all px-6 py-2.5 flex items-center gap-2"
+                  onClick={() => {
+                    if (onNavigate) {
+                      onNavigate("partner-preference");
+                    } else {
+                      navigate("/dashboard?tab=partner-preference");
+                    }
+                  }}
+                >
+                  <Sliders className="w-4 h-4" />
+                  <span>Go to Partner Preference</span>
+                </Button>
               </Card>
             </div>
           )}
