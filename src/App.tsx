@@ -224,7 +224,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AppLayout />
+            <AppLayout />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
