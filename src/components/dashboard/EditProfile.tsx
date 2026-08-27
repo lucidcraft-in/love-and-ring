@@ -241,12 +241,12 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
       const primaryPhoto = user.photos?.find((p: any) => p.isPrimary);
 
       const planTitle =
-        (typeof user.membership?.plan === "object" && user.membership?.plan?.title) ||
-        (user.profileStatus && user.profileStatus.toUpperCase() !== "BASIC"
-          ? user.profileStatus
+        (typeof user.membership?.plan === "object" && (user.membership?.plan?.title || user.membership?.plan?.name)) ||
+        (user.profileStatus && user.profileStatus.toLowerCase().includes("million")
+          ? "Million Club"
           : null);
 
-      const hasPlan = Boolean(user.membership?.plan || planTitle);
+      const hasPlan = Boolean(user.membership?.plan && planTitle);
 
       const formatGender = (g?: string) => {
         if (!g) return "";
@@ -297,7 +297,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ onNavigate }) => {
           ? user.dietPreference.join(", ")
           : user.dietPreference || "Non-Vegetarian",
 
-        membership: planTitle || "Free Account",
+        membership: planTitle || "Free Plan",
         hasPlan,
       });
 
