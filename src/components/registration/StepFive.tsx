@@ -166,24 +166,25 @@ const StepFive = ({ formData, updateFormData }: StepFiveProps) => {
         <div className="space-y-3">
           <Label>Personality Traits (Select multiple)</Label>
           <div className="flex flex-wrap gap-2">
-            {traits.map((trait) => (
-              <Badge
-                key={trait.id}
-                variant={
-                  selectedTraits.includes(trait.id) ? "default" : "outline"
-                }
-                className="cursor-pointer px-4 py-2 text-sm"
-                onClick={() =>
-                  toggleSelection(trait.id, selectedTraits, setSelectedTraits)
-                }
-              >
-                <span className="mr-1">{trait.icon}</span>
-                {trait.name}
-                {selectedTraits.includes(trait.id) && (
-                  <X className="ml-2 h-3 w-3" />
-                )}
-              </Badge>
-            ))}
+            {traits.map((trait) => {
+              const isSelected =
+                selectedTraits.includes(trait.name) ||
+                selectedTraits.includes(trait.id);
+              return (
+                <Badge
+                  key={trait.id}
+                  variant={isSelected ? "default" : "outline"}
+                  className="cursor-pointer px-4 py-2 text-sm"
+                  onClick={() =>
+                    toggleSelection(trait.name, selectedTraits, setSelectedTraits)
+                  }
+                >
+                  <span className="mr-1">{trait.icon}</span>
+                  {trait.name}
+                  {isSelected && <X className="ml-2 h-3 w-3" />}
+                </Badge>
+              );
+            })}
           </div>
         </div>
 
