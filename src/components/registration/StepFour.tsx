@@ -13,6 +13,7 @@ import { Upload, FileText, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { RegistrationData } from "@/pages/Register";
 import { useEffect, useState, useRef } from "react";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 interface StepFourProps {
   formData?: RegistrationData;
@@ -149,30 +150,18 @@ const StepFour = ({ formData, updateFormData }: StepFourProps) => {
         {/* Profession */}
         <div className="space-y-2 md:col-span-2">
           <Label>Profession *</Label>
-          <Select
-            value={isCustomProfession ? "OTHER" : (formData?.profession || "")}
+          <SearchableSelect
+            options={professions}
+            value={formData?.profession || ""}
             onValueChange={handleProfessionSelectChange}
-            disabled={loading}
-          >
-            <SelectTrigger>
-              <SelectValue
-                placeholder={
-                  loading ? "Loading professions..." : "Select profession"
-                }
-              />
-            </SelectTrigger>
-
-            <SelectContent>
-              {professions.map((item) => (
-                <SelectItem key={item._id} value={item._id}>
-                  {item.name}
-                </SelectItem>
-              ))}
-              <SelectItem value="OTHER" className="text-primary font-medium">
-                + Add Custom Profession
-              </SelectItem>
-            </SelectContent>
-          </Select>
+            placeholder="Select profession..."
+            searchPlaceholder="Search profession..."
+            loading={loading}
+            allowCustom={true}
+            customLabel="+ Add Custom Profession"
+            isCustomSelected={isCustomProfession}
+            onCustomSelect={() => handleProfessionSelectChange("OTHER")}
+          />
 
           {isCustomProfession && (
             <div className="pt-2 animate-fade-in">
