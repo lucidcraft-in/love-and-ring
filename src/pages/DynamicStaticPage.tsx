@@ -88,7 +88,7 @@ export default function DynamicStaticPage({ forcedSlug, fallbackTitle, fallbackC
       {/* Hero Header */}
       <section
         id="hero-section"
-        className="relative min-h-[45vh] flex items-center justify-center overflow-hidden"
+        className="relative min-h-[100vh] md:min-h-[100vh] flex items-center justify-center overflow-hidden"
         style={{ marginTop: 0, paddingTop: 0 }}
       >
         <AnimatePresence mode="wait">
@@ -124,21 +124,21 @@ export default function DynamicStaticPage({ forcedSlug, fallbackTitle, fallbackC
             transition={{ duration: 0.7 }}
             className="max-w-3xl mx-auto text-center space-y-4"
           >
-            {page?.category && (
+            {/* {page?.category && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-md">
                 <Tag className="w-3.5 h-3.5" />
                 {page.category}
               </span>
-            )}
+            )} */}
             <h1 className="text-3xl md:text-7xl  font-extrabold text-white tracking-tight">
               {displayTitle}
             </h1>
-            {page?.updatedAt && (
+            {/* {page?.updatedAt && (
               <p className="text-xs sm:text-sm text-white/80 flex items-center justify-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" />
                 Last updated: {new Date(page.updatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
-            )}
+            )} */}
           </motion.div>
         </div>
       </section>
