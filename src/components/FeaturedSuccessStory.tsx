@@ -58,9 +58,13 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
     setActiveIndex(index);
   }, []);
 
-  // Auto-play functionality
+  // Auto-play functionality (desktop only to prevent mobile scroll jumping)
   useEffect(() => {
     if (!isAutoPlaying) return;
+
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      return;
+    }
 
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % stories.length);
@@ -99,7 +103,7 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
         </div>
 
         {/* Right - Testimonial Content */}
-        <div className="flex flex-col justify-center space-y-3 lg:space-y-4 py-1 lg:py-2">
+        <div className="flex flex-col justify-center space-y-3 lg:space-y-4 py-1 lg:py-2 min-h-[220px] sm:min-h-[260px]">
           {/* Quote Icon */}
           <div className="hidden sm:block">
             <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
@@ -108,40 +112,42 @@ const FeaturedSuccessStory = ({ stories }: FeaturedSuccessStoryProps) => {
           </div>
 
           {/* Testimonial Text */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeIndex}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
-              className="space-y-3 lg:space-y-4"
-            >
-              <div
-                className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-normal italic prose dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: activeStory.fullStory }}
-              />
-
-              {/* Read More Link */}
-              <Link
-                to="/success-stories"
-                className="inline-flex items-center text-primary font-medium hover:underline text-sm sm:text-base group"
+          <div className="relative min-h-[140px] sm:min-h-[160px] overflow-hidden">
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                key={activeIndex}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.35, ease: "easeInOut" }}
+                className="space-y-3 lg:space-y-4 w-full"
               >
-                Read More
-                <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-              </Link>
+                <div
+                  className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-normal italic prose dark:prose-invert max-w-none line-clamp-4 sm:line-clamp-6"
+                  dangerouslySetInnerHTML={{ __html: activeStory.fullStory }}
+                />
 
-              {/* Couple Name and Date */}
-              <div className="pt-3 lg:pt-4 border-t border-border/50">
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold gradient-text">
-                  {activeStory.names}
-                </h3>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                  {formatDate(activeStory.date)}
-                </p>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+                {/* Read More Link */}
+                <Link
+                  to="/success-stories"
+                  className="inline-flex items-center text-primary font-medium hover:underline text-sm sm:text-base group"
+                >
+                  Read More
+                  <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                </Link>
+
+                {/* Couple Name and Date */}
+                <div className="pt-3 lg:pt-4 border-t border-border/50">
+                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold gradient-text">
+                    {activeStory.names}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                    {formatDate(activeStory.date)}
+                  </p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
