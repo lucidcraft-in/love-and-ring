@@ -35,9 +35,14 @@ const HowItWorks = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Auto-rotate steps every 4 seconds
+  // Auto-rotate steps every 4 seconds only on desktop viewports to prevent page layout thrashing on mobile
   useEffect(() => {
     if (isPaused) return;
+
+    // Disable auto-rotation timer on mobile screen sizes
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      return;
+    }
 
     const interval = setInterval(() => {
       setActiveStep((prev) => (prev + 1) % steps.length);
