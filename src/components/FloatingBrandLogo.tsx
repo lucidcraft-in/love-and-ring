@@ -48,9 +48,9 @@ const FloatingBrandLogo = ({ className = "", variant = "hero" }: FloatingBrandLo
     );
   }
 
-  // Hero variant: two floating logos for Home page / Hero sections
+  // Hero variant: two floating logos for Home page / Hero sections (desktop/tablet only to avoid mobile GPU layer repaints)
   return (
-    <div className={`pointer-events-none select-none ${className}`}>
+    <div className={`pointer-events-none select-none hidden sm:block ${className}`}>
       {/* Top-left floating logo */}
       <motion.div
         className="absolute top-24 left-4 sm:left-10 opacity-25 sm:opacity-30"
@@ -62,7 +62,7 @@ const FloatingBrandLogo = ({ className = "", variant = "hero" }: FloatingBrandLo
           ease: "easeInOut",
         }}
         style={{
-          filter: `${lightLogoFilter} drop-shadow(0 0 30px hsl(270 65% 70% / 0.6)) drop-shadow(0 0 60px hsl(270 65% 70% / 0.3))`,
+          filter: `${lightLogoFilter} drop-shadow(0 0 20px hsl(270 65% 70% / 0.4))`,
         }}
       >
         <img
@@ -85,7 +85,7 @@ const FloatingBrandLogo = ({ className = "", variant = "hero" }: FloatingBrandLo
           delay: 1.5,
         }}
         style={{
-          filter: `${lightLogoFilter} drop-shadow(0 0 35px hsl(220 70% 75% / 0.5)) drop-shadow(0 0 70px hsl(270 65% 70% / 0.25))`,
+          filter: `${lightLogoFilter} drop-shadow(0 0 25px hsl(220 70% 75% / 0.35))`,
         }}
       >
         <img
