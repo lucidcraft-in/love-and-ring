@@ -335,22 +335,21 @@ const Home = () => {
         onMouseEnter={() => setIsHeroHovered(true)}
         onMouseLeave={() => setIsHeroHovered(false)}
       >
-        {/* Background Image Carousel */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url(${activeHeroSlides[currentSlide % activeHeroSlides.length]})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-        </AnimatePresence>
+        {/* Background Image Carousel - Smooth Crossfade without blank frames */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {activeHeroSlides.map((slideUrl, idx) => (
+            <div
+              key={slideUrl + idx}
+              className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+              style={{
+                backgroundImage: `url(${slideUrl})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                opacity: currentSlide % activeHeroSlides.length === idx ? 1 : 0,
+              }}
+            />
+          ))}
+        </div>
 
         {/* Dark Gradient Overlay */}
         <div
@@ -379,29 +378,32 @@ const Home = () => {
                     Perfect Match
                   </span>
                 </h1>
-                <p className="text-base sm:text-xl md:text-2xl hero-subtext min-h-[60px]">
-                  Join thousands of happy couples.{" "}
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={currentTagline}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.6 }}
-                      style={
-                        heroTaglines[currentTagline].includes("നിങ്ങൾ")
-                          ? {
-                              fontFamily: "'Noto Sans Malayalam', sans-serif",
-                              fontSize: "0.95em",
-                              fontWeight: 500,
-                            }
-                          : {}
-                      }
-                    >
-                      {heroTaglines[currentTagline]}
-                    </motion.span>
-                  </AnimatePresence>
-                </p>
+                <div className="text-base sm:text-xl md:text-2xl hero-subtext min-h-[64px] flex flex-col items-center justify-center gap-1">
+                  <span>Join thousands of happy couples.</span>
+                  <div className="relative inline-flex items-center justify-center min-h-[1.5em] overflow-hidden w-full">
+                    <AnimatePresence mode="popLayout">
+                      <motion.span
+                        key={currentTagline}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.5, ease: "easeInOut" }}
+                        className="inline-block"
+                        style={
+                          heroTaglines[currentTagline].includes("നിങ്ങൾ")
+                            ? {
+                                fontFamily: "'Noto Sans Malayalam', sans-serif",
+                                fontSize: "0.95em",
+                                fontWeight: 500,
+                              }
+                            : {}
+                        }
+                      >
+                        {heroTaglines[currentTagline]}
+                      </motion.span>
+                    </AnimatePresence>
+                  </div>
+                </div>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                   <Button
                     size="lg"
