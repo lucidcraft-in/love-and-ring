@@ -380,12 +380,6 @@ const PartnerPreference = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Partner Preference</h2>
-        <Button
-          className="bg-gradient-to-r from-primary to-secondary"
-          onClick={() => setShowConfirm(true)}
-        >
-          Save Preferences
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -838,6 +832,17 @@ const PartnerPreference = () => {
             </div>
           </div>
         </Card>
+      </div>
+
+      {/* Bottom Save Action */}
+      <div className="flex justify-end pt-4 pb-2">
+        <Button
+          size="lg"
+          className="bg-gradient-to-r from-primary to-secondary text-white px-8 font-semibold shadow-md hover:shadow-lg transition-all"
+          onClick={() => setShowConfirm(true)}
+        >
+          Save Preferences
+        </Button>
       </div>
 
       <ConfirmDialog
