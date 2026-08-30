@@ -31,7 +31,7 @@ import heroSlide3 from "@/assets/hero-slide-3.jpg";
 import { completeUserProfile, verifyRegistrationOtp, registerFullUserApi } from "@/services/UserServices";
 import Axios from "@/axios/axios";
 import PrivacyConsentModal from "@/components/registration/PrivacyConsentModal";
-import { trackUserActivity } from "@/utils/activityTracker";
+import { trackUserActivity, flushPendingActivityLogs } from "@/utils/activityTracker";
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
@@ -136,8 +136,21 @@ const Register = () => {
 
   // Listen to network status
   useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
+    const handleOnline = () => {
+      setIsOffline(false);
+      flushPendingActivityLogs();
+      toast.success("Network connection restored! You can now retry your registration submission.", {
+        id: "connection-status-toast",
+      });
+    };
+
+    const handleOffline = () => {
+      setIsOffline(true);
+      toast.error("Network connection lost! Your registration details are saved safely as a draft.", {
+        id: "connection-status-toast",
+        duration: 5000,
+      });
+    };
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
@@ -147,27 +160,25 @@ const Register = () => {
     };
   }, []);
 
-  // Restore draft from localStorage on mount
+  // Restore draft and pre-fill user profile data on mount
   useEffect(() => {
-    if (location.state?.userId) return; // Don't overwrite if editing existing profile
+    let draftData: Partial<RegistrationData> = {};
+    let draftStep: number | null = null;
+    let draftOTPVerified = false;
+
+    // 1. Read draft from localStorage if present
     const savedDraftStr = localStorage.getItem("registration_draft");
     const tempPassword = sessionStorage.getItem("register_temp_password");
     if (savedDraftStr) {
       try {
         const savedDraft = JSON.parse(savedDraftStr);
         if (savedDraft.formData) {
-          setFormData((prev) => ({
-            ...prev,
-            ...savedDraft.formData,
-            password: tempPassword || savedDraft.formData.password || prev.password,
-            profileImage: null,
-            cv: null,
-          }));
+          draftData = savedDraft.formData;
           if (savedDraft.currentStep && savedDraft.currentStep > 1) {
-            setCurrentStep(savedDraft.currentStep);
+            draftStep = savedDraft.currentStep;
           }
           if (savedDraft.isOTPVerified) {
-            setIsOTPVerified(true);
+            draftOTPVerified = true;
           }
           setDraftRestored(true);
         }
@@ -175,11 +186,82 @@ const Register = () => {
         console.error("Failed to restore draft:", err);
       }
     }
-  }, [location.state?.userId]);
+
+    // 2. Read saved user profile from localStorage if present
+    let userData: Partial<RegistrationData> = {};
+    const savedUserStr = localStorage.getItem("user");
+    if (savedUserStr && savedUserStr !== "undefined") {
+      try {
+        const u = JSON.parse(savedUserStr);
+        if (u && u._id) {
+          setUserId(u._id);
+          setIsOTPVerified(true);
+          userData = {
+            accountFor: u.accountFor ? u.accountFor.toLowerCase() : "",
+            fullName: u.fullName || u.name || "",
+            email: u.email || "",
+            countryCode: u.countryCode || "+91",
+            mobile: u.mobile || u.phone || "",
+            gender: u.gender ? u.gender.toLowerCase() : "",
+            dob: u.dob || (u.dateOfBirth ? new Date(u.dateOfBirth).toISOString().split('T')[0] : ""),
+            language: u.language || u.preferredLanguage || "",
+            religion: typeof u.religion === 'object' ? u.religion?._id : (u.religion || ""),
+            caste: typeof u.caste === 'object' ? u.caste?._id : (u.caste || ""),
+            motherTongue: typeof u.motherTongue === 'object' ? u.motherTongue?._id : (u.motherTongue || ""),
+            height: u.height ? String(u.height) : u.heightCm ? String(u.heightCm) : "",
+            weight: u.weight ? String(u.weight) : u.weightKg ? String(u.weightKg) : "",
+            maritalStatus: u.maritalStatus || "",
+            bodyType: u.bodyType || "",
+            city: typeof u.city === 'object' ? u.city?._id : (u.city || ""),
+            primaryEducation: typeof u.primaryEducation === 'object' ? u.primaryEducation?._id : (u.primaryEducation || u.education || ""),
+            profession: typeof u.profession === 'object' ? u.profession?._id : (u.profession || ""),
+            physicallyChallenged: u.physicallyChallenged ?? false,
+            liveWithFamily: u.livingWithFamily ?? u.liveWithFamily ?? true,
+            interests: Array.isArray(u.interests) ? u.interests : [],
+            traits: Array.isArray(u.traits || u.personalityTraits) ? (u.traits || u.personalityTraits) : [],
+            diets: Array.isArray(u.diets || u.dietPreference) ? (u.diets || u.dietPreference) : [],
+            income: u.income || null,
+          };
+        }
+      } catch (err) {
+        console.error("Error pre-filling profile data:", err);
+      }
+    }
+
+    // 3. Merge: prefer draftData if filled, fallback to userData, fallback to initial state
+    setFormData((prev) => {
+      const merged = { ...prev };
+      Object.keys(prev).forEach((k) => {
+        const key = k as keyof RegistrationData;
+        const valDraft = draftData[key];
+        const valUser = userData[key];
+
+        if (valDraft !== undefined && valDraft !== null && valDraft !== "" && (!Array.isArray(valDraft) || valDraft.length > 0)) {
+          (merged as any)[key] = valDraft;
+        } else if (valUser !== undefined && valUser !== null && valUser !== "" && (!Array.isArray(valUser) || valUser.length > 0)) {
+          (merged as any)[key] = valUser;
+        }
+      });
+
+      if (tempPassword || draftData.password) {
+        merged.password = tempPassword || draftData.password || merged.password;
+      }
+      return merged;
+    });
+
+    if (draftOTPVerified || location.state?.userId) {
+      setIsOTPVerified(true);
+    }
+
+    if (location.state?.step) {
+      setCurrentStep(location.state.step);
+    } else if (draftStep && draftStep > 1) {
+      setCurrentStep(draftStep);
+    }
+  }, [location.state?.userId, location.state?.step]);
 
   // Persist form data to localStorage as draft whenever formData or currentStep changes
   useEffect(() => {
-    if (userId) return;
     const { profileImage, cv, ...serializableFormData } = formData;
     if (formData.password) {
       sessionStorage.setItem("register_temp_password", formData.password);
@@ -191,7 +273,7 @@ const Register = () => {
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("registration_draft", JSON.stringify(draftPayload));
-  }, [formData, currentStep, isOTPVerified, userId]);
+  }, [formData, currentStep, isOTPVerified]);
 
   const clearDraft = () => {
     localStorage.removeItem("registration_draft");
@@ -211,49 +293,6 @@ const Register = () => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 7000);
     return () => clearInterval(interval);
-  }, []);
-
-  // Pre-fill existing profile data for logged-in users
-  useEffect(() => {
-    const savedUserStr = localStorage.getItem("user");
-    if (savedUserStr && savedUserStr !== "undefined") {
-      try {
-        const u = JSON.parse(savedUserStr);
-        if (u && u._id) {
-          setUserId(u._id);
-          setIsOTPVerified(true);
-          setFormData((prev) => ({
-            ...prev,
-            accountFor: u.accountFor ? u.accountFor.toLowerCase() : prev.accountFor,
-            fullName: u.fullName || u.name || prev.fullName,
-            email: u.email || prev.email,
-            countryCode: u.countryCode || "+91",
-            mobile: u.mobile || u.phone || prev.mobile,
-            gender: u.gender ? u.gender.toLowerCase() : prev.gender,
-            dob: u.dob || (u.dateOfBirth ? new Date(u.dateOfBirth).toISOString().split('T')[0] : prev.dob),
-            language: u.language || u.preferredLanguage || prev.language,
-            religion: typeof u.religion === 'object' ? u.religion?._id : (u.religion || prev.religion),
-            caste: typeof u.caste === 'object' ? u.caste?._id : (u.caste || prev.caste),
-            motherTongue: typeof u.motherTongue === 'object' ? u.motherTongue?._id : (u.motherTongue || prev.motherTongue),
-            height: u.height ? String(u.height) : u.heightCm ? String(u.heightCm) : prev.height,
-            weight: u.weight ? String(u.weight) : u.weightKg ? String(u.weightKg) : prev.weight,
-            maritalStatus: u.maritalStatus || prev.maritalStatus,
-            bodyType: u.bodyType || prev.bodyType,
-            city: typeof u.city === 'object' ? u.city?._id : (u.city || prev.city),
-            primaryEducation: typeof u.primaryEducation === 'object' ? u.primaryEducation?._id : (u.primaryEducation || u.education || prev.primaryEducation),
-            profession: typeof u.profession === 'object' ? u.profession?._id : (u.profession || prev.profession),
-            physicallyChallenged: u.physicallyChallenged ?? prev.physicallyChallenged,
-            liveWithFamily: u.livingWithFamily ?? u.liveWithFamily ?? prev.liveWithFamily,
-            interests: Array.isArray(u.interests) ? u.interests : prev.interests,
-            traits: Array.isArray(u.traits || u.personalityTraits) ? (u.traits || u.personalityTraits) : prev.traits,
-            diets: Array.isArray(u.diets || u.dietPreference) ? (u.diets || u.dietPreference) : prev.diets,
-            income: u.income || prev.income,
-          }));
-        }
-      } catch (err) {
-        console.error("Error pre-filling profile data:", err);
-      }
-    }
   }, []);
 
   /* 👈 FIX: Pass email, mobile, and countryCode when requesting OTP */
