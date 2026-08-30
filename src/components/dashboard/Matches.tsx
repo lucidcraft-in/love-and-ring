@@ -92,8 +92,22 @@ const Matches = ({ onNavigate }: MatchesProps) => {
   const [sendingInterest, setSendingInterest] = useState<string | null>(null);
   const [cancelingInterest, setCancelingInterest] = useState<string | null>(null);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+  const currentUserId = parsedUser?._id;
+
+  const isCacheForCurrentUser = () => {
+    try {
+      const cachedUserId = sessionStorage.getItem("cached_user_id");
+      return cachedUserId && currentUserId && String(cachedUserId) === String(currentUserId);
+    } catch {
+      return false;
+    }
+  };
+
   const [matches, setMatches] = useState<MatchItem[]>(() => {
     try {
+      if (!isCacheForCurrentUser()) return [];
       const cached = sessionStorage.getItem("cached_matches_data");
       return cached ? JSON.parse(cached) : [];
     } catch {
@@ -102,6 +116,7 @@ const Matches = ({ onNavigate }: MatchesProps) => {
   });
   const [myMatches, setMyMatches] = useState<MatchItem[]>(() => {
     try {
+      if (!isCacheForCurrentUser()) return [];
       const cached = sessionStorage.getItem("cached_mymatches_data");
       return cached ? JSON.parse(cached) : [];
     } catch {
@@ -110,8 +125,7 @@ const Matches = ({ onNavigate }: MatchesProps) => {
   }); // Mutual / Accepted matches
   const [millionClubMatches, setMillionClubMatches] = useState<MatchItem[]>([]);
   const [millionClubUserIds, setMillionClubUserIds] = useState<Set<string>>(new Set());
-  const storedUser = localStorage.getItem("user");
-  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+
   const checkMillionStatus = (userObj: any) => {
     if (!userObj) return false;
     const status = (userObj.profileStatus || "").toLowerCase();
@@ -133,6 +147,7 @@ const Matches = ({ onNavigate }: MatchesProps) => {
   const [likedUserIds, setLikedUserIds] = useState<Set<string>>(new Set());
   const [likedByMe, setLikedByMe] = useState<MatchItem[]>(() => {
     try {
+      if (!isCacheForCurrentUser()) return [];
       const cached = sessionStorage.getItem("cached_likedbyme_data");
       return cached ? JSON.parse(cached) : [];
     } catch {
@@ -141,6 +156,7 @@ const Matches = ({ onNavigate }: MatchesProps) => {
   });
   const [likedMe, setLikedMe] = useState<MatchItem[]>(() => {
     try {
+      if (!isCacheForCurrentUser()) return [];
       const cached = sessionStorage.getItem("cached_likedme_data");
       return cached ? JSON.parse(cached) : [];
     } catch {
@@ -279,6 +295,7 @@ const Matches = ({ onNavigate }: MatchesProps) => {
 
       setMatches(normalized);
       try {
+        if (currentUserId) sessionStorage.setItem("cached_user_id", String(currentUserId));
         sessionStorage.setItem("cached_matches_data", JSON.stringify(normalized));
       } catch {}
     } catch (err) {
@@ -433,6 +450,7 @@ const Matches = ({ onNavigate }: MatchesProps) => {
 
       setMyMatches(formattedMyMatches);
       try {
+        if (currentUserId) sessionStorage.setItem("cached_user_id", String(currentUserId));
         sessionStorage.setItem("cached_mymatches_data", JSON.stringify(formattedMyMatches));
       } catch {}
     } catch (err) {
