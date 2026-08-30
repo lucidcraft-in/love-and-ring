@@ -355,8 +355,10 @@ const Summary = ({ onNavigate }: SummaryProps) => {
       const hasInterests = Array.isArray(data.interests) && data.interests.length > 0;
       const hasAgeRange = !!(data.ageRange && (data.ageRange.min !== undefined || data.ageRange.max !== undefined));
       const hasHeightRange = !!(data.heightRangeCm && (data.heightRangeCm.min !== undefined || data.heightRangeCm.max !== undefined));
+      const hasMaritalStatus = Array.isArray(data.maritalStatuses) && data.maritalStatuses.length > 0;
+      const hasLocations = Array.isArray(data.locations) && data.locations.length > 0;
 
-      return hasReligions || hasEducation || hasInterests || hasAgeRange || hasHeightRange;
+      return hasReligions || hasEducation || hasInterests || hasAgeRange || hasHeightRange || hasMaritalStatus || hasLocations;
     } catch (err) {
       console.error("Failed to check partner preferences", err);
       return false;
