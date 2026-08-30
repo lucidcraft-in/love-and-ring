@@ -13,6 +13,7 @@ import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import heroSlide2 from "@/assets/hero-slide-2.jpg";
 import heroSlide3 from "@/assets/hero-slide-3.jpg";
 import { loginUserApi, sendLoginOtp, verifyLoginOtp } from "@/services/AuthServices";
+import { getProfileStatus, getNextIncompleteStep } from "@/utils/profileStatus";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import {
@@ -102,8 +103,21 @@ const Login = () => {
       localStorage.setItem("token", token);
       localStorage.setItem("userId", user._id);
       login(user);
-      toast.success("Logged in successfully");
-      navigate("/dashboard");
+
+      const status = getProfileStatus(user);
+      if (status !== "COMPLETED") {
+        const incompleteStep = getNextIncompleteStep(user) || 1;
+        toast.info("Please complete your profile details to continue.");
+        navigate("/register", {
+          state: {
+            step: incompleteStep,
+            userId: user._id,
+          },
+        });
+      } else {
+        toast.success("Logged in successfully");
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Login failed");
       console.error("Login error:", error);
@@ -143,8 +157,21 @@ const Login = () => {
       localStorage.setItem("token", token);
       localStorage.setItem("userId", user._id);
       login(user);
-      toast.success("Logged in successfully");
-      navigate("/dashboard");
+
+      const status = getProfileStatus(user);
+      if (status !== "COMPLETED") {
+        const incompleteStep = getNextIncompleteStep(user) || 1;
+        toast.info("Please complete your profile details to continue.");
+        navigate("/register", {
+          state: {
+            step: incompleteStep,
+            userId: user._id,
+          },
+        });
+      } else {
+        toast.success("Logged in successfully");
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Verification failed");
     } finally {
