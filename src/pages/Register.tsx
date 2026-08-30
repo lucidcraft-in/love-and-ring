@@ -187,10 +187,12 @@ const Register = () => {
       }
     }
 
-    // 2. Read saved user profile from localStorage if present
+    // 2. Read saved user profile ONLY if explicitly completing profile for existing user ID
     let userData: Partial<RegistrationData> = {};
+    const isExplicitEditOrComplete = !!(location.state?.userId || location.state?.isCompletingProfile);
     const savedUserStr = localStorage.getItem("user");
-    if (savedUserStr && savedUserStr !== "undefined") {
+    
+    if (isExplicitEditOrComplete && savedUserStr && savedUserStr !== "undefined") {
       try {
         const u = JSON.parse(savedUserStr);
         if (u && u._id) {
@@ -258,7 +260,12 @@ const Register = () => {
     } else if (draftStep && draftStep > 1) {
       setCurrentStep(draftStep);
     }
-  }, [location.state?.userId, location.state?.step]);
+  }, [location.state?.userId, location.state?.step, location.state?.isCompletingProfile]);
+
+  // Fix mobile automatic scroll down issue: Scroll window to top whenever step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentStep]);
 
   // Persist form data to localStorage as draft whenever formData or currentStep changes
   useEffect(() => {
@@ -465,6 +472,33 @@ const Register = () => {
     }
 
     if (currentStep < totalSteps) {
+      const stepPayload: Record<string, any> = {};
+      if (currentStep === 1) {
+        stepPayload.accountFor = formData.accountFor;
+        stepPayload.fullName = formData.fullName;
+        stepPayload.email = formData.email;
+        stepPayload.mobile = formData.mobile;
+        stepPayload.countryCode = formData.countryCode;
+        stepPayload.gender = formData.gender;
+      } else if (currentStep === 2) {
+        stepPayload.religion = formData.religion;
+        stepPayload.caste = formData.caste;
+        stepPayload.motherTongue = formData.motherTongue;
+      } else if (currentStep === 3) {
+        stepPayload.dob = formData.dob;
+        stepPayload.height = formData.height;
+        stepPayload.weight = formData.weight;
+        stepPayload.maritalStatus = formData.maritalStatus;
+        stepPayload.bodyType = formData.bodyType;
+        stepPayload.city = formData.city;
+        stepPayload.physicallyChallenged = formData.physicallyChallenged;
+        stepPayload.liveWithFamily = formData.liveWithFamily;
+      } else if (currentStep === 4) {
+        stepPayload.primaryEducation = formData.primaryEducation;
+        stepPayload.profession = formData.profession;
+        stepPayload.income = formData.income;
+      }
+
       trackUserActivity({
         category: "REGISTRATION",
         action: `REGISTRATION_STEP_${currentStep}_NEXT`,
@@ -473,7 +507,7 @@ const Register = () => {
         userEmail: formData.email,
         userPhone: formData.mobile,
         userFullName: formData.fullName,
-        details: { nextStep: currentStep + 1 },
+        details: { nextStep: currentStep + 1, payload: stepPayload },
       });
       setCurrentStep(currentStep + 1);
       setStepErrors({});
