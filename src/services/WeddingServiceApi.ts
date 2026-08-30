@@ -26,6 +26,7 @@ export interface EnquiryRequestPayload {
   message?: string;
   location?: string;
   eventDate?: string;
+  approximateMemberCount?: string;
 }
 
 export const getPublicWeddingServices = async (): Promise<WeddingService[]> => {
