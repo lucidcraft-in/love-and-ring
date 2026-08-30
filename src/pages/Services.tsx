@@ -25,6 +25,7 @@ import {
   CalendarCheck,
   Wine,
   Mic,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -182,6 +183,8 @@ const Services = () => {
   const [phone, setPhone] = useState<string>("");
   const [eventDate, setEventDate] = useState<string>("");
   const [location, setLocation] = useState<string>("");
+  const [approximateMemberCount, setApproximateMemberCount] = useState<string>("");
+  const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [ticketSuccess, setTicketSuccess] = useState<string | null>(null);
 
@@ -274,11 +277,13 @@ const Services = () => {
   const handleOpenEnquiry = (service: WeddingService) => {
     setSelectedService(service);
     setLocation("");
+    setApproximateMemberCount("");
+    setConfirmModalOpen(false);
     setTicketSuccess(null);
     setEnquiryOpen(true);
   };
 
-  const handleEnquirySubmit = async (e: React.FormEvent) => {
+  const handleEnquirySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedService) return;
 
@@ -291,6 +296,12 @@ const Services = () => {
       return;
     }
 
+    setConfirmModalOpen(true);
+  };
+
+  const handleFinalConfirmSubmit = async () => {
+    if (!selectedService) return;
+
     try {
       setSubmitting(true);
       const result = await submitServiceEnquiry({
@@ -302,10 +313,16 @@ const Services = () => {
         serviceCategory: selectedService.category,
         eventDate,
         location,
-        message: location ? `Event Location: ${location}` : "",
+        approximateMemberCount,
+        message: location
+          ? `Event Location: ${location}${approximateMemberCount ? ` | Approx. Guests/Members: ${approximateMemberCount}` : ""}`
+          : approximateMemberCount
+          ? `Approx. Guests/Members: ${approximateMemberCount}`
+          : "",
       });
 
       setTicketSuccess(result.ticketId);
+      setConfirmModalOpen(false);
       toast.success("Enquiry request sent successfully! We will contact you soon.");
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Failed to submit enquiry request.");
@@ -815,6 +832,21 @@ const Services = () => {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="req-members" className="text-xs font-semibold flex items-center justify-between">
+                    <span>Approximate Count of Members / Guests</span>
+                    <span className="text-[10px] text-muted-foreground font-normal">(Optional)</span>
+                  </Label>
+                  <Input
+                    id="req-members"
+                    type="text"
+                    placeholder="e.g. 250 - 500 members"
+                    value={approximateMemberCount}
+                    onChange={(e) => setApproximateMemberCount(e.target.value)}
+                    className="rounded-xl border-border focus-visible:ring-primary"
+                  />
+                </div>
+
                 <div className="pt-2 flex gap-3">
                   <Button
                     type="button"
@@ -828,23 +860,99 @@ const Services = () => {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground"
+                    className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
                   >
-                    {submitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4 mr-2" />
-                        Submit Request
-                      </>
-                    )}
+                    <Send className="w-4 h-4 mr-2" />
+                    Review &amp; Submit Request
                   </Button>
                 </div>
               </form>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Modal */}
+      <Dialog open={confirmModalOpen} onOpenChange={setConfirmModalOpen}>
+        <DialogContent className="w-[calc(100%-2rem)] max-w-md rounded-2xl overflow-hidden p-0 border border-border shadow-2xl">
+          <div className="bg-gradient-to-r from-primary via-primary/90 to-secondary p-5 text-white">
+            <div className="flex items-center gap-2 text-white/80 text-xs font-semibold uppercase tracking-wider mb-1">
+              <Sparkles className="w-4 h-4 text-white" />
+              Confirm Service Request
+            </div>
+            <DialogTitle className="text-xl font-bold text-white">
+              Review Your Enquiry Details
+            </DialogTitle>
+            <DialogDescription className="text-white/80 text-xs mt-0.5">
+              Please double-check your request information before final submission.
+            </DialogDescription>
+          </div>
+
+          <div className="p-5 space-y-4 bg-card">
+            <div className="bg-muted/40 rounded-2xl p-4 border border-border/80 space-y-3 text-xs">
+              <div className="border-b border-border/50 pb-2">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Service Requested</span>
+                <span className="font-extrabold text-sm text-foreground block">{selectedService?.title}</span>
+                <span className="text-primary text-[11px] font-semibold">{selectedService?.category}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-foreground">
+                <div>
+                  <span className="text-muted-foreground block text-[11px]">Full Name</span>
+                  <span className="font-semibold">{name}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[11px]">Email Address</span>
+                  <span className="font-semibold truncate block">{email}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[11px]">Phone / WhatsApp</span>
+                  <span className="font-semibold">{phone || "Not provided"}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[11px]">Preferred Event Date</span>
+                  <span className="font-semibold">{eventDate || "Not specified"}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[11px]">Event Location</span>
+                  <span className="font-semibold">{location || "Not specified"}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[11px]">Approx. Member Count</span>
+                  <span className="font-semibold text-primary">{approximateMemberCount || "Not specified"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setConfirmModalOpen(false)}
+                disabled={submitting}
+                className="flex-1 rounded-xl text-xs font-semibold"
+              >
+                Edit Details
+              </Button>
+              <Button
+                type="button"
+                onClick={handleFinalConfirmSubmit}
+                disabled={submitting}
+                className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-md"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-1.5" />
+                    Confirm &amp; Submit Request
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
