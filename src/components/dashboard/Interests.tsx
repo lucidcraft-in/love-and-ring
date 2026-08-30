@@ -797,7 +797,7 @@ const Interests = () => {
           )}
         </TabsContent>
 
-        {/* <TabsContent value="sent" className="mt-6">
+        <TabsContent value="sent" className="mt-6">
           {displayedSent.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {displayedSent.map((item) => (
@@ -807,8 +807,8 @@ const Interests = () => {
           ) : (
             <EmptyState message="No interests sent yet." />
           )}
-        </TabsContent> */}
-        <TabsContent value="accepted" className="mt-6">
+        </TabsContent>
+        {/* <TabsContent value="accepted" className="mt-6">
           {displayedAccepted.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {displayedAccepted.map((item) => (
@@ -818,7 +818,7 @@ const Interests = () => {
           ) : (
             <EmptyState message="No accepted interests yet." />
           )}
-        </TabsContent>
+        </TabsContent> */}
         <TabsContent value="rejected" className="mt-6">
           {displayedRejected.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
