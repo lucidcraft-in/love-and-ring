@@ -334,15 +334,25 @@ const Services = () => {
   // Active Category Details Object if selected
   const activeTile = categoryTiles.find((t) => t.id === selectedCategory);
 
+  // Helper for matching services against search query
+  const matchesSearchQuery = (service: WeddingService, query: string) => {
+    if (!query || !query.trim()) return true;
+    const q = query.trim().toLowerCase();
+    const titleMatch = service.title ? service.title.toLowerCase().includes(q) : false;
+    const descMatch = service.description ? service.description.toLowerCase().includes(q) : false;
+    const catMatch = service.category ? service.category.toLowerCase().includes(q) : false;
+    const locMatch = service.location ? service.location.toLowerCase().includes(q) : false;
+    const priceMatch = service.priceRange ? service.priceRange.toLowerCase().includes(q) : false;
+    return titleMatch || descMatch || catMatch || locMatch || priceMatch;
+  };
+
   const filteredServices = services.filter((service) => {
     const matchesCategory = isCategoryMatch(service.category, selectedCategory);
-    const matchesSearch =
-      !searchQuery ||
-      service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (service.location && service.location.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch = matchesSearchQuery(service, searchQuery);
     return matchesCategory && matchesSearch;
   });
+
+  const isSearchActive = searchQuery.trim().length > 0;
 
   return (
     <div ref={topRef} className="min-h-screen bg-background pt-20 pb-16">
@@ -421,7 +431,7 @@ const Services = () => {
                 Explore Wedding <span className="gradient-text">Service Categories</span>
               </h1>
               <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
-                Select a category tile below to view photography studios, master catering teams, banquet venues, decorators &amp; makeup artists.
+                Select a category tile below or search to view photography studios, catering teams, banquet venues, decorators &amp; makeup artists.
               </p>
 
               {/* Global Search Bar */}
@@ -460,7 +470,7 @@ const Services = () => {
               Quick Switch Category
             </span>
             <span className="text-[11px] whitespace-nowrap shrink-0">
-              Total {services.length} Listed Partners
+              {isSearchActive ? `Found ${filteredServices.length} Results` : `Total ${services.length} Listed Partners`}
             </span>
           </div>
 
@@ -476,14 +486,16 @@ const Services = () => {
               <Sparkles className="w-3.5 h-3.5" />
               <span>All Categories</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-white/20">
-                {services.length}
+                {isSearchActive ? filteredServices.length : services.length}
               </span>
             </button>
 
             {categoryTiles.map((cat) => {
               const Icon = cat.icon;
               const isSelected = selectedCategory === cat.id;
-              const count = services.filter((s) => isCategoryMatch(s.category, cat.id)).length;
+              const count = services.filter(
+                (s) => isCategoryMatch(s.category, cat.id) && matchesSearchQuery(s, searchQuery)
+              ).length;
 
               return (
                 <button
@@ -510,7 +522,7 @@ const Services = () => {
           </div>
         </div>
 
-        {!selectedCategory ? (
+        {!selectedCategory && !isSearchActive ? (
           /* ================= MODE 1: CATEGORY TILES GRID (CLEAN WHITE TILES) ================= */
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
@@ -576,8 +588,30 @@ const Services = () => {
             </div>
           </div>
         ) : (
-          /* ================= MODE 2: CATEGORY SPECIFIC SERVICES LIST ================= */
+          /* ================= MODE 2: CATEGORY / SEARCH SPECIFIC SERVICES LIST ================= */
           <div className="space-y-6">
+            {isSearchActive && !selectedCategory && (
+              <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-primary text-primary-foreground px-3 py-1 text-xs font-bold rounded-full">
+                    Search Results
+                  </Badge>
+                  <span className="text-sm font-semibold text-foreground">
+                    Showing results for &ldquo;{searchQuery}&rdquo;
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchQuery("")}
+                  className="text-xs text-muted-foreground hover:text-foreground gap-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Clear Search
+                </Button>
+              </div>
+            )}
+
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {[1, 2, 3, 4, 5, 6].map((n) => (
@@ -587,18 +621,22 @@ const Services = () => {
             ) : filteredServices.length === 0 ? (
               <div className="text-center py-16 bg-card border border-border/80 rounded-3xl max-w-lg mx-auto p-8 space-y-4 shadow-sm">
                 <Briefcase className="w-12 h-12 text-muted-foreground mx-auto opacity-50" />
-                <h3 className="text-lg font-bold text-foreground">No Listings Found in {selectedCategory}</h3>
+                <h3 className="text-lg font-bold text-foreground">
+                  No Listings Found {isSearchActive ? `matching "${searchQuery}"` : selectedCategory ? `in ${selectedCategory}` : ""}
+                </h3>
                 <p className="text-xs text-muted-foreground">
-                  We currently don't have any active service listings matching your filter criteria.
+                  We currently don't have any active service listings matching your filter or search criteria.
                 </p>
                 <div className="flex justify-center gap-3 pt-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setSearchQuery("")}
-                    className="rounded-full text-xs px-5"
-                  >
-                    Clear Search
-                  </Button>
+                  {isSearchActive && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setSearchQuery("")}
+                      className="rounded-full text-xs px-5"
+                    >
+                      Clear Search
+                    </Button>
+                  )}
                   <Button
                     onClick={handleBackToCategories}
                     className="rounded-full text-xs px-5 bg-primary text-primary-foreground"
