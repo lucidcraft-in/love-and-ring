@@ -26,6 +26,16 @@ import {
   deleteNotificationApi,
   NotificationItem,
 } from "@/services/notificationService";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface NotificationsProps {
   onNavigate?: (tab: string) => void;
@@ -54,6 +64,7 @@ const Notifications = ({ onNavigate }: NotificationsProps) => {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedForDelete, setSelectedForDelete] = useState<NotificationItem | null>(null);
 
   const loadNotifications = async () => {
     setLoading(true);
@@ -81,6 +92,13 @@ const Notifications = ({ onNavigate }: NotificationsProps) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
     await deleteNotificationApi(id);
     toast.success("Notification removed");
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedForDelete) return;
+    const itemToDelete = selectedForDelete;
+    setSelectedForDelete(null);
+    await handleClearNotification(itemToDelete.id);
   };
 
   const handleAction = (item: NotificationItem) => {
@@ -291,7 +309,7 @@ const Notifications = ({ onNavigate }: NotificationsProps) => {
                       size="icon"
                       variant="ghost"
                       className="h-7 w-7 text-muted-foreground hover:text-destructive rounded-full"
-                      onClick={() => handleClearNotification(item.id)}
+                      onClick={() => setSelectedForDelete(item)}
                       title="Delete notification"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -315,6 +333,47 @@ const Notifications = ({ onNavigate }: NotificationsProps) => {
           </p>
         </Card>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={!!selectedForDelete}
+        onOpenChange={(open) => !open && setSelectedForDelete(null)}
+      >
+        <AlertDialogContent className=" max-w-md rounded-2xl p-6 border border-border/40 bg-card/95 backdrop-blur-md shadow-2xl">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3.5">
+              <div className="h-11 w-11 rounded-2xl bg-gradient-to-r from-primary/15 to-secondary/15 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                <Trash2 className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <AlertDialogTitle className="text-base font-bold text-foreground">
+                  Delete Notification?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-xs text-muted-foreground mt-0.5">
+                  Are you sure you want to delete this notification
+                  {selectedForDelete?.name ? ` from "${selectedForDelete.name}"` : ""}?
+                  This action cannot be undone.
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter className="mt-5 flex items-center justify-end gap-2.5">
+            <AlertDialogCancel
+              onClick={() => setSelectedForDelete(null)}
+              className="text-xs rounded-xl h-9 px-4 font-semibold border-border/60 hover:text-gray-500 hover:glass-card"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="text-xs rounded-xl h-9 px-5 bg-gradient-to-r from-primary to-secondary hover:opacity-95 text-white font-semibold shadow-md border-0"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
