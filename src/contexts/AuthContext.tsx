@@ -63,6 +63,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("activeMatchesTab");
+    localStorage.removeItem("activeUserDashboardTab");
+    localStorage.removeItem("registration_draft");
+    try {
+      sessionStorage.clear();
+    } catch (e) {
+      console.error("Error clearing sessionStorage on logout:", e);
+    }
+    window.dispatchEvent(new Event("userProfileUpdated"));
   };
 
   const updateProfile = (data: Partial<UserProfile>) => {
