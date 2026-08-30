@@ -38,8 +38,8 @@ import ClientRegistrationCTA from "@/components/ClientRegistrationCTA";
 import HomeServicesSection from "@/components/HomeServicesSection";
 import HomeExploreSection from "@/components/HomeExploreSection";
 import { loginUserApi } from "@/services/AuthServices";
+import { getProfileStatus, getNextIncompleteStep } from "@/utils/profileStatus";
 import Axios from "@/axios/axios";
-import { getNextIncompleteStep } from "@/utils/profileStatus";
 
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
@@ -157,15 +157,24 @@ const Home = () => {
 
     try {
       const res = await loginUserApi(signInData.email, signInData.password);
+      const user = res.data?.user || res.user;
 
-      login({
-        _id: res.user._id,
-        email: res.user.email,
-        fullName: res.user.fullName,
-      });
+      login(user);
 
-      toast.success("Signed in successfully");
-      navigate("/dashboard");
+      const status = getProfileStatus(user);
+      if (status !== "COMPLETED") {
+        const incompleteStep = getNextIncompleteStep(user) || 1;
+        toast.info("Please complete your profile details to continue.");
+        navigate("/register", {
+          state: {
+            step: incompleteStep,
+            userId: user._id,
+          },
+        });
+      } else {
+        toast.success("Signed in successfully");
+        navigate("/dashboard");
+      }
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Login failed");
     }
