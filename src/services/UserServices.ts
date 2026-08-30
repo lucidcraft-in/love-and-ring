@@ -27,6 +27,8 @@ export const verifyRegistrationOtp = (data: {
   alternateMobile?: string;
   countryCode?: string;
   gender?: string;
+  createdBy?: string;
+  createdByModel?: string;
 }) => {
   return Axios.post("/api/users/verify-otp", data);
 };
