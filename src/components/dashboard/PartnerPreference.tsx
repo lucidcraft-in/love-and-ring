@@ -46,6 +46,30 @@ const staticTraitsOptions = [
   { id: "patient", name: "Patient", icon: "🕊️" },
 ];
 
+const staticMaritalStatusOptions = [
+  "Single",
+  "Widowed",
+  "Divorced",
+  "Awaiting Divorce",
+  "Married",
+  "Annulled",
+];
+
+const staticLocationSuggestions = [
+  "Kochi",
+  "Trivandrum",
+  "Kozhikode",
+  "Thrissur",
+  "Kottayam",
+  "Palakkad",
+  "Kannur",
+  "Bangalore",
+  "Chennai",
+  "Mumbai",
+  "Delhi",
+  "Dubai",
+];
+
 /* ================= COMPONENT ================= */
 const PartnerPreference = () => {
   const [showConfirm, setShowConfirm] = useState(false);
@@ -67,6 +91,9 @@ const PartnerPreference = () => {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedDiets, setSelectedDiets] = useState<string[]>([]);
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
+  const [selectedMaritalStatuses, setSelectedMaritalStatuses] = useState<string[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [newLocationInput, setNewLocationInput] = useState<string>("");
 
   /* ---------- Master & Custom Interests ---------- */
   const [educations, setEducations] = useState<Education[]>([]);
@@ -124,6 +151,14 @@ const PartnerPreference = () => {
         if (data.personalityTraits || data.traits) {
           setSelectedTraits(data.personalityTraits || data.traits);
         }
+
+        if (data.maritalStatuses || data.maritalStatus) {
+          setSelectedMaritalStatuses(data.maritalStatuses || data.maritalStatus);
+        }
+
+        if (data.locations || data.places) {
+          setSelectedLocations(data.locations || data.places);
+        }
       } catch (error: any) {
         console.error("Failed to load preferences", error);
       }
@@ -131,6 +166,19 @@ const PartnerPreference = () => {
 
     fetchPreferences();
   }, []);
+
+  /* ================= ADD CUSTOM LOCATION ================= */
+  const handleAddLocation = (locName?: string) => {
+    const target = (locName || newLocationInput).trim();
+    if (!target) return;
+
+    const formatted = target.charAt(0).toUpperCase() + target.slice(1);
+
+    if (!selectedLocations.some((l) => l.toLowerCase() === formatted.toLowerCase())) {
+      setSelectedLocations((prev) => [...prev, formatted]);
+    }
+    if (!locName) setNewLocationInput("");
+  };
 
   /* ================= FETCH RELIGIONS ================= */
   useEffect(() => {
@@ -299,6 +347,8 @@ const PartnerPreference = () => {
         interests: selectedInterests,
         diets: selectedDiets,
         personalityTraits: selectedTraits,
+        maritalStatuses: selectedMaritalStatuses,
+        locations: selectedLocations,
       };
 
       await Axios.post("/api/user/partner-preferences/me", payload, {
@@ -605,7 +655,7 @@ const PartnerPreference = () => {
                 }
                 className={`cursor-pointer py-2 px-4 ${
                   selectedEducation.includes(edu._id)
-                    ? "bg-gradient-to-r from-primary to-secondary"
+                    ? "bg-gradient-to-r from-primary to-secondary text-white"
                     : ""
                 }`}
                 onClick={() =>
@@ -622,6 +672,170 @@ const PartnerPreference = () => {
                 )}
               </Badge>
             ))}
+          </div>
+        </Card>
+
+        {/* Marital Status Preference */}
+        <Card className="glass-card p-6 lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <Label className="text-lg font-semibold block">
+                Marital Status Preference
+              </Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Select preferred marital status(es) for your partner match
+              </p>
+            </div>
+            {selectedMaritalStatuses.length > 0 && (
+              <span className="text-xs text-muted-foreground font-medium">
+                {selectedMaritalStatuses.length} selected
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {staticMaritalStatusOptions.map((status) => {
+              const isSelected = selectedMaritalStatuses.includes(status);
+              return (
+                <Badge
+                  key={status}
+                  variant={isSelected ? "default" : "outline"}
+                  className={`cursor-pointer py-2 px-4 transition-all ${
+                    isSelected
+                      ? "bg-gradient-to-r from-primary to-secondary text-white"
+                      : "hover:bg-accent"
+                  }`}
+                  onClick={() =>
+                    toggleSelection(
+                      status,
+                      selectedMaritalStatuses,
+                      setSelectedMaritalStatuses,
+                    )
+                  }
+                >
+                  {status}
+                  {isSelected && <X className="w-3 h-3 ml-1" />}
+                </Badge>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Preferred Places / Locations */}
+        <Card className="glass-card p-6 lg:col-span-2">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <Label className="text-lg font-semibold block">
+                Preferred Places / Location
+              </Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Add cities, states, or locations you prefer for matching candidates
+              </p>
+            </div>
+            {selectedLocations.length > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-xs h-7 text-primary hover:text-primary/80"
+                onClick={() => setSelectedLocations([])}
+              >
+                Clear All
+              </Button>
+            )}
+          </div>
+
+          {/* Location Input */}
+          <div className="flex gap-2 mb-4">
+            <Input
+              placeholder="Enter a city or location (e.g. Kochi, Bangalore, Dubai)..."
+              value={newLocationInput}
+              onChange={(e) => setNewLocationInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddLocation();
+                }
+              }}
+              className="max-w-md text-sm"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleAddLocation()}
+              className="shrink-0"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Add Place
+            </Button>
+          </div>
+
+          {/* Selected Places Tags */}
+          {selectedLocations.length > 0 && (
+            <div className="mb-4">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2">
+                Selected Places ({selectedLocations.length}):
+              </span>
+              <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
+                {selectedLocations.map((loc) => (
+                  <Badge
+                    key={loc}
+                    variant="default"
+                    className="py-1.5 px-3 bg-gradient-to-r from-primary to-secondary text-white flex items-center gap-1.5 shadow-sm"
+                  >
+                    <span>{loc}</span>
+                    <X
+                      className="w-3.5 h-3.5 cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() =>
+                        setSelectedLocations((prev) =>
+                          prev.filter((item) => item !== loc)
+                        )
+                      }
+                    />
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Popular Suggestions */}
+          <div>
+            <span className="text-xs font-medium text-muted-foreground block mb-2">
+              Popular City Suggestions:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {staticLocationSuggestions.map((loc) => {
+                const isSelected = selectedLocations.some(
+                  (l) => l.toLowerCase() === loc.toLowerCase()
+                );
+                return (
+                  <Badge
+                    key={loc}
+                    variant={isSelected ? "default" : "outline"}
+                    className={`cursor-pointer py-1.5 px-3 text-xs transition-all ${
+                      isSelected
+                        ? "bg-gradient-to-r from-primary to-secondary text-white"
+                        : "hover:bg-accent hover:border-primary/50"
+                    }`}
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedLocations((prev) =>
+                          prev.filter((item) => item.toLowerCase() !== loc.toLowerCase())
+                        );
+                      } else {
+                        handleAddLocation(loc);
+                      }
+                    }}
+                  >
+                    {loc}
+                    {isSelected ? (
+                      <X className="w-3 h-3 ml-1" />
+                    ) : (
+                      <Plus className="w-3 h-3 ml-1 text-muted-foreground" />
+                    )}
+                  </Badge>
+                );
+              })}
+            </div>
           </div>
         </Card>
       </div>
