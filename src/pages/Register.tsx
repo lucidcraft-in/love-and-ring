@@ -262,10 +262,33 @@ const Register = () => {
     }
   }, [location.state?.userId, location.state?.step, location.state?.isCompletingProfile]);
 
-  // Fix mobile automatic scroll down issue: Scroll window to top whenever step changes
+  // Helper function to scroll window and registration card to top ONLY in mobile view
+  const scrollToTopMobile = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      // Blur any active element to prevent virtual keyboard / element focus holding scroll
+      if (document.activeElement && typeof (document.activeElement as HTMLElement).blur === "function") {
+        (document.activeElement as HTMLElement).blur();
+      }
+
+      // Scroll window & document body to top
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+
+      // Also scroll registration card top into view
+      setTimeout(() => {
+        const cardEl = document.getElementById("registration-card");
+        if (cardEl) {
+          cardEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 50);
+    }
+  };
+
+  // Scroll mobile view up to start of section whenever step changes
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [currentStep]);
+    scrollToTopMobile();
+  }, [currentStep, showOTPVerification]);
 
   // Persist form data to localStorage as draft whenever formData or currentStep changes
   useEffect(() => {
@@ -697,6 +720,33 @@ const Register = () => {
         userEmail: formData.email,
         userPhone: formData.mobile,
         userFullName: formData.fullName,
+        details: {
+          payload: {
+            accountFor: formData.accountFor,
+            fullName: formData.fullName,
+            email: formData.email,
+            mobile: formData.mobile,
+            countryCode: formData.countryCode,
+            gender: formData.gender,
+            religion: formData.religion,
+            caste: formData.caste,
+            motherTongue: formData.motherTongue,
+            dob: formData.dob,
+            height: formData.height,
+            weight: formData.weight,
+            maritalStatus: formData.maritalStatus,
+            bodyType: formData.bodyType,
+            city: formData.city,
+            primaryEducation: formData.primaryEducation,
+            profession: formData.profession,
+            physicallyChallenged: formData.physicallyChallenged,
+            liveWithFamily: formData.liveWithFamily,
+            interests: formData.interests,
+            traits: formData.traits,
+            diets: formData.diets,
+            income: formData.income,
+          },
+        },
       });
 
       localStorage.removeItem("registration_draft");
@@ -730,6 +780,33 @@ const Register = () => {
         userPhone: formData.mobile,
         userFullName: formData.fullName,
         errorMessage: message,
+        details: {
+          errorResponse: err.response?.data || null,
+          errorStatus: err.response?.status || null,
+          errorCode: err.code || null,
+          errorMessage: message,
+          payload: {
+            accountFor: formData.accountFor,
+            fullName: formData.fullName,
+            email: formData.email,
+            mobile: formData.mobile,
+            countryCode: formData.countryCode,
+            gender: formData.gender,
+            religion: formData.religion,
+            caste: formData.caste,
+            motherTongue: formData.motherTongue,
+            dob: formData.dob,
+            height: formData.height,
+            weight: formData.weight,
+            maritalStatus: formData.maritalStatus,
+            bodyType: formData.bodyType,
+            city: formData.city,
+            primaryEducation: formData.primaryEducation,
+            profession: formData.profession,
+            physicallyChallenged: formData.physicallyChallenged,
+            liveWithFamily: formData.liveWithFamily,
+          },
+        },
       });
 
       setSubmissionError({ message, action: "submit" });
@@ -957,7 +1034,7 @@ const Register = () => {
               <X className="h-5 w-5" />
             </Button>
 
-            <Card className="relative mt-10 p-5 sm:p-6 lg:p-7 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
+            <Card id="registration-card" className="relative mt-10 p-5 sm:p-6 lg:p-7 bg-card/95 backdrop-blur-md shadow-2xl border-border/30 rounded-2xl lg:rounded-3xl">
               <div className="mb-5 pr-8 lg:pr-6">
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-base font-semibold text-foreground">
