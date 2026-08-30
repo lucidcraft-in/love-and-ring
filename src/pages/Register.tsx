@@ -162,6 +162,13 @@ const Register = () => {
 
   // Restore draft and pre-fill user profile data on mount
   useEffect(() => {
+    // Capture referral consultant parameter if present in URL
+    const searchParams = new URLSearchParams(location.search || window.location.search);
+    const refId = searchParams.get("ref") || searchParams.get("consultantId") || searchParams.get("referral");
+    if (refId) {
+      localStorage.setItem("referral_consultant_id", refId);
+    }
+
     let draftData: Partial<RegistrationData> = {};
     let draftStep: number | null = null;
     let draftOTPVerified = false;
@@ -572,7 +579,8 @@ const Register = () => {
 
       // Save password and initial profile details into MongoDB directly at Step 1
       try {
-        const otpRes = await verifyRegistrationOtp({
+        const refConsultantId = localStorage.getItem("referral_consultant_id");
+        const otpPayload: any = {
           email: formData.email,
           otp,
           password,
@@ -586,7 +594,13 @@ const Register = () => {
           gender: formData.gender
             ? formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1)
             : "Male",
-        });
+        };
+        if (refConsultantId) {
+          otpPayload.createdBy = refConsultantId;
+          otpPayload.createdByModel = "Consultant";
+        }
+
+        const otpRes = await verifyRegistrationOtp(otpPayload);
         if (otpRes?.data?.user?._id) {
           setUserId(otpRes.data.user._id);
         }
@@ -648,6 +662,12 @@ const Register = () => {
           ? formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1)
           : "Male"
       );
+
+      const refConsultantId = localStorage.getItem("referral_consultant_id");
+      if (refConsultantId) {
+        submitData.append("createdBy", refConsultantId);
+        submitData.append("createdByModel", "Consultant");
+      }
 
       if (formData.dob) submitData.append("dob", formData.dob);
       if (formData.religion) submitData.append("religion", formData.religion);
