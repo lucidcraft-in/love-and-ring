@@ -373,46 +373,53 @@ const Summary = ({ onNavigate }: SummaryProps) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const raw = Array.isArray(res.data?.data) ? res.data.data : [];
-      const normalized: MatchItem[] = raw
-        .filter((item: any) => item && item.user)
-        .map((item: any) => ({
-          user: {
-            _id: item.user._id,
-            fullName: item.user.fullName,
-            dateOfBirth: item.user.dateOfBirth,
-            heightCm: item.user.heightCm,
-            weightKg: item.user.weightKg,
-            maritalStatus: item.user.maritalStatus,
-            religion: item.user.religion,
-            caste: item.user.caste,
-            interests: item.user.interests || [],
-            education:
-              item.user.primaryEducation ||
-              item.user.highestEducation ||
-              item.user.education
-                ? {
-                    name: (
-                      item.user.primaryEducation ||
-                      item.user.highestEducation ||
-                      item.user.education
-                    ).name,
-                  }
+      const seenIds = new Set<string>();
+      const normalized: MatchItem[] = [];
+
+      for (const item of raw) {
+        if (item && item.user && item.user._id && !seenIds.has(String(item.user._id))) {
+          seenIds.add(String(item.user._id));
+          normalized.push({
+            user: {
+              _id: item.user._id,
+              fullName: item.user.fullName,
+              gender: item.user.gender,
+              dateOfBirth: item.user.dateOfBirth,
+              heightCm: item.user.heightCm,
+              weightKg: item.user.weightKg,
+              maritalStatus: item.user.maritalStatus,
+              religion: item.user.religion,
+              caste: item.user.caste,
+              interests: item.user.interests || [],
+              education:
+                item.user.primaryEducation ||
+                item.user.highestEducation ||
+                item.user.education
+                  ? {
+                      name: (
+                        item.user.primaryEducation ||
+                        item.user.highestEducation ||
+                        item.user.education
+                      ).name,
+                    }
+                  : undefined,
+              profession: item.user.profession
+                ? { name: item.user.profession.name }
                 : undefined,
-            profession: item.user.profession
-              ? { name: item.user.profession.name }
-              : undefined,
-            city: item.user.city,
-            state: item.user.state,
-            profileStatus: item.user.profileStatus,
-            isMillionClub: item.user.profileStatus
-              ?.toLowerCase()
-              .includes("million"),
-            emailVerified: item.user.emailVerified,
-            photos: item.user.photos || [],
-          },
-          matchScore: item.matchPercentage ?? 0,
-          liked: likedIds.has(item.user._id),
-        }));
+              city: item.user.city,
+              state: item.user.state,
+              profileStatus: item.user.profileStatus,
+              isMillionClub: item.user.profileStatus
+                ?.toLowerCase()
+                .includes("million"),
+              emailVerified: item.user.emailVerified,
+              photos: item.user.photos || [],
+            },
+            matchScore: item.matchPercentage ?? 0,
+            liked: likedIds.has(item.user._id),
+          });
+        }
+      }
       setMatches(normalized);
     } catch (err) {
       console.error("Failed to fetch matches", err);
