@@ -27,6 +27,10 @@ import {
   Lock,
   Eye,
   ShieldCheck,
+  Globe,
+  User,
+  UserCheck,
+  IndianRupee,
 } from "lucide-react";
 import {
   Dialog,
@@ -677,25 +681,57 @@ const SingleProfile = () => {
               <h2 className="text-xl font-bold mb-4">Basic Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InfoItem
+                  icon={UserCheck}
+                  label="Profile Created For"
+                  value={profile.accountFor || "Self"}
+                />
+                <InfoItem
+                  icon={User}
+                  label="Gender"
+                  value={profile.gender || "Not specified"}
+                />
+                <InfoItem
                   icon={MapPin}
                   label="Location"
                   value={profile.city || "Not specified"}
                 />
                 <InfoItem
-                  icon={Users}
+                  icon={Sparkles}
                   label="Religion"
-                  value={profile.religion?.name || "Not specified"}
+                  value={typeof profile.religion === "object" ? profile.religion?.name || "Not specified" : profile.religion || "Not specified"}
+                />
+                <InfoItem
+                  icon={Users}
+                  label="Caste"
+                  value={typeof profile.caste === "object" ? profile.caste?.name || "Not specified" : profile.caste || "Not specified"}
+                />
+                <InfoItem
+                  icon={Globe}
+                  label="Mother Tongue"
+                  value={typeof profile.motherTongue === "object" ? profile.motherTongue?.name || "Not specified" : profile.motherTongue || "Not specified"}
+                />
+                <InfoItem
+                  icon={Globe}
+                  label="Preferred Language"
+                  value={profile.preferredLanguage || "English"}
                 />
                 <InfoItem
                   icon={GraduationCap}
                   label="Education"
-                  value={profile.primaryEducation?.name || profile.education?.name || "Not specified"}
+                  value={profile.primaryEducation?.name || profile.education?.name || (typeof profile.primaryEducation === "string" ? profile.primaryEducation : "Not specified")}
                 />
                 <InfoItem
                   icon={Briefcase}
                   label="Profession"
-                  value={profile.profession?.name || "Not specified"}
+                  value={profile.profession?.name || (typeof profile.profession === "string" ? profile.profession : "Not specified")}
                 />
+                {profile.income?.amount && (
+                  <InfoItem
+                    icon={IndianRupee}
+                    label="Annual Income"
+                    value={`₹${Number(profile.income.amount).toLocaleString('en-IN')} / ${profile.income.type || 'Yearly'}`}
+                  />
+                )}
               </div>
             </Card>
 
@@ -709,25 +745,35 @@ const SingleProfile = () => {
                 />
                 <InfoItem
                   icon={Activity}
+                  label="Weight"
+                  value={profile.weightKg ? `${profile.weightKg} kg` : "N/A"}
+                />
+                <InfoItem
+                  icon={Activity}
                   label="Body Type"
                   value={profile.bodyType || "Not specified"}
                 />
                 <InfoItem
-                  icon={Users}
+                  icon={Heart}
                   label="Marital Status"
                   value={profile.maritalStatus || "Not specified"}
                 />
                 <InfoItem
                   icon={Utensils}
                   label="Diet"
-                  value={profile.dietPreference || "Not specified"}
+                  value={Array.isArray(profile.dietPreference) ? profile.dietPreference.join(", ") : (profile.dietPreference || "Not specified")}
+                />
+                <InfoItem
+                  icon={ShieldCheck}
+                  label="Physically Challenged"
+                  value={profile.physicallyChallenged !== undefined ? (profile.physicallyChallenged ? "Yes" : "No") : "No"}
                 />
                 <InfoItem
                   icon={Home}
                   label="Lives With Family"
-                  value={profile.livesWithFamily ? "Yes" : "No"}
+                  value={profile.livesWithFamily !== undefined ? (profile.livesWithFamily ? "Yes" : "No") : (profile.livingWithFamily ? "Yes" : "No")}
                 />
-                {!profile.livesWithFamily && (
+                {!(profile.livesWithFamily ?? profile.livingWithFamily) && (
                   <InfoItem
                     icon={MapPin}
                     label="Family Location"
