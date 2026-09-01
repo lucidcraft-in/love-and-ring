@@ -24,7 +24,6 @@ import {
 const heroSlides = [heroSlide1, heroSlide2, heroSlide3];
 
 interface ClientFormData {
-  username: string;
   fullName: string;
   email: string;
   countryCode: string;
@@ -41,7 +40,6 @@ const ClientRegistration = () => {
   const [isStepValid, setIsStepValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<ClientFormData>({
-    username: "",
     fullName: "",
     email: "",
     countryCode: "+91",
@@ -77,7 +75,7 @@ const ClientRegistration = () => {
   const getRequiredFieldsForStep = (step: number): (keyof ClientFormData)[] => {
     switch (step) {
       case 1:
-        return ["username", "fullName", "email", "countryCode", "mobile"];
+        return ["fullName", "email", "countryCode", "mobile"];
       case 2:
         return ["regions", "password", "confirmPassword"];
       default:
@@ -137,7 +135,6 @@ const ClientRegistration = () => {
     try {
       const fullPhone = `${formData.countryCode} ${formData.mobile}`;
       await Axios.post("/api/consultants/register", {
-        username: formData.username,
         fullName: formData.fullName,
         email: formData.email,
         phone: fullPhone,
@@ -182,33 +179,18 @@ const ClientRegistration = () => {
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="username" className="text-sm">
-                    Username <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    value={formData.username}
-                    onChange={(e) => updateFormData("username", e.target.value)}
-                    placeholder="broker_name"
-                    className="h-10"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="fullName" className="text-sm">
-                    Full Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    value={formData.fullName}
-                    onChange={(e) => updateFormData("fullName", e.target.value)}
-                    placeholder="Enter full name"
-                    className="h-10"
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="fullName" className="text-sm">
+                  Full Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  value={formData.fullName}
+                  onChange={(e) => updateFormData("fullName", e.target.value)}
+                  placeholder="Enter full name"
+                  className="h-10"
+                />
               </div>
 
               <div className="space-y-1.5">
