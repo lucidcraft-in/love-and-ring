@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 
 const categories = [
-  { id: "about", label: "About Love & Ring" },
+  { id: "about", label: "About Love & Ring Matrimony" },
   { id: "registration", label: "Registration & Account" },
   { id: "verification", label: "Profile Verification" },
   { id: "finding-match", label: "Finding Your Match" },
