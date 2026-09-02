@@ -17,7 +17,7 @@ const ClientRegistrationCTA = () => {
             className="space-y-5 sm:space-y-6 text-center lg:text-left"
           >
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
-              Become a Matchmaking Partner
+              Becoming a Partner
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
               Join our trusted network of matchmaking professionals who help families 
