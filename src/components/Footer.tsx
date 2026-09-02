@@ -140,7 +140,7 @@ const Footer = () => {
                 className="h-10 w-10 object-contain"
               />
               <span className="text-xl font-bold gradient-text">
-                Love & Ring
+                Love & Ring Matrimony
               </span>
             </Link>
             <p className="text-muted-foreground text-sm">
@@ -185,7 +185,7 @@ const Footer = () => {
 
         <div className="border-t mt-8 pt-8 text-sm text-muted-foreground space-y-6">
           <div className="text-center">
-            <p className="font-semibold text-base text-foreground">Love & Ring Ltd.</p>
+            <p className="font-semibold text-base text-foreground">Love & Ring Matrimony Ltd.</p>
           </div>
 
           {/* Three Locations Grid */}
@@ -264,7 +264,7 @@ const Footer = () => {
             </div>
 
             <p className="text-xs pt-2">
-              &copy; {new Date().getFullYear()} Love & Ring Ltd. All rights reserved.
+              &copy; {new Date().getFullYear()} Love & Ring Matrimony Ltd. All rights reserved.
             </p>
           </div>
         </div>
