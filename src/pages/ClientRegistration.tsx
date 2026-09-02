@@ -472,7 +472,7 @@ const ClientRegistration = () => {
 
             {/* Main Heading */}
             <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-6">
-              Client Partner
+              Consultant
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
                 Registration
