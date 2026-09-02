@@ -63,7 +63,7 @@ export default function About() {
   return (
     <DynamicStaticPage
       forcedSlug="about"
-      fallbackTitle="About Love & Ring"
+      fallbackTitle="About Love & Ring Matrimony"
       fallbackContent={<FallbackAboutContent />}
     />
   );
