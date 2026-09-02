@@ -884,7 +884,7 @@ const Home = () => {
             className="text-center mb-10 sm:mb-16"
           >
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
-              Why Choose Love &amp; Ring?
+              Why Choose Love &amp; Ring Matrimony?
             </h2>
             <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               We provide a secure, trusted platform to help you find your
@@ -1017,7 +1017,7 @@ const Home = () => {
               className="text-center space-y-4 sm:space-y-6"
             >
               <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold">
-                About Love &amp; Ring
+                About Love &amp; Ring Matrimony
               </h2>
               <p className="text-sm sm:text-lg text-muted-foreground leading-relaxed">
                 Love &amp; Ring is a trusted, personalised matchmaking and
