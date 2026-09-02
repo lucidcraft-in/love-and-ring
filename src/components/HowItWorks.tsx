@@ -66,7 +66,7 @@ const HowItWorks = () => {
           className="text-center mb-12 md:mb-16"
         >
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
-            How Love & Ring Works
+            How Love & Ring Matrimony Works
           </h2>
           <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
             Find your perfect match in three simple steps
