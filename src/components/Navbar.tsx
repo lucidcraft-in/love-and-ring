@@ -120,7 +120,7 @@ const Navbar = () => {
               className="h-10 w-10 sm:h-12 sm:w-12 object-contain" 
             />
             <span className={`text-lg sm:text-xl font-bold transition-colors duration-300 ${logoTextClass}`}>
-              Love & Ring 
+              Love & Ring Matrimony
             </span>
           </Link>
 
