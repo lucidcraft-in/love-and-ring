@@ -710,12 +710,24 @@ const Register = () => {
       let res;
       if (userId && localStorage.getItem("token")) {
         const token = localStorage.getItem("token");
-        res = await Axios.put(`/api/users/${userId}`, submitData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        try {
+          res = await Axios.put(`/api/users/${userId}`, submitData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        } catch (putErr: any) {
+          if (
+            putErr.response?.status === 404 ||
+            putErr.response?.data?.message?.toLowerCase().includes("user not found")
+          ) {
+            console.warn("User ID not found in database, falling back to registerFullUserApi");
+            res = await registerFullUserApi(submitData);
+          } else {
+            throw putErr;
+          }
+        }
       } else {
         res = await registerFullUserApi(submitData);
       }
