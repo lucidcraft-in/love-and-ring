@@ -17,6 +17,7 @@ import {
 
 const categories = [
   { id: "about", label: "About Love & Ring Matrimony" },
+  { id: "million-club", label: "Million Club – FAQ" },
   { id: "registration", label: "Registration & Account" },
   { id: "verification", label: "Profile Verification" },
   { id: "finding-match", label: "Finding Your Match" },
@@ -38,6 +39,113 @@ const categories = [
 ];
 
 const faqData: Record<string, { question: string; answer: string }[]> = {
+  "million-club": [
+    {
+      question: "1. What is the Million Club?",
+      answer:
+        "Million Club is a premium matchmaking plan created for individuals seeking personalised, confidential and professionally assisted partner-search services.",
+    },
+    {
+      question: "2. How much does the Million Club plan cost?",
+      answer:
+        "The Million Club membership fee is ₹22,222. Any applicable taxes or additional charges will be displayed before payment.",
+    },
+    {
+      question: "3. What services are included in the plan?",
+      answer:
+        "The plan includes:\n\n• Dedicated matchmaking consultant\n• Complete client validation\n• Confidential and personalised service\n• Pre-nuptial legal consultation\n• Background verification support\n• Curated meeting opportunities\n• Executive Lounge access\n• Video calls, audio calls and live chat",
+    },
+    {
+      question: "4. Will I receive assistance from a dedicated consultant?",
+      answer:
+        "Yes. A dedicated consultant will understand your preferences, help identify suitable matches and assist you throughout your matchmaking journey.",
+    },
+    {
+      question: "5. What is complete client validation?",
+      answer:
+        "It is a verification process used to assess the authenticity of a member’s profile and the information submitted during registration. Additional documents may be requested when necessary.",
+    },
+    {
+      question: "6. Is my personal information kept confidential?",
+      answer:
+        "Yes. Million Club follows a confidential and privacy-focused approach. Personal information is shared only as required for matchmaking and according to your communication preferences and the platform’s privacy policy.",
+    },
+    {
+      question: "7. Does Million Club provide background checks?",
+      answer:
+        "Yes. Background verification support is included. However, verification is subject to the availability and accuracy of documents, public records and information provided by the member or third-party sources.",
+    },
+    {
+      question: "8. What does the pre-nuptial legal service include?",
+      answer:
+        "The plan provides access to guidance or consultation regarding pre-nuptial matters. The exact scope of the service will be explained before the consultation. Court representation, documentation, registration or additional legal services may involve separate charges.",
+    },
+    {
+      question: "9. Are meetings with potential matches guaranteed?",
+      answer:
+        "The plan provides curated meeting opportunities based on mutual interest, compatibility and availability. A specific number of meetings or a successful marriage cannot be guaranteed.",
+    },
+    {
+      question: "10. What is the Executive Lounge?",
+      answer:
+        "The Executive Lounge is a premium communication facility that allows eligible members to connect through video calls, audio calls and live chat in a convenient and secure environment.",
+    },
+    {
+      question: "11. Can I communicate directly with a potential match?",
+      answer:
+        "Communication can be arranged after mutual interest and according to the platform’s privacy and safety guidelines. Your consultant may assist with introductions and meeting coordination.",
+    },
+    {
+      question: "12. How are suitable matches selected?",
+      answer:
+        "Matches are shortlisted using factors such as personal preferences, lifestyle, values, interests, relationship goals and other compatibility criteria provided by both members.",
+    },
+    {
+      question: "13. Does purchasing the plan guarantee that I will find a partner?",
+      answer:
+        "No matchmaking service can guarantee a relationship, engagement or marriage. Million Club provides professional assistance, verified introductions and premium communication facilities to improve your matchmaking experience.",
+    },
+    {
+      question: "14. How long is the Million Club membership valid?",
+      answer:
+        "The membership duration and service limits applicable to your plan will be clearly stated during purchase and in the membership terms and conditions.",
+    },
+    {
+      question: "15. Can I cancel the membership or request a refund?",
+      answer:
+        "Cancellation and refund eligibility are governed by the Million Club cancellation and refund policy. Please review the applicable terms carefully before purchasing the plan.",
+    },
+    {
+      question: "16. Can the membership be transferred to another person?",
+      answer:
+        "No. The membership is intended for the registered individual and cannot normally be transferred, shared or resold.",
+    },
+    {
+      question: "17. What documents may be required for verification?",
+      answer:
+        "Members may be asked to submit proof of identity, age, address, education, occupation, marital status or other relevant information. The required documents may vary depending on the profile.",
+    },
+    {
+      question: "18. How do I join the Million Club?",
+      answer:
+        "Create or sign in to your account, select the Million Club plan, review the services and terms, and complete the payment. A representative will then contact you to begin the onboarding and validation process.",
+    },
+    {
+      question: "19. How can I contact Million Club support?",
+      answer:
+        "You can contact the support team through the website’s official contact options or WhatsApp assistance. Please use only the contact information displayed on the official website.",
+    },
+    {
+      question: "20. What should I do if I have a concern about a profile?",
+      answer:
+        "Stop communicating with the profile and immediately report the concern to the support team. Never send money, financial information, passwords or sensitive documents to another member.",
+    },
+    {
+      question: "21. Are legal services included in the Million Club membership fee?",
+      answer:
+        "No. Legal services, including pre-nuptial consultation, documentation, registration and legal representation, are not included in the membership fee. These services are chargeable separately based on the type and scope of assistance required.",
+    },
+  ],
   about: [
     {
       question: "1. What is Love & Ring?",
